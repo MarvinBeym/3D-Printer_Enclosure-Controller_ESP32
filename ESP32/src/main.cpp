@@ -18,7 +18,8 @@
 #include <Nextion.h>
 #define nextion Serial2
 
-const String version = "1.0";
+const String esp32_version = "1.1";
+const String display_version = "1.1";
 
 //Storage
 Preferences preferences;
@@ -213,6 +214,13 @@ void setup() {
   FastLED.clear(true);
 
   myNextion.init("boot_page");
+  String esp32Version = "ESP32: v";
+  esp32Version.concat(esp32_version);
+  myNextion.setComponentText("about_page.tf_esp32_v", esp32Version);
+
+  String displayVersion = "Display: v";
+  displayVersion.concat(display_version);
+  myNextion.setComponentText("about_page.tf_display_v", displayVersion);
 
   setupWifiAndUI();
 
@@ -307,6 +315,12 @@ String message = myNextion.listen();
     }
     if(message == "65 5 2 0 ff ff ff"){
       currentPage = 6;
+    }
+    if(message == "65 5 2 0 ff ff ff"){
+      currentPage == 7;
+    }
+    if(message == "65 6 6 0 ff ff ff"){
+      currentPage == 6;
     }
     if(message == "65 2 6 0 ff ff ff" || message == "65 3 2 0 ff ff ff" || message == "65 4 e 0 ff ff ff" || message == "65 5 1 0 ff ff ff"){
       currentPage = 1;
