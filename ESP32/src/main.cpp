@@ -19,12 +19,18 @@
 #include <Nextion.h>
 #define nextion Serial2
 
-const String esp32_version = "1.1";
-const String display_version = "1.1";
+const String esp32_version = "1.2";
+const String display_version = "1.2";
 
 //Storage
 Preferences preferences;
 
+//Watcher
+bool temperature_warnState = false;
+bool temperature_dangState = false;
+int temperature_warnThreshold = 40;
+int temperature_dangThreshold = 60;
+unsigned long temperature_warner_previousMillis = 0;
 //Wifi
 const char* wifi_ssid = "FRITZ!Box 7430 DU";
 const char* wifi_password =  "34948404760450512835";
@@ -120,15 +126,16 @@ void setLed2Color(String color);
 void setLed2Mode(String mode);
 void setDisplaySleep(bool value);
 void setDisplayBrightness(int value);
+void saveToFlash();
 void setSensorGraphValues(int sensorID, float temperature);
 void setSensorValues(int sensorID, float temperature, float humidity);
 void setFanPwm(int fanID, int pwmValue);
 void setFanRpm(int fanID, int rpm);
 void setTempWarnDang(int state, int warnOrDanger);
 void setTempWarnDangThreshold(int state, int warnOrDanger);
-void loadFlashSave();
+void loadFromFlash();
 char* string2char(String command);
-void HandleSensors();
+void HandleTempWarn();
 void HandleDisplay();
 String convertToLed2ModeString(int mode);
 int getFanSpeed(int fanID);
@@ -178,30 +185,25 @@ void espui_button_displaySleep_CALLBACK(Control* sender, int value){
   setDisplaySleep(display_sleepState);
 }
 void espui_button_saveToFlash_CALLBACK(Control* sender, int value){
-  preferences.begin("enclC_E32", false);
-
-  preferences.putInt("fan1_dC", fan1_dutyCycle);
-  preferences.putInt("fan2_dC", fan2_dutyCycle);
-  preferences.putInt("led1_rlyState", led1_relay.getState());
-  preferences.putInt("led2_color_sel", led2_color_selected);
-  preferences.putInt("led2_mode_sel", led2_mode_selected);
-  preferences.putInt("disp_brt", display_brightness);
-  preferences.putInt("disp_slpState", display_sleepState);
-  preferences.end();
+  if(value == B_UP)
+    saveToFlash();
 }
 void espui_button_TempWarning_CALLBACK(Control* sender, int value){
-  setTempWarnDang(sender->value.toInt(), value);
+  temperature_warnState = sender->value.toInt();
+  setTempWarnDang(temperature_warnState, 0);
 }
 void espui_button_TempDanger_CALLBACK(Control* sender, int value){
-  setTempWarnDang(sender->value.toInt(), value);
+  temperature_dangState = sender->value.toInt();
+  setTempWarnDang(temperature_dangState, 1);
 }
 void espui_number_TempWarningThreshold_CALLBACK(Control* sender, int value){
-  setTempWarnDangThreshold(sender->value.toInt(), value);
+  temperature_warnThreshold = sender->value.toInt();
+  setTempWarnDangThreshold(temperature_warnThreshold, 0);
 }
 void espui_number_TempDangerThreshold_CALLBACK(Control* sender, int value){
-  setTempWarnDangThreshold(sender->value.toInt(), value);
+  temperature_dangThreshold = sender->value.toInt();
+  setTempWarnDangThreshold(temperature_dangThreshold, 1);
 }
-
 
 void Led2EffectsHandler( void * parameter) {
   for(;;) {
@@ -290,8 +292,6 @@ void SensorHandler( void * parameter){
 
       }
       else{
-        Serial.print("Test2: ");
-        Serial.println(dht_1_temperature);
         dht_1_humidity = tmp_humidity_1;
         dht_1_temperature = tmp_temperature_1;
       }
@@ -331,12 +331,18 @@ void setup() {
   pinMode(relay_in_pin, OUTPUT);
   pinMode(led2_data_pin, OUTPUT);
 
-  int temp = xTaskCreatePinnedToCore(Led2EffectsHandler, "Led2EffectsTask", 10000, NULL, 1, &Led2EffectsTask, 1);
-  xTaskCreatePinnedToCore(SensorHandler, "SensorTask", 10000, NULL, 2, &SensorTask, 0);
-  if(temp) {
-    Serial.println("Task created...");
+  int task1return = xTaskCreatePinnedToCore(Led2EffectsHandler, "Led2EffectsTask", 10000, NULL, 1, &Led2EffectsTask, 1);
+  int task2return = xTaskCreatePinnedToCore(SensorHandler, "SensorTask", 10000, NULL, 2, &SensorTask, 0);
+  if(task1return) {
+    Serial.println("Led2Effects Task created...");
   } else {
-    Serial.printf("Couldn't create task %i", temp);
+    Serial.printf("Couldn't create Led2Effects Task");
+  }
+
+  if(task2return) {
+    Serial.println("Sensor Task created...");
+  } else {
+    Serial.printf("Couldn't create Sensor Task");
   }
 
   dht_1.begin();
@@ -371,14 +377,14 @@ void setup() {
 
 
 
-  loadFlashSave();
+  loadFromFlash();
 }
 
 void loop() {
   //dnsServer.processNextRequest();
   fan1rpm = getFanSpeed(1);
   fan2rpm = getFanSpeed(2);
-  //HandleSensors();
+  HandleTempWarn();
   HandleDisplay(); //-> causes problem with fastLED
 
 }
@@ -418,8 +424,21 @@ int getFanSpeed(int fanID){
   else
     return 0;
 }
-void HandleSensors(){
-  
+void HandleTempWarn(){
+  unsigned long temperature_warner_currentMillis = millis();
+  if (temperature_warner_currentMillis - temperature_warner_previousMillis >= temperature_warner_checkInterval) {
+    temperature_warner_previousMillis = temperature_warner_currentMillis;
+    if(temperature_warnState == 1){
+      if(dht_1_temperature > temperature_warnThreshold || dht_2_temperature > temperature_warnThreshold){
+        Serial.println("!!!> WARNING: Temperature warning threshold has been reached :WARNING <!!!");
+      }
+    }
+    else if(temperature_dangState == 1){
+      if(dht_1_temperature > temperature_dangThreshold || dht_2_temperature > temperature_dangThreshold){
+        Serial.println("!!!> DANGER: Temperature danger threshold has been reached :DANGER <!!!");
+      }
+    }
+  }
 }
 void HandleDisplay(){
 String message = myNextion.listen();
@@ -458,6 +477,13 @@ String message = myNextion.listen();
     else if(message == "65 4 9 0 ff ff ff"){setLed2Color("pink");}
     else if(message == "65 5 4 0 ff ff ff"){display_sleepState = !display_sleepState; setDisplaySleep(display_sleepState);}
     else if(message == "65 5 3 0 ff ff ff"){display_brightness = myNextion.getComponentValue("conf_page.sli_brightness"); setDisplayBrightness(display_brightness);}
+    else if(message == "65 5 e 0 ff ff ff"){saveToFlash();}
+    else if(message == "65 5 6 0 ff ff ff"){temperature_warnState = !temperature_warnState; setTempWarnDang(temperature_warnState, 0);}
+    else if(message == "65 5 7 0 ff ff ff"){temperature_dangState = !temperature_dangState; setTempWarnDang(temperature_dangState, 1);}
+    else if(message == "65 5 a 0 ff ff ff"){temperature_warnThreshold -= 1; setTempWarnDangThreshold(temperature_warnThreshold, 0);}
+    else if(message == "65 5 b 0 ff ff ff"){temperature_warnThreshold += 1; setTempWarnDangThreshold(temperature_warnThreshold, 0);}
+    else if(message == "65 5 c 0 ff ff ff"){temperature_dangThreshold -= 1; setTempWarnDangThreshold(temperature_dangThreshold, 1);}
+    else if(message == "65 5 d 0 ff ff ff"){temperature_dangThreshold += 1; setTempWarnDangThreshold(temperature_dangThreshold, 1);}
   }
   unsigned long display_current_millis = millis();
   if (display_current_millis - display_previous_millis >= display_update_interval) {
@@ -541,7 +567,6 @@ void setupWifiAndUI(){
   WiFi.begin(wifi_ssid, wifi_password);
   Serial.print("\n\nTry to connect to existing network");
   {
-
     do {
       delay(500);
       Serial.print(".");
@@ -566,7 +591,6 @@ void setupWifiAndUI(){
       } while (wifi_timeout);
     }
   }
-
   //dnsServer.start( DNS_PORT, "*", apIP );
 
   Serial.println("\n\nWiFi parameters:");
@@ -575,6 +599,7 @@ void setupWifiAndUI(){
   Serial.print("IP address: ");
   Serial.println(WiFi.getMode() == WIFI_AP ? WiFi.softAPIP() : WiFi.localIP());
 
+  Serial.println("Setting up WiFi done!");
   //Tabs
   uint16_t mainTab = ESPUI.addControl(ControlType::Tab, "Main Page", "Main Page");
   uint16_t confTab = ESPUI.addControl(ControlType::Tab, "Configuration", "Configuration");
@@ -625,14 +650,15 @@ void setupWifiAndUI(){
   //Configuration Tab
   espui_temperature_warning_compID = ESPUI.addControl(ControlType::Switcher, "Temperature Warning", "", ControlColor::Peterriver, confTab, &espui_button_TempWarning_CALLBACK);
   espui_temperature_danger_compID = ESPUI.addControl(ControlType::Switcher, "Temperature Danger Warning", "", ControlColor::Peterriver, confTab, &espui_button_TempDanger_CALLBACK);
-  espui_temperature_warningThreshhold_compID = ESPUI.addControl(ControlType::Number, "Temperature Warning Threshold", "", ControlColor::Peterriver, confTab, &espui_number_TempWarningThreshold_CALLBACK);
-  espui_temperature_dangerThreshhold_compID = ESPUI.addControl(ControlType::Number, "Temperature Danger Threshold", "", ControlColor::Peterriver, confTab, &espui_number_TempDangerThreshold_CALLBACK);
+  espui_temperature_warningThreshhold_compID = ESPUI.addControl(ControlType::Number, "Temperature Warning Threshold", String(temperature_warnThreshold), ControlColor::Peterriver, confTab, &espui_number_TempWarningThreshold_CALLBACK);
+  espui_temperature_dangerThreshhold_compID = ESPUI.addControl(ControlType::Number, "Temperature Danger Threshold", String(temperature_dangThreshold), ControlColor::Peterriver, confTab, &espui_number_TempDangerThreshold_CALLBACK);
 
   espui_display_brightness_compID = ESPUI.addControl(ControlType::Slider, "Display Brightness", "", ControlColor::Peterriver, confTab, &espui_slider_displayBrightness_CALLBACK);
   espui_display_sleep_compID = ESPUI.addControl(ControlType::Switcher, "Display Sleep", "", ControlColor::Peterriver, confTab, &espui_button_displaySleep_CALLBACK);
-  espui_flash_save_compID = ESPUI.addControl(ControlType::Button, "Save Settings to Flash", "", ControlColor::Peterriver, confTab, &espui_button_saveToFlash_CALLBACK);
+  espui_flash_save_compID = ESPUI.addControl(ControlType::Button, "Save Settings to Flash", "Save to Flash", ControlColor::Peterriver, confTab, &espui_button_saveToFlash_CALLBACK);
 
   ESPUI.begin("Enclosure Controller ESP32");
+  Serial.println("Setting up Webinterface done!");
 }
 void setFanPwm(int fanID, int pwmValue){
   if(fanID == 0){
@@ -720,6 +746,24 @@ void setDisplayBrightness(int value){
   ESPUI.updateSlider(espui_display_brightness_compID, value);
   myNextion.sendCommand(string2char("dims=" + String(display_brightness)));
 }
+void saveToFlash(){
+  preferences.begin("enclC_E32", false);
+
+  preferences.putInt("fan1_dC", fan1_dutyCycle);
+  preferences.putInt("fan2_dC", fan2_dutyCycle);
+  preferences.putInt("led1_rlyState", led1_relay.getState());
+  preferences.putInt("led2_color_sel", led2_color_selected);
+  preferences.putInt("led2_mode_sel", led2_mode_selected);
+  preferences.putInt("disp_brt", display_brightness);
+  preferences.putInt("disp_slpState", display_sleepState);
+  preferences.putBool("temp_warnState", temperature_warnState);
+  preferences.putBool("temp_dangState", temperature_dangState);
+  preferences.putInt("temp_warnThresh", temperature_warnThreshold);
+  preferences.putInt("temp_dangThresh", temperature_dangThreshold);
+
+  preferences.end();
+  Serial.println("Finished saving to Flash!");
+}
 void setLed2Color(String color){
   if(led2_mode_selected == 0){
     if(color == "black"){led2_color_selected = CRGB::Black;}
@@ -773,21 +817,40 @@ void setLed2Mode(String mode){
 void setTempWarnDang(int state, int warnOrDanger){
   switch(warnOrDanger){
     case 0:
+      if(temperature_dangState == 1 && state == 1){
+        temperature_dangState = 0;
+        ESPUI.updateSwitcher(espui_temperature_danger_compID, 0); 
+        myNextion.setComponentValue("conf_page.btn_tempDang", 0);
+      }
       ESPUI.updateSwitcher(espui_temperature_warning_compID, state); 
       myNextion.setComponentValue("conf_page.btn_tempWarn", state);
       break;
     case 1:
+      if(temperature_warnState == 1 && state == 1){
+        temperature_warnState = 0;
+        ESPUI.updateSwitcher(espui_temperature_warning_compID, 0); 
+        myNextion.setComponentValue("conf_page.btn_tempWarn", 0);
+      }
       ESPUI.updateSwitcher(espui_temperature_danger_compID, state); 
       myNextion.setComponentValue("conf_page.btn_tempDang", state);
       break;
   }
-
-  
 }
-void setTempWarnDangThreshold(int state, int warnOrDanger){
-
+void setTempWarnDangThreshold(int value, int warnOrDanger){ 
+  switch(warnOrDanger){
+    case 0:
+      if(value >= temperature_dangThreshold){value = temperature_dangThreshold - 1; temperature_warnThreshold = value;}
+      ESPUI.updateNumber(espui_temperature_warningThreshhold_compID, value); 
+      myNextion.setComponentValue("conf_page.nbr_tempWT", value);
+      break;
+    case 1:
+      if(value <= temperature_warnThreshold){value = temperature_warnThreshold + 1; temperature_dangThreshold = value;}
+      ESPUI.updateNumber(espui_temperature_dangerThreshhold_compID, value); 
+      myNextion.setComponentValue("conf_page.nbr_tempDT", value);
+      break;
+  }
 }
-void loadFlashSave(){
+void loadFromFlash(){
   preferences.begin("enclC_E32", false);
   fan1_dutyCycle = preferences.getInt("fan1_dC", 0);
   fan2_dutyCycle = preferences.getInt("fan2_dC", 0);
@@ -796,6 +859,10 @@ void loadFlashSave(){
   led2_mode_selected = preferences.getInt("led2_mode_sel", 0);
   display_brightness = preferences.getInt("disp_brt", 80);
   display_sleepState = preferences.getInt("disp_slpState", 0);
+  temperature_warnState = preferences.getBool("temp_warnState", false);
+  temperature_dangState = preferences.getBool("temp_dangState", false);
+  temperature_warnThreshold = preferences.getInt("temp_warnThresh", 40);
+  temperature_dangThreshold = preferences.getInt("temp_dangThresh", 60);
   preferences.end();
 
   setFanPwm(0, fan1_dutyCycle);
@@ -824,4 +891,11 @@ void loadFlashSave(){
   setDisplayBrightness(display_brightness);
   
   setDisplaySleep(display_sleepState);
+
+  setTempWarnDang(temperature_warnState, 0);
+  setTempWarnDang(temperature_dangState, 1);
+  setTempWarnDangThreshold(temperature_warnThreshold, 0);
+  setTempWarnDangThreshold(temperature_dangThreshold, 1);
+
+  Serial.println("Finished loading save from Flash!");
 }
