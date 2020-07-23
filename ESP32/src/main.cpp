@@ -40,6 +40,8 @@ bool temperature_dangState = false;
 int temperature_warnThreshold = 40;
 int temperature_dangThreshold = 60;
 unsigned long temperature_warner_previousMillis = 0;
+bool normalState = true;
+
 //Wifi
 const char* wifi_ssid = "FRITZ!Box 7430 DU";
 const char* wifi_password =  "34948404760450512835";
@@ -112,6 +114,7 @@ int display_brightness = 80;
 //ESPUI
 uint16_t espui_sens1Graph_compID;
 uint16_t espui_sens2Graph_compID;
+uint16_t espui_messageBox_compID;
 uint16_t espui_led1Control_compID;
 uint16_t espui_led2ColorSelect_compID;
 uint16_t espui_led2ModeSelect_compID;
@@ -441,9 +444,15 @@ void HandleTempWarn(){
     if(temperature_warnState == 1){
       if(dht_1_temperature > temperature_warnThreshold || dht_2_temperature > temperature_warnThreshold){
         Serial.println("!!!> WARNING: Temperature warning threshold has been reached :WARNING <!!!");
+        normalState = false;
         if(currentPage != MESSAGE_PAGE){
           currentPage = MESSAGE_PAGE;
           
+          ESPUI.updateLabel(espui_messageBox_compID, "WARNING: Temperature warning threshold has been reached");
+          ESPUI.getControl(espui_messageBox_compID)->color = ControlColor::Carrot;
+          ESPUI.updateControl(espui_messageBox_compID);
+
+          myNextion.sendCommand("sleep=0");
           myNextion.setComponentText("message_page.tf_headline", "Temperature Warning");
           myNextion.setComponentText("message_page.tf_message1", "Values when Triggered: ");
           myNextion.setComponentText("message_page.tf_message2", String("Warning Threshold: " + String(temperature_warnThreshold)));
@@ -457,9 +466,15 @@ void HandleTempWarn(){
     else if(temperature_dangState == 1){
       if(dht_1_temperature > temperature_dangThreshold || dht_2_temperature > temperature_dangThreshold){
         Serial.println("!!!> DANGER: Temperature danger threshold has been reached :DANGER <!!!");
+        normalState = false;
         if(currentPage != MESSAGE_PAGE){
           currentPage = MESSAGE_PAGE;
           
+          ESPUI.updateLabel(espui_messageBox_compID, "DANGER: Temperature danger threshold has been reached");
+          ESPUI.getControl(espui_messageBox_compID)->color = ControlColor::Alizarin;
+          ESPUI.updateControl(espui_messageBox_compID);
+
+          myNextion.sendCommand("sleep=0");
           myNextion.setComponentText("message_page.tf_headline", "Temperature Danger");
           myNextion.setComponentText("message_page.tf_message1", "Values when Triggered: ");
           myNextion.setComponentText("message_page.tf_message2", String("Danger Threshold: " + String(temperature_dangThreshold)));
@@ -471,6 +486,17 @@ void HandleTempWarn(){
         delay(400);
         ledcWrite(2, 0);
       }
+    }
+    else{
+      if(normalState == false){
+        normalState = true;
+        currentPage = MAIN_PAGE;
+        myNextion.sendCommand("page main_page");
+        ESPUI.updateLabel(espui_messageBox_compID, "");
+        ESPUI.getControl(espui_messageBox_compID)->color = ControlColor::Emerald;
+        ESPUI.updateControl(espui_messageBox_compID);
+      }
+      
     }
   }
 }
@@ -658,6 +684,8 @@ void setupWifiAndUI(){
   //ESPUI.clearGraph(espui_sens1Graph_compID);
   //ESPUI.clearGraph(espui_sens2Graph_compID);
 
+  espui_messageBox_compID = ESPUI.label("Status/Messages", ControlColor::Peterriver, ""); 
+
   //LED1 Control
   espui_led1Control_compID = ESPUI.addControl(ControlType::Switcher, "LED 1 Control", "", ControlColor::Peterriver, mainTab, &espui_button_led1_control_CALLBACK);
   
@@ -781,6 +809,7 @@ void setDisplaySleep(bool value){
   if(value == false){
       myNextion.sendCommand("thsp=0");
       myNextion.sendCommand("thup=0");
+      myNextion.sendCommand("sleep=0");
   }
   else{
     myNextion.sendCommand("thsp=10");
