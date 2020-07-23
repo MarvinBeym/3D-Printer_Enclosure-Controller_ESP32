@@ -19,6 +19,15 @@
 #include <Nextion.h>
 #define nextion Serial2
 
+#define BOOT_PAGE 0
+#define MAIN_PAGE 1
+#define FANS_PAGE 2
+#define SENSOR_PAGE 3
+#define LED_PAGE 4
+#define CONF_PAGE 5
+#define ABOUT_PAGE 6
+#define MESSAGE_PAGE 7
+
 const String esp32_version = "1.2";
 const String display_version = "1.2";
 
@@ -35,12 +44,12 @@ unsigned long temperature_warner_previousMillis = 0;
 const char* wifi_ssid = "***REMOVED***";
 const char* wifi_password =  "***REMOVED***";
 
-const char* wifi_ap_ssid = "enclosure_controller_esp32";
-const char* wifi_ap_password = "enclosure_controller_esp32";
+const char* wifi_ap_ssid = "enclC_ESP32";
+const char* wifi_ap_password = "enclC_ESP32";
 
-const char* wifi_hostname = "enclosure_controller_esp32";
+const char* wifi_hostname = "enclC_ESP32";
 
-uint8_t wifi_timeout = 8;
+
 
 const byte DNS_PORT = 53;
 IPAddress apIP(192, 168, 1, 1);
@@ -95,7 +104,7 @@ unsigned long led2_effect_previousMillis = 0;
 Nextion myNextion(nextion, 115200);
 
 unsigned long display_previous_millis = 0;
-int currentPage = 1;
+int currentPage = MAIN_PAGE;
 int sliderValue = 0;
 bool display_sleepState = 0;
 int display_brightness = 80;
@@ -351,9 +360,11 @@ void setup() {
 
   ledcSetup(0, 25000, 8);
   ledcSetup(1, 25000, 8);
+  ledcSetup(2, 2000, 8);
 
   ledcAttachPin(fan1_pwm_pin, 0);
   ledcAttachPin(fan2_pwm_pin, 1);
+  ledcAttachPin(buzzer_pin, 2);
   ledcWrite(0, 0);
   ledcWrite(1, 0);
   attachInterrupt(digitalPinToInterrupt(fan1_tacho_pin), interupt_fan1, FALLING);
@@ -386,7 +397,6 @@ void loop() {
   fan2rpm = getFanSpeed(2);
   HandleTempWarn();
   HandleDisplay(); //-> causes problem with fastLED
-
 }
 int getFanSpeed(int fanID){
   if(fanID == 1){
@@ -431,11 +441,35 @@ void HandleTempWarn(){
     if(temperature_warnState == 1){
       if(dht_1_temperature > temperature_warnThreshold || dht_2_temperature > temperature_warnThreshold){
         Serial.println("!!!> WARNING: Temperature warning threshold has been reached :WARNING <!!!");
+        if(currentPage != MESSAGE_PAGE){
+          currentPage = MESSAGE_PAGE;
+          
+          myNextion.setComponentText("message_page.tf_headline", "Temperature Warning");
+          myNextion.setComponentText("message_page.tf_message1", "Values when Triggered: ");
+          myNextion.setComponentText("message_page.tf_message2", String("Warning Threshold: " + String(temperature_warnThreshold)));
+          myNextion.setComponentText("message_page.tf_message3", String("Temperature1: " + String(dht_1_temperature)));
+          myNextion.setComponentText("message_page.tf_message4", String("Temperature2: " + String(dht_2_temperature)));
+          myNextion.sendCommand("page message_page");
+        }
+        
       }
     }
     else if(temperature_dangState == 1){
       if(dht_1_temperature > temperature_dangThreshold || dht_2_temperature > temperature_dangThreshold){
         Serial.println("!!!> DANGER: Temperature danger threshold has been reached :DANGER <!!!");
+        if(currentPage != MESSAGE_PAGE){
+          currentPage = MESSAGE_PAGE;
+          
+          myNextion.setComponentText("message_page.tf_headline", "Temperature Danger");
+          myNextion.setComponentText("message_page.tf_message1", "Values when Triggered: ");
+          myNextion.setComponentText("message_page.tf_message2", String("Danger Threshold: " + String(temperature_dangThreshold)));
+          myNextion.setComponentText("message_page.tf_message3", String("Temperature1: " + String(dht_1_temperature) + String("°C")));
+          myNextion.setComponentText("message_page.tf_message4", String("Temperature2: " + String(dht_2_temperature) + String("°C")));
+          myNextion.sendCommand("page message_page");
+        }
+        ledcWrite(2, 127);
+        delay(400);
+        ledcWrite(2, 0);
       }
     }
   }
@@ -444,14 +478,15 @@ void HandleDisplay(){
 String message = myNextion.listen();
   if(message != ""){
     Serial.println(message);
-    if(message == "65 1 1 0 ff ff ff"){currentPage = 2;}
-    else if(message == "65 1 2 0 ff ff ff"){currentPage = 3;}
-    else if(message == "65 1 3 0 ff ff ff"){currentPage = 4;}
-    else if(message == "65 1 4 0 ff ff ff"){currentPage = 5;}
-    else if(message == "65 5 2 0 ff ff ff"){currentPage = 6;}
-    else if(message == "65 5 2 0 ff ff ff"){currentPage == 7;}
-    else if(message == "65 6 6 0 ff ff ff"){currentPage == 6;}
-    else if(message == "65 2 6 0 ff ff ff" || message == "65 3 2 0 ff ff ff" || message == "65 4 e 0 ff ff ff" || message == "65 5 1 0 ff ff ff"){currentPage = 1;}
+    if(message == "65 1 1 0 ff ff ff"){currentPage = FANS_PAGE;}
+    else if(message == "65 1 2 0 ff ff ff"){currentPage = SENSOR_PAGE;}
+    else if(message == "65 1 3 0 ff ff ff"){currentPage = LED_PAGE;}
+    else if(message == "65 1 4 0 ff ff ff"){currentPage = CONF_PAGE;}
+    else if(message == "65 5 2 0 ff ff ff"){currentPage = ABOUT_PAGE;}
+    else if(message == "65 6 6 0 ff ff ff"){currentPage = ABOUT_PAGE;}
+    else if(message == "65 7 6 0 ff ff ff"){currentPage = MAIN_PAGE;}
+    else if(message == "65 7 7 0 ff ff ff"){ESP.restart();}
+    else if(message == "65 2 6 0 ff ff ff" || message == "65 3 2 0 ff ff ff" || message == "65 4 e 0 ff ff ff" || message == "65 5 1 0 ff ff ff"){currentPage = MAIN_PAGE;}
     if(message == "65 4 1 0 ff ff ff"){
       int btn_led1_value = myNextion.getComponentValue("led_page.btn_led1");
       if(btn_led1_value != -1){
@@ -488,7 +523,7 @@ String message = myNextion.listen();
   unsigned long display_current_millis = millis();
   if (display_current_millis - display_previous_millis >= display_update_interval) {
     display_previous_millis = display_current_millis;
-    if(currentPage == 1){
+    if(currentPage == MAIN_PAGE){
       if(fan1rpm != send_fan1rpm){
         send_fan1rpm = fan1rpm;
         setFanRpm(0, fan1rpm);
@@ -508,7 +543,7 @@ String message = myNextion.listen();
         setSensorValues(1, dht_2_temperature, dht_2_humidity);
       }
     }
-    else if(currentPage == 2){
+    else if(currentPage == FANS_PAGE){
       if(fan1rpm != send_fan1rpm){
         send_fan1rpm = fan1rpm;
         setFanRpm(0, fan2rpm);
@@ -518,7 +553,7 @@ String message = myNextion.listen();
         setFanRpm(1, fan2rpm);
       }
     }
-    else if(currentPage == 3){
+    else if(currentPage == SENSOR_PAGE){
       if((dht_1_temperature != send_dht_1_temperature) || (dht_1_humidity != send_dht_1_humidity)){
         send_dht_1_temperature = dht_1_temperature;
         send_dht_1_humidity = dht_1_humidity;
@@ -561,6 +596,7 @@ char* string2char(String command){
   return p;
 }
 void setupWifiAndUI(){
+  bool hotspotWasCreated = false;
   ESPUI.setVerbosity(Verbosity::Quiet);
   WiFi.setHostname(wifi_hostname);
   // try to connect to existing network
@@ -576,7 +612,7 @@ void setupWifiAndUI(){
     // not connected -> create hotspot
     if (WiFi.status() != WL_CONNECTED) {
       Serial.print("\n\nCreating hotspot");
-
+      Serial.println(hotspotWasCreated);
       WiFi.mode(WIFI_AP);
       delay(2000);
       WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
@@ -598,6 +634,17 @@ void setupWifiAndUI(){
   Serial.println(WiFi.getMode() == WIFI_AP ? "Station" : "Client");
   Serial.print("IP address: ");
   Serial.println(WiFi.getMode() == WIFI_AP ? WiFi.softAPIP() : WiFi.localIP());
+
+  if(WiFi.getMode() == WIFI_AP){
+    myNextion.sendCommand("page message_page");
+
+    myNextion.setComponentText("message_page.tf_headline", "Hotspot was created!");
+    myNextion.setComponentText("message_page.tf_message1", "Mode: Station");
+    myNextion.setComponentText("message_page.tf_message2", String("SSID: " + String(wifi_ap_ssid)));
+    myNextion.setComponentText("message_page.tf_message3", String("pass: " + String(wifi_ap_password)));
+    myNextion.setComponentText("message_page.tf_message4", String("IP: " + String(WiFi.softAPIP().toString())));
+    currentPage = MESSAGE_PAGE;
+  }
 
   Serial.println("Setting up WiFi done!");
   //Tabs
@@ -714,7 +761,7 @@ void setSensorValues(int sensorID, float temperature, float humidity){
 void setSensorGraphValues(int sensorID, float temperature){
   if(sensorID == 0){
     //ESPUI.addGraphPoint(espui_sens1Graph_compID, 20);
-    if(currentPage == 3){
+    if(currentPage == SENSOR_PAGE){
       String graphCommand = "add 1,0,";
       graphCommand.concat(map(temperature, dht_1_min_tempGraph + 128, 255, 128, 255));
       myNextion.sendCommand(string2char(graphCommand));
@@ -722,7 +769,7 @@ void setSensorGraphValues(int sensorID, float temperature){
   }
   else if(sensorID == 1){
     //ESPUI.addGraphPoint(espui_sens2Graph_compID, 30);
-    if(currentPage == 3){
+    if(currentPage == SENSOR_PAGE){
       String graphCommand = "add 1,1,";
       graphCommand.concat(map(temperature, dht_2_min_tempGraph + 0, 255, 0, 127));
       myNextion.sendCommand(string2char(graphCommand));
