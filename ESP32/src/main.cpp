@@ -723,7 +723,7 @@ void setFanPwm(int fanID, int pwmValue){
     myNextion.setComponentText("fans_page.tf_pwm_fan2", String(fan2_dutyCycle) + "%");
     myNextion.setComponentValue("fans_page.sli_speed_fan2", fan2_dutyCycle);
     ESPUI.updateSlider(espui_fan2_pwm_compID, fan2_dutyCycle);
-    int convertedValue = map(fan1_dutyCycle, 0, 100, 0, 255);
+    int convertedValue = map(fan2_dutyCycle, 0, 100, 0, 255);
     ledcWrite(1, convertedValue);
   }
   
