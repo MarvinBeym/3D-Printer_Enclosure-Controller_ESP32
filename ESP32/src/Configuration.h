@@ -7,4 +7,4 @@ const int dht_2_min_tempGraph = -20;
 const long dht_sense_interval = 2000;
 const long display_update_interval = 1500;
 const long temperature_warner_checkInterval = 2000;
-#define EEPROM_SIZE 7
+uint8_t wifi_timeout = 8;
