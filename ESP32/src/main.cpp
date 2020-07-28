@@ -668,63 +668,10 @@ void setupWifiAndUI(){
     wifiManager.setClass("invert");
   
   wifiManager.autoConnect(wifi_ap_ssid, wifi_ap_password);
+  currentPage = MAIN_PAGE;
+  myNextion.sendCommand("page main_page");
+  delay(10);
 
-  /*
-  bool hotspotWasCreated = false;
-  ESPUI.setVerbosity(Verbosity::Quiet);
-  WiFi.setHostname(wifi_hostname);
-  // try to connect to existing network
-  WiFi.begin(wifi_ssid, wifi_password);
-  Serial.print("\n\nTry to connect to existing network");
-  {
-    do {
-      delay(500);
-      Serial.print(".");
-      wifi_timeout--;
-    } while (wifi_timeout && WiFi.status() != WL_CONNECTED);
-
-    // not connected -> create hotspot
-    if (WiFi.status() != WL_CONNECTED) {
-      if(rebootOnHotspot){
-        delay(500);
-        ESP.restart();
-      }
-      else{
-        Serial.print("\n\nCreating hotspot");
-        WiFi.mode(WIFI_AP);
-        delay(2000);
-        WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
-        WiFi.softAP(wifi_ap_ssid, wifi_ap_password);
-
-        wifi_timeout = 5;
-
-        do {
-          delay(500);
-          Serial.print(".");
-          wifi_timeout--;
-        } while (wifi_timeout);
-      }
-    }
-  }
-  //dnsServer.start( DNS_PORT, "*", apIP );
-
-  Serial.println("\n\nWiFi parameters:");
-  Serial.print("Mode: ");
-  Serial.println(WiFi.getMode() == WIFI_AP ? "Station" : "Client");
-  Serial.print("IP address: ");
-  Serial.println(WiFi.getMode() == WIFI_AP ? WiFi.softAPIP() : WiFi.localIP());
-
-  if(WiFi.getMode() == WIFI_AP){
-    myNextion.sendCommand("page message_page");
-    delay(10);
-    myNextion.setComponentText("message_page.tf_headline", "Hotspot was created!");
-    myNextion.setComponentText("message_page.tf_message1", "Mode: Station");
-    myNextion.setComponentText("message_page.tf_message2", String("SSID: " + String(wifi_ap_ssid)));
-    myNextion.setComponentText("message_page.tf_message3", String("pass: " + String(wifi_ap_password)));
-    myNextion.setComponentText("message_page.tf_message4", String("IP: " + String(WiFi.softAPIP().toString())));
-    currentPage = MESSAGE_PAGE;
-  }
-  */
   Serial.println("Setting up WiFi done!");
   //Tabs
   uint16_t mainTab = ESPUI.addControl(ControlType::Tab, "Main Page", "Main Page");
