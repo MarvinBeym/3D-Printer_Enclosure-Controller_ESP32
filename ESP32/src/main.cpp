@@ -31,8 +31,8 @@
 #define ABOUT_PAGE 6
 #define MESSAGE_PAGE 7
 
-const String esp32_version = "1.2";
-const String display_version = "1.2";
+const String esp32_version = "1.3";
+const String display_version = "1.3";
 
 //Storage
 Preferences preferences;
@@ -664,6 +664,9 @@ void setupWifiAndUI(){
   wifiManager.setConfigPortalTimeout(wifiManagerTimeoutSec);
   wifiManager.setDebugOutput(wifiManagerDebug);
   wifiManager.setHostname(wifi_hostname);
+  if(wifiManagerDarkMode)
+    wifiManager.setClass("invert");
+  
   wifiManager.autoConnect(wifi_ap_ssid, wifi_ap_password);
 
   /*
