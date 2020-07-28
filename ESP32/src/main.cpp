@@ -107,7 +107,6 @@ Nextion myNextion(nextion, 115200);
 
 unsigned long display_previous_millis = 0;
 int currentPage = MAIN_PAGE;
-int sliderValue = 0;
 bool display_sleepState = 0;
 int display_brightness = 80;
 
@@ -152,38 +151,43 @@ void HandleDisplay();
 String convertToLed2ModeString(int mode);
 int getFanSpeed(int fanID);
 void setupWifiAndUI();
-void interupt_fan1()
+void IRAM_ATTR interupt_fan1()
 {
   half_revolutionsFan1++;
 }
-void interupt_fan2()
+void IRAM_ATTR interupt_fan2()
 {
   half_revolutionsFan2++;
 }
-void espui_button_led1_control_CALLBACK(Control* sender, int value) {
-  if(value == B_UP){
-    int buttonValue = sender->value.toInt();
-    if(buttonValue == 0){
-      led1_relay.off();
-    }
-    else if(buttonValue == 1){
-      led1_relay.on();
-    }
-    myNextion.setComponentValue("led_page.btn_led1", buttonValue);
+void espui_switch_led1_control_CALLBACK(Control* sender, int value) {
+  int buttonValue = sender->value.toInt();
+  if(buttonValue == 0){
+    led1_relay.off();
   }
-
+  else if(buttonValue == 1){
+    led1_relay.on();
+  }
+  myNextion.setComponentValue("led_page.btn_led1", buttonValue);
+}
+void espui_button_reboot_CALLBACK(Control* sender, int value){
+  if(value == B_UP){
+    delay(500);
+    ESP.restart();
+  }
 }
 void espui_slider_fan1PWM_CALLBACK(Control* sender, int value) {
   int sliderValue = sender->value.toInt();
-  if(fan1_dutyCycle != sliderValue){
+  if(sliderValue != fan1_dutyCycle){
     setFanPwm(0, sliderValue);
   }
+  
 }
 void espui_slider_fan2PWM_CALLBACK(Control* sender, int value) {
   int sliderValue = sender->value.toInt();
   if(fan2_dutyCycle != sliderValue){
     setFanPwm(1, sliderValue);
   }
+
 }
 void espui_select_led2Color_CALLBACK(Control* sender, int value) {
   setLed2Color(sender->value);
@@ -195,28 +199,21 @@ void espui_slider_displayBrightness_CALLBACK(Control* sender, int value){
   display_brightness = sender->value.toInt();
   setDisplayBrightness(display_brightness);
 }
-void espui_button_displaySleep_CALLBACK(Control* sender, int value){
-  if(value == B_UP){
-    display_sleepState = !display_sleepState;
-    setDisplaySleep(display_sleepState);
-  }
-
+void espui_switch_displaySleep_CALLBACK(Control* sender, int value){
+  display_sleepState = sender->value.toInt();
+  setDisplaySleep(display_sleepState);
 }
 void espui_button_saveToFlash_CALLBACK(Control* sender, int value){
   if(value == B_UP)
     saveToFlash();
 }
-void espui_button_TempWarning_CALLBACK(Control* sender, int value){
-  if(value == B_UP){
-    temperature_warnState = sender->value.toInt();
-    setTempWarnDang(temperature_warnState, 0);
-  }
+void espui_switch_TempWarning_CALLBACK(Control* sender, int value){
+  temperature_warnState = sender->value.toInt();
+  setTempWarnDang(temperature_warnState, 0);
 }
-void espui_button_TempDanger_CALLBACK(Control* sender, int value){
-  if(value == B_UP){
-    temperature_dangState = sender->value.toInt();
-    setTempWarnDang(temperature_dangState, 1);
-  }
+void espui_switch_TempDanger_CALLBACK(Control* sender, int value){
+  temperature_dangState = sender->value.toInt();
+  setTempWarnDang(temperature_dangState, 1);
 }
 void espui_number_TempWarningThreshold_CALLBACK(Control* sender, int value){
   temperature_warnThreshold = sender->value.toInt();
@@ -373,13 +370,13 @@ void setup() {
 
   ledcSetup(0, 25000, 8);
   ledcSetup(1, 25000, 8);
-  ledcSetup(2, 2000, 8);
+  //ledcSetup(2, 2000, 8);
 
   ledcAttachPin(fan1_pwm_pin, 0);
   ledcAttachPin(fan2_pwm_pin, 1);
-  ledcAttachPin(buzzer_pin, 2);
-  ledcWrite(0, 0);
-  ledcWrite(1, 0);
+  //ledcAttachPin(buzzer_pin, 2);
+  ledcWrite(0, 200);
+  ledcWrite(1, 200);
   attachInterrupt(digitalPinToInterrupt(fan1_tacho_pin), interupt_fan1, FALLING);
   attachInterrupt(digitalPinToInterrupt(fan2_tacho_pin), interupt_fan2, FALLING);
 
@@ -463,12 +460,14 @@ void HandleTempWarn(){
           ESPUI.updateControl(espui_messageBox_compID);
 
           myNextion.sendCommand("sleep=0");
+          delay(10);
           myNextion.setComponentText("message_page.tf_headline", "Temperature Warning");
           myNextion.setComponentText("message_page.tf_message1", "Values when Triggered: ");
           myNextion.setComponentText("message_page.tf_message2", String("Warning Threshold: " + String(temperature_warnThreshold)));
           myNextion.setComponentText("message_page.tf_message3", String("Temperature1: " + String(dht_1_temperature)));
           myNextion.setComponentText("message_page.tf_message4", String("Temperature2: " + String(dht_2_temperature)));
           myNextion.sendCommand("page message_page");
+          delay(10);
         }
         
       }
@@ -485,12 +484,14 @@ void HandleTempWarn(){
           ESPUI.updateControl(espui_messageBox_compID);
 
           myNextion.sendCommand("sleep=0");
+          delay(10);
           myNextion.setComponentText("message_page.tf_headline", "Temperature Danger");
           myNextion.setComponentText("message_page.tf_message1", "Values when Triggered: ");
           myNextion.setComponentText("message_page.tf_message2", String("Danger Threshold: " + String(temperature_dangThreshold)));
           myNextion.setComponentText("message_page.tf_message3", String("Temperature1: " + String(dht_1_temperature) + String("°C")));
           myNextion.setComponentText("message_page.tf_message4", String("Temperature2: " + String(dht_2_temperature) + String("°C")));
           myNextion.sendCommand("page message_page");
+          delay(10);
         }
         ledcWrite(2, 127);
         delay(400);
@@ -502,6 +503,7 @@ void HandleTempWarn(){
         normalState = true;
         currentPage = MAIN_PAGE;
         myNextion.sendCommand("page main_page");
+        delay(10);
         ESPUI.updateLabel(espui_messageBox_compID, "");
         ESPUI.getControl(espui_messageBox_compID)->color = ControlColor::Emerald;
         ESPUI.updateControl(espui_messageBox_compID);
@@ -647,20 +649,25 @@ void setupWifiAndUI(){
 
     // not connected -> create hotspot
     if (WiFi.status() != WL_CONNECTED) {
-      Serial.print("\n\nCreating hotspot");
-      Serial.println(hotspotWasCreated);
-      WiFi.mode(WIFI_AP);
-      delay(2000);
-      WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
-      WiFi.softAP(wifi_ap_ssid, wifi_ap_password);
-
-      wifi_timeout = 5;
-
-      do {
+      if(rebootOnHotspot){
         delay(500);
-        Serial.print(".");
-        wifi_timeout--;
-      } while (wifi_timeout);
+        ESP.restart();
+      }
+      else{
+        Serial.print("\n\nCreating hotspot");
+        WiFi.mode(WIFI_AP);
+        delay(2000);
+        WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
+        WiFi.softAP(wifi_ap_ssid, wifi_ap_password);
+
+        wifi_timeout = 5;
+
+        do {
+          delay(500);
+          Serial.print(".");
+          wifi_timeout--;
+        } while (wifi_timeout);
+      }
     }
   }
   //dnsServer.start( DNS_PORT, "*", apIP );
@@ -673,7 +680,7 @@ void setupWifiAndUI(){
 
   if(WiFi.getMode() == WIFI_AP){
     myNextion.sendCommand("page message_page");
-
+    delay(10);
     myNextion.setComponentText("message_page.tf_headline", "Hotspot was created!");
     myNextion.setComponentText("message_page.tf_message1", "Mode: Station");
     myNextion.setComponentText("message_page.tf_message2", String("SSID: " + String(wifi_ap_ssid)));
@@ -695,9 +702,9 @@ void setupWifiAndUI(){
   //ESPUI.clearGraph(espui_sens2Graph_compID);
 
   espui_messageBox_compID = ESPUI.label("Status/Messages", ControlColor::Peterriver, ""); 
-
+  ESPUI.button("Reboot ESP32", &espui_button_reboot_CALLBACK, ControlColor::Peterriver, "Reboot");
   //LED1 Control
-  espui_led1Control_compID = ESPUI.addControl(ControlType::Switcher, "LED 1 Control", "", ControlColor::Peterriver, mainTab, &espui_button_led1_control_CALLBACK);
+  espui_led1Control_compID = ESPUI.addControl(ControlType::Switcher, "LED 1 Control", "", ControlColor::Peterriver, mainTab, &espui_switch_led1_control_CALLBACK);
   
   //LED2 color selector
   espui_led2ColorSelect_compID = ESPUI.addControl(ControlType::Select, "LED2 Color:", "", ControlColor::Peterriver, mainTab, &espui_select_led2Color_CALLBACK);
@@ -733,14 +740,20 @@ void setupWifiAndUI(){
   espui_fan2_rpm_compID = ESPUI.addControl(ControlType::Label, "Fan 2 RPM", "0rpm", ControlColor::Peterriver, mainTab);
 
   //Configuration Tab
-  espui_temperature_warning_compID = ESPUI.addControl(ControlType::Switcher, "Temperature Warning", "", ControlColor::Peterriver, confTab, &espui_button_TempWarning_CALLBACK);
-  espui_temperature_danger_compID = ESPUI.addControl(ControlType::Switcher, "Temperature Danger Warning", "", ControlColor::Peterriver, confTab, &espui_button_TempDanger_CALLBACK);
+  espui_temperature_warning_compID = ESPUI.addControl(ControlType::Switcher, "Temperature Warning", "", ControlColor::Peterriver, confTab, &espui_switch_TempWarning_CALLBACK);
+  espui_temperature_danger_compID = ESPUI.addControl(ControlType::Switcher, "Temperature Danger Warning", "", ControlColor::Peterriver, confTab, &espui_switch_TempDanger_CALLBACK);
   espui_temperature_warningThreshhold_compID = ESPUI.addControl(ControlType::Number, "Temperature Warning Threshold", String(temperature_warnThreshold), ControlColor::Peterriver, confTab, &espui_number_TempWarningThreshold_CALLBACK);
   espui_temperature_dangerThreshhold_compID = ESPUI.addControl(ControlType::Number, "Temperature Danger Threshold", String(temperature_dangThreshold), ControlColor::Peterriver, confTab, &espui_number_TempDangerThreshold_CALLBACK);
 
   espui_display_brightness_compID = ESPUI.addControl(ControlType::Slider, "Display Brightness", "", ControlColor::Peterriver, confTab, &espui_slider_displayBrightness_CALLBACK);
-  espui_display_sleep_compID = ESPUI.addControl(ControlType::Switcher, "Display Sleep", "", ControlColor::Peterriver, confTab, &espui_button_displaySleep_CALLBACK);
+  espui_display_sleep_compID = ESPUI.addControl(ControlType::Switcher, "Display Sleep", "", ControlColor::Peterriver, confTab, &espui_switch_displaySleep_CALLBACK);
   espui_flash_save_compID = ESPUI.addControl(ControlType::Button, "Save Settings to Flash", "Save to Flash", ControlColor::Peterriver, confTab, &espui_button_saveToFlash_CALLBACK);
+
+  //About Tab
+  ESPUI.addControl(ControlType::Label, "Made by:", "Marvin Beym", ControlColor::Peterriver, aboutTab);
+  ESPUI.addControl(ControlType::Label, "GitHub:", "https://github.com/MarvinBeym/3D-Printer_Enclosure-Controller_ESP32", ControlColor::Peterriver, aboutTab);
+  ESPUI.addControl(ControlType::Label, "ESP32 Software version:", esp32_version, ControlColor::Peterriver, aboutTab);
+  ESPUI.addControl(ControlType::Label, "Display Software version:", display_version, ControlColor::Peterriver, aboutTab);
 
   ESPUI.begin("Enclosure Controller ESP32");
   Serial.println("Setting up Webinterface done!");
@@ -803,6 +816,7 @@ void setSensorGraphValues(int sensorID, float temperature){
       String graphCommand = "add 1,0,";
       graphCommand.concat(map(temperature, dht_1_min_tempGraph + 128, 255, 128, 255));
       myNextion.sendCommand(string2char(graphCommand));
+      delay(10);
     }
   }
   else if(sensorID == 1){
@@ -811,17 +825,21 @@ void setSensorGraphValues(int sensorID, float temperature){
       String graphCommand = "add 1,1,";
       graphCommand.concat(map(temperature, dht_2_min_tempGraph + 0, 255, 0, 127));
       myNextion.sendCommand(string2char(graphCommand));
+      delay(10);
     }
 
   }
 }
 void setDisplaySleep(bool value){
   if(value == false){
-      myNextion.sendCommand("thsp=0");
       myNextion.sendCommand("sleep=0");
+      delay(10);
+      myNextion.sendCommand("thsp=0");
+      delay(10);
   }
   else{
     myNextion.sendCommand("thsp=10");
+    delay(10);
   }
   myNextion.setComponentValue("conf_page.btn_sleep", value);
   ESPUI.updateSwitcher(espui_display_sleep_compID, value);
@@ -829,6 +847,7 @@ void setDisplaySleep(bool value){
 void setDisplayBrightness(int value){
   ESPUI.updateSlider(espui_display_brightness_compID, value);
   myNextion.sendCommand(string2char("dims=" + String(display_brightness)));
+  delay(10);
 }
 void saveToFlash(){
   preferences.begin("enclC_E32", false);
@@ -871,7 +890,6 @@ void setLed2Color(String color){
     myNextion.setComponentValue("led_page.btn_blue", 0);
     myNextion.setComponentValue("led_page.btn_purple", 0);
     myNextion.setComponentValue("led_page.btn_pink", 0);
-
     if(color == "black"){myNextion.setComponentValue("led_page.btn_black", 1);}
     else if(color == "white"){myNextion.setComponentValue("led_page.btn_white", 1);}
     else if(color == "red"){myNextion.setComponentValue("led_page.btn_red", 1);}

@@ -8,3 +8,4 @@ const long dht_sense_interval = 2000;
 const long display_update_interval = 1500;
 const long temperature_warner_checkInterval = 2000;
 uint8_t wifi_timeout = 8;
+const bool rebootOnHotspot = true;
