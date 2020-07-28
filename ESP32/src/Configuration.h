@@ -14,6 +14,7 @@ const char* wifi_ap_ssid = "enclC_ESP32"; //WiFi SSID when in AP mode.
 const char* wifi_ap_password = "enclC_ESP32"; //WiFi Password when in AP mode.
 const char* wifi_hostname = "enclC_ESP32"; //WiFi hostname both for AP and Client.
 
+const bool wifiManagerDarkMode = true;
 const bool rebootOnHotspot = false; //Should the ESP32 reboot when going into hotspot (incase you are sure everything is correct with your setup and you want to try again).
 const int wifiManagerTimeoutSec = 120; //After how many seconds to cancel the WiFiManager configuration mode.
 const bool wifiManagerDebug = true; //WifiManagers debug function.
