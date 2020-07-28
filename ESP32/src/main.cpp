@@ -1,4 +1,5 @@
 #include <Arduino.h>
+
 #include <Preferences.h>
 #include <Adafruit_Sensor.h>
 #include <DHT.h>
@@ -6,11 +7,13 @@
 #include <SPI.h>
 #include <WiFi.h>
 #include <DNSServer.h>
-#define FASTLED_ALLOW_INTERRUPTS 0
-#include <FastLED.h>
-#include <WiFi.h>
-#include <DNSServer.h>
+#include <WebServer.h>
+#include <WiFiManager.h> 
 #include <ESPUI.h>
+
+#define FASTLED_ALLOW_INTERRUPTS 0
+
+#include <FastLED.h>
 
 #include "Relay.h"
 #include "PinDefinition.h"
@@ -42,10 +45,11 @@ int temperature_dangThreshold = 60;
 unsigned long temperature_warner_previousMillis = 0;
 bool normalState = true;
 
-
+//WIFI
 const byte DNS_PORT = 53;
 IPAddress apIP(192, 168, 1, 1);
 DNSServer dnsServer;
+WiFiManager wifiManager;
 
 //Dual core
 TaskHandle_t Led2EffectsTask;
@@ -148,6 +152,37 @@ void IRAM_ATTR interupt_fan1()
 void IRAM_ATTR interupt_fan2()
 {
   half_revolutionsFan2++;
+}
+
+void wifiAP_CALLBACK (WiFiManager *myWiFiManager) {
+  if(rebootOnHotspot){
+      delay(200);
+      ESP.restart();
+  }
+  else{
+    myNextion.sendCommand("page message_page");
+    delay(10);
+    myNextion.setComponentText("message_page.tf_headline", "Hotspot was created!");
+    myNextion.setComponentText("message_page.tf_message1", "Mode: Station");
+    myNextion.setComponentText("message_page.tf_message2", String("SSID: " + String(wifi_ap_ssid)));
+    if(wifiPassSecret)
+      myNextion.setComponentText("message_page.tf_message3", String("pass: " + String("********")));
+    else
+      myNextion.setComponentText("message_page.tf_message3", String("pass: " + String(wifi_ap_password)));
+    
+    myNextion.setComponentText("message_page.tf_message4", String("IP: " + String(WiFi.softAPIP().toString())));
+    currentPage = MESSAGE_PAGE;
+    Serial.println("Entered WiFi config mode");
+    Serial.println(WiFi.softAPIP());
+
+    Serial.println(myWiFiManager->getConfigPortalSSID());
+  }
+  
+}
+void espui_button_wifiReset_CALLBACK(Control* sender, int value){
+  wifiManager.resetSettings();
+  delay(500);
+  ESP.restart();
 }
 void espui_switch_led1_control_CALLBACK(Control* sender, int value) {
   int buttonValue = sender->value.toInt();
@@ -624,6 +659,14 @@ char* string2char(String command){
   return p;
 }
 void setupWifiAndUI(){
+  wifiManager.setAPCallback(wifiAP_CALLBACK);
+  wifiManager.setAPStaticIPConfig(IPAddress(192, 168, 200, 1), IPAddress(192, 168, 200, 1), IPAddress(255,255,255,0));
+  wifiManager.setConfigPortalTimeout(wifiManagerTimeoutSec);
+  wifiManager.setDebugOutput(wifiManagerDebug);
+  wifiManager.setHostname(wifi_hostname);
+  wifiManager.autoConnect(wifi_ap_ssid, wifi_ap_password);
+
+  /*
   bool hotspotWasCreated = false;
   ESPUI.setVerbosity(Verbosity::Quiet);
   WiFi.setHostname(wifi_hostname);
@@ -678,7 +721,7 @@ void setupWifiAndUI(){
     myNextion.setComponentText("message_page.tf_message4", String("IP: " + String(WiFi.softAPIP().toString())));
     currentPage = MESSAGE_PAGE;
   }
-
+  */
   Serial.println("Setting up WiFi done!");
   //Tabs
   uint16_t mainTab = ESPUI.addControl(ControlType::Tab, "Main Page", "Main Page");
@@ -693,6 +736,8 @@ void setupWifiAndUI(){
 
   espui_messageBox_compID = ESPUI.label("Status/Messages", ControlColor::Peterriver, ""); 
   ESPUI.button("Reboot ESP32", &espui_button_reboot_CALLBACK, ControlColor::Peterriver, "Reboot");
+  ESPUI.button("Reset WiFi config", &espui_button_wifiReset_CALLBACK, ControlColor::Peterriver, "Reset config");
+  
   //LED1 Control
   espui_led1Control_compID = ESPUI.addControl(ControlType::Switcher, "LED 1 Control", "", ControlColor::Peterriver, mainTab, &espui_switch_led1_control_CALLBACK);
   
