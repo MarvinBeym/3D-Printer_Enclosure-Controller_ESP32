@@ -161,14 +161,17 @@ void interupt_fan2()
   half_revolutionsFan2++;
 }
 void espui_button_led1_control_CALLBACK(Control* sender, int value) {
-  int buttonValue = sender->value.toInt();
-  if(buttonValue == 0){
-    led1_relay.off();
+  if(value == B_UP){
+    int buttonValue = sender->value.toInt();
+    if(buttonValue == 0){
+      led1_relay.off();
+    }
+    else if(buttonValue == 1){
+      led1_relay.on();
+    }
+    myNextion.setComponentValue("led_page.btn_led1", buttonValue);
   }
-  else if(buttonValue == 1){
-    led1_relay.on();
-  }
-  myNextion.setComponentValue("led_page.btn_led1", buttonValue);
+
 }
 void espui_slider_fan1PWM_CALLBACK(Control* sender, int value) {
   int sliderValue = sender->value.toInt();
@@ -193,20 +196,27 @@ void espui_slider_displayBrightness_CALLBACK(Control* sender, int value){
   setDisplayBrightness(display_brightness);
 }
 void espui_button_displaySleep_CALLBACK(Control* sender, int value){
-  display_sleepState = !display_sleepState;
-  setDisplaySleep(display_sleepState);
+  if(value == B_UP){
+    display_sleepState = !display_sleepState;
+    setDisplaySleep(display_sleepState);
+  }
+
 }
 void espui_button_saveToFlash_CALLBACK(Control* sender, int value){
   if(value == B_UP)
     saveToFlash();
 }
 void espui_button_TempWarning_CALLBACK(Control* sender, int value){
-  temperature_warnState = sender->value.toInt();
-  setTempWarnDang(temperature_warnState, 0);
+  if(value == B_UP){
+    temperature_warnState = sender->value.toInt();
+    setTempWarnDang(temperature_warnState, 0);
+  }
 }
 void espui_button_TempDanger_CALLBACK(Control* sender, int value){
-  temperature_dangState = sender->value.toInt();
-  setTempWarnDang(temperature_dangState, 1);
+  if(value == B_UP){
+    temperature_dangState = sender->value.toInt();
+    setTempWarnDang(temperature_dangState, 1);
+  }
 }
 void espui_number_TempWarningThreshold_CALLBACK(Control* sender, int value){
   temperature_warnThreshold = sender->value.toInt();
@@ -808,12 +818,10 @@ void setSensorGraphValues(int sensorID, float temperature){
 void setDisplaySleep(bool value){
   if(value == false){
       myNextion.sendCommand("thsp=0");
-      myNextion.sendCommand("thup=0");
       myNextion.sendCommand("sleep=0");
   }
   else{
     myNextion.sendCommand("thsp=10");
-    myNextion.sendCommand("thup=1");
   }
   myNextion.setComponentValue("conf_page.btn_sleep", value);
   ESPUI.updateSwitcher(espui_display_sleep_compID, value);
