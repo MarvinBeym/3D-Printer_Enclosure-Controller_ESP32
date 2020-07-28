@@ -9,3 +9,11 @@ const long display_update_interval = 1500;
 const long temperature_warner_checkInterval = 2000;
 uint8_t wifi_timeout = 8;
 const bool rebootOnHotspot = true;
+//Wifi
+const char* wifi_ssid = "enclC_ESP32";
+const char* wifi_password =  "enclC_ESP32";
+
+const char* wifi_ap_ssid = "enclC_ESP32";
+const char* wifi_ap_password = "enclC_ESP32";
+
+const char* wifi_hostname = "enclC_ESP32";

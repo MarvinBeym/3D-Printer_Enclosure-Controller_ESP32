@@ -42,16 +42,6 @@ int temperature_dangThreshold = 60;
 unsigned long temperature_warner_previousMillis = 0;
 bool normalState = true;
 
-//Wifi
-const char* wifi_ssid = "***REMOVED***";
-const char* wifi_password =  "***REMOVED***";
-
-const char* wifi_ap_ssid = "enclC_ESP32";
-const char* wifi_ap_password = "enclC_ESP32";
-
-const char* wifi_hostname = "enclC_ESP32";
-
-
 
 const byte DNS_PORT = 53;
 IPAddress apIP(192, 168, 1, 1);
