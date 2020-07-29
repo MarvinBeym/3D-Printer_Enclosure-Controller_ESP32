@@ -898,11 +898,13 @@ void setLed2Color(String color){
     else if(color == "blue"){myNextion.setComponentValue("led_page.btn_blue", 1);}
     else if(color == "purple"){myNextion.setComponentValue("led_page.btn_purple", 1);}
     else if(color == "pink"){myNextion.setComponentValue("led_page.btn_pink", 1);}
-
-    for(int i = 0; i < led2_numberOfLEDs; i++){
-      leds[i] = led2_color_selected;
+    
+    if(led2_mode == "solid"){
+      for(int i = 0; i < led2_numberOfLEDs; i++){
+        leds[i] = led2_color_selected;
+      }
+      FastLED.show();
     }
-    FastLED.show();
   }
   
 }
