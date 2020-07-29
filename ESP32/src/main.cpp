@@ -186,7 +186,6 @@ void espui_button_wifiReset_CALLBACK(Control* sender, int value){
   ESP.restart();
 }
 void espui_switch_led1_control_CALLBACK(Control* sender, int value) {
-  Serial.println("Test");
   int buttonValue = sender->value.toInt();
   if(buttonValue == 0){
     led1_relay.off();
@@ -720,12 +719,12 @@ void setupWifiAndUI(){
 
   //LED2 mode selector
   espui_led2ModeSelect_compID = ESPUI.addControl(ControlType::Select, "LED2 Mode:", "", ControlColor::Peterriver, mainTab, &espui_select_led2Mode_CALLBACK);
-  ESPUI.addControl(ControlType::Option, "SOLID", "solid", ControlColor::Peterriver, espui_led2ModeSelect_compID);
-  ESPUI.addControl(ControlType::Option, "FADE", "fade", ControlColor::Peterriver, espui_led2ModeSelect_compID);
-  ESPUI.addControl(ControlType::Option, "RAINBOW", "rainbow", ControlColor::Peterriver, espui_led2ModeSelect_compID);
-  ESPUI.addControl(ControlType::Option, "RUNNING", "running", ControlColor::Peterriver, espui_led2ModeSelect_compID);
-  ESPUI.addControl(ControlType::Option, "PULSE", "pulse", ControlColor::Peterriver, espui_led2ModeSelect_compID);
+  ESPUI.addControl(ControlType::Option, "SOLID -> needs LED2 Color", "solid", ControlColor::Peterriver, espui_led2ModeSelect_compID);
+  ESPUI.addControl(ControlType::Option, "FADE -> needs LED2 Color", "fade", ControlColor::Peterriver, espui_led2ModeSelect_compID);
+  ESPUI.addControl(ControlType::Option, "RUNNING -> needs LED2 Color", "running", ControlColor::Peterriver, espui_led2ModeSelect_compID);
+  ESPUI.addControl(ControlType::Option, "PULSE -> needs LED2 Color", "pulse", ControlColor::Peterriver, espui_led2ModeSelect_compID);
   ESPUI.addControl(ControlType::Option, "TEMPERATURE", "temperature", ControlColor::Peterriver, espui_led2ModeSelect_compID);
+  ESPUI.addControl(ControlType::Option, "RAINBOW", "rainbow", ControlColor::Peterriver, espui_led2ModeSelect_compID);
   //Sensor value display
   espui_sensor1_temp_compID = ESPUI.addControl(ControlType::Label, "Sensor 1 Temperature", "0°C", ControlColor::Peterriver, mainTab);
   espui_sensor1_humi_compID = ESPUI.addControl(ControlType::Label, "Sensor 1 Humidity", "0%", ControlColor::Peterriver, mainTab);
