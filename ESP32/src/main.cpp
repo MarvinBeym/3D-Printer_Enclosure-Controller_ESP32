@@ -986,12 +986,7 @@ void loadFromFlash(){
     case 1: led1_relay.on(); break;
   }
 
-  if(led2_mode_selected == 0 && led2_color_selected){
-    for(int i = 0; i < led2_numberOfLEDs; i++){
-      leds[i] = led2_color_selected;
-    }
-    FastLED.show();
-  }
+  led2_mode = convertToLed2ModeString(led2_mode_selected);
 
   if(display_brightness <= 20 || display_brightness > 100){
     display_brightness = 80;
