@@ -16,6 +16,5 @@ const char* wifi_hostname = "enclC_ESP32"; //WiFi hostname both for AP and Clien
 
 const bool wifiManagerDarkMode = true;
 const bool rebootOnHotspot = false; //Should the ESP32 reboot when going into hotspot (incase you are sure everything is correct with your setup and you want to try again).
-const int wifiManagerTimeoutSec = 120; //After how many seconds to cancel the WiFiManager configuration mode.
 const bool wifiManagerDebug = true; //WifiManagers debug function.
 const int wifiPassSecret = true; //Should the password be replaced by '********' on the nextion display.

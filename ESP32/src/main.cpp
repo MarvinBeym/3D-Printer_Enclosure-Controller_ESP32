@@ -186,6 +186,7 @@ void espui_button_wifiReset_CALLBACK(Control* sender, int value){
   ESP.restart();
 }
 void espui_switch_led1_control_CALLBACK(Control* sender, int value) {
+  Serial.println("Test");
   int buttonValue = sender->value.toInt();
   if(buttonValue == 0){
     led1_relay.off();
@@ -675,7 +676,7 @@ char* string2char(String command){
 void setupWifiAndUI(){
   wifiManager.setAPCallback(wifiAP_CALLBACK);
   wifiManager.setAPStaticIPConfig(IPAddress(192, 168, 200, 1), IPAddress(192, 168, 200, 1), IPAddress(255,255,255,0));
-  wifiManager.setConfigPortalTimeout(wifiManagerTimeoutSec);
+  wifiManager.setConfigPortalBlocking(false);
   wifiManager.setDebugOutput(wifiManagerDebug);
   wifiManager.setHostname(wifi_hostname);
   if(wifiManagerDarkMode)
