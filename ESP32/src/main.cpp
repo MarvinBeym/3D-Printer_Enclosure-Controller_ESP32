@@ -88,7 +88,7 @@ Relay led1_relay(relay_in_pin, false);
 CRGB leds[led2_numberOfLEDs];
 int led2_mode_selected = 0;
 String led2_mode = "solid";
-int led2_numberOfModes = 5;
+int led2_numberOfModes = 6;
 int led2_color_selected = 0;
 int led2_effect_brightness = 0;
 int led2_effect_fadeAmount = 1;
@@ -127,6 +127,7 @@ uint16_t espui_temperature_danger_compID;
 uint16_t espui_temperature_warningThreshhold_compID;
 uint16_t espui_temperature_dangerThreshhold_compID;
 
+void fill_solid_fromTo(struct CRGB * leds, int fromToFill, int toToFill, const struct CRGB& color);
 void setLed2Color(String color);
 void setLed2Mode(String mode);
 void setDisplaySleep(bool value);
@@ -321,6 +322,18 @@ void Led2EffectsHandler( void * parameter) {
       uint8_t fillNumber = beat8(100,300);
       fill_rainbow(leds, led2_numberOfLEDs, fillNumber, 255/led2_numberOfLEDs); 
       fadeToBlackBy(leds, led2_numberOfLEDs, led2_brightness);
+      FastLED.show();
+    }
+    else if(led2_mode == "temperature"){
+      if(dht_1_temperature <= 0){fill_solid_fromTo(leds, 0, 29, CRGB::SkyBlue);}
+      else if(dht_1_temperature < temperature_warnThreshold){fill_solid_fromTo(leds, 0, 29, CRGB::Green);}
+      else if(dht_1_temperature < temperature_dangThreshold){fill_solid_fromTo(leds, 0, 29, CRGB::OrangeRed);}
+      else if(dht_1_temperature > temperature_dangThreshold){fill_solid_fromTo(leds, 0, 29, CRGB::Red);}
+
+      if(dht_2_temperature <= 0){fill_solid_fromTo(leds, 30, 60, CRGB::SkyBlue);}
+      else if(dht_2_temperature < temperature_warnThreshold){fill_solid_fromTo(leds, 30, 60, CRGB::Green);}
+      else if(dht_2_temperature < temperature_dangThreshold){fill_solid_fromTo(leds, 30, 60, CRGB::OrangeRed);}
+      else if(dht_2_temperature > temperature_dangThreshold){fill_solid_fromTo(leds, 30, 60, CRGB::Red);}
       FastLED.show();
     }
   }
@@ -628,10 +641,10 @@ String message = myNextion.listen();
         setSensorValues(0, dht_2_temperature, dht_2_humidity);
       }
     }
-    if(dht_1_temperature >= dht_1_min_tempGraph){
+    if(dht_1_temperature >= dht_1_minTemp){
       setSensorGraphValues(0, dht_1_temperature);
     }
-    if(dht_2_temperature >= dht_2_min_tempGraph){
+    if(dht_2_temperature >= dht_2_minTemp){
       setSensorGraphValues(1, dht_2_temperature);
     }
   }
@@ -651,6 +664,7 @@ String convertToLed2ModeString(int mode){
     case 2: returnValue = "rainbow"; break;
     case 3: returnValue = "running"; break;
     case 4: returnValue = "pulse"; break;
+    case 5: returnValue = "temperature"; break;
   }
   return returnValue;
 }
@@ -710,7 +724,7 @@ void setupWifiAndUI(){
   ESPUI.addControl(ControlType::Option, "RAINBOW", "rainbow", ControlColor::Peterriver, espui_led2ModeSelect_compID);
   ESPUI.addControl(ControlType::Option, "RUNNING", "running", ControlColor::Peterriver, espui_led2ModeSelect_compID);
   ESPUI.addControl(ControlType::Option, "PULSE", "pulse", ControlColor::Peterriver, espui_led2ModeSelect_compID);
-
+  ESPUI.addControl(ControlType::Option, "TEMPERATURE", "temperature", ControlColor::Peterriver, espui_led2ModeSelect_compID);
   //Sensor value display
   espui_sensor1_temp_compID = ESPUI.addControl(ControlType::Label, "Sensor 1 Temperature", "0°C", ControlColor::Peterriver, mainTab);
   espui_sensor1_humi_compID = ESPUI.addControl(ControlType::Label, "Sensor 1 Humidity", "0%", ControlColor::Peterriver, mainTab);
@@ -799,7 +813,7 @@ void setSensorGraphValues(int sensorID, float temperature){
     //ESPUI.addGraphPoint(espui_sens1Graph_compID, 20);
     if(currentPage == SENSOR_PAGE){
       String graphCommand = "add 1,0,";
-      graphCommand.concat(map(temperature, dht_1_min_tempGraph + 128, 255, 128, 255));
+      graphCommand.concat(map(temperature, dht_1_minTemp + 128, 255, 128, 255));
       myNextion.sendCommand(string2char(graphCommand));
       delay(10);
     }
@@ -808,7 +822,7 @@ void setSensorGraphValues(int sensorID, float temperature){
     //ESPUI.addGraphPoint(espui_sens2Graph_compID, 30);
     if(currentPage == SENSOR_PAGE){
       String graphCommand = "add 1,1,";
-      graphCommand.concat(map(temperature, dht_2_min_tempGraph + 0, 255, 0, 127));
+      graphCommand.concat(map(temperature, dht_2_minTemp + 0, 255, 0, 127));
       myNextion.sendCommand(string2char(graphCommand));
       delay(10);
     }
@@ -935,6 +949,11 @@ void setTempWarnDangThreshold(int value, int warnOrDanger){
       ESPUI.updateNumber(espui_temperature_dangerThreshhold_compID, value); 
       myNextion.setComponentValue("conf_page.nbr_tempDT", value);
       break;
+  }
+}
+void fill_solid_fromTo(struct CRGB * leds, int fromToFill, int toToFill, const struct CRGB& color){
+  for( int i = fromToFill; i < toToFill; i++) {
+    leds[i] = color;
   }
 }
 void loadFromFlash(){
