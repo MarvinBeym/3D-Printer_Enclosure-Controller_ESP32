@@ -675,12 +675,16 @@ char* string2char(String command){
 void setupWifiAndUI(){
   wifiManager.setAPCallback(wifiAP_CALLBACK);
   wifiManager.setAPStaticIPConfig(IPAddress(192, 168, 200, 1), IPAddress(192, 168, 200, 1), IPAddress(255,255,255,0));
-  wifiManager.setConfigPortalBlocking(false);
+  wifiManager.setConfigPortalBlocking(wifiManagerBlocking);
+  if(wifiManagerBlocking)
+    wifiManager.setConfigPortalTimeout(wifiManagerTimeout);
   wifiManager.setDebugOutput(wifiManagerDebug);
   wifiManager.setHostname(wifi_hostname);
   if(wifiManagerDarkMode)
     wifiManager.setClass("invert");
   
+
+
   wifiManager.autoConnect(wifi_ap_ssid, wifi_ap_password);
   currentPage = MAIN_PAGE;
   myNextion.sendCommand("page main_page");
@@ -856,6 +860,7 @@ void saveToFlash(){
   preferences.putInt("led1_rlyState", led1_relay.getState());
   preferences.putInt("led2_color_sel", led2_color_selected);
   preferences.putInt("led2_mode_sel", led2_mode_selected);
+  preferences.putString("led2_mod", led2_mode);
   preferences.putInt("disp_brt", display_brightness);
   preferences.putInt("disp_slpState", display_sleepState);
   preferences.putBool("temp_warnState", temperature_warnState);
@@ -965,6 +970,7 @@ void loadFromFlash(){
   int led1_relayState = preferences.getInt("led1_rlyState", 0);
   led2_color_selected = preferences.getInt("led2_color_sel", 0);
   led2_mode_selected = preferences.getInt("led2_mode_sel", 0);
+  led2_mode = preferences.getString("led2_mod", "solid");
   display_brightness = preferences.getInt("disp_brt", 80);
   display_sleepState = preferences.getInt("disp_slpState", 0);
   temperature_warnState = preferences.getBool("temp_warnState", false);
@@ -985,8 +991,6 @@ void loadFromFlash(){
     case 0: led1_relay.off(); break;
     case 1: led1_relay.on(); break;
   }
-
-  led2_mode = convertToLed2ModeString(led2_mode_selected);
 
   if(display_brightness <= 20 || display_brightness > 100){
     display_brightness = 80;
