@@ -128,7 +128,7 @@ uint16_t espui_temperature_warningThreshhold_compID;
 uint16_t espui_temperature_dangerThreshhold_compID;
 
 void fill_solid_fromTo(struct CRGB * leds, int fromToFill, int toToFill, const struct CRGB& color);
-void setLed2Color(String color);
+void setLed2Color(int color);
 void setLed2Mode(String mode);
 void setDisplaySleep(bool value);
 void setDisplayBrightness(int value);
@@ -216,7 +216,7 @@ void espui_slider_fan2PWM_CALLBACK(Control* sender, int value) {
 
 }
 void espui_select_led2Color_CALLBACK(Control* sender, int value) {
-  setLed2Color(sender->value);
+  setLed2Color(sender->value.toInt());
 }
 void espui_select_led2Mode_CALLBACK(Control* sender, int value){
   setLed2Mode(sender->value);
@@ -444,7 +444,7 @@ void loop() {
   fan1rpm = getFanSpeed(1);
   fan2rpm = getFanSpeed(2);
   HandleTempWarn();
-  HandleDisplay(); //-> causes problem with fastLED
+  HandleDisplay();
 }
 int getFanSpeed(int fanID){
   if(fanID == 1){
@@ -546,7 +546,6 @@ void HandleTempWarn(){
 void HandleDisplay(){
 String message = myNextion.listen();
   if(message != ""){
-    Serial.println(message);
     if(message == "65 1 1 0 ff ff ff"){currentPage = FANS_PAGE;}
     else if(message == "65 1 2 0 ff ff ff"){currentPage = SENSOR_PAGE;}
     else if(message == "65 1 3 0 ff ff ff"){currentPage = LED_PAGE;}
@@ -570,15 +569,15 @@ String message = myNextion.listen();
     else if(message == "65 2 3 0 ff ff ff"){setFanPwm(1, myNextion.getComponentValue("fans_page.sli_speed_fan2"));}
     else if(message == "65 4 b 0 ff ff ff"){led2_mode_selected++; setLed2Mode(convertToLed2ModeString(led2_mode_selected));}
     else if(message == "65 4 c 0 ff ff ff"){led2_mode_selected--; setLed2Mode(convertToLed2ModeString(led2_mode_selected));}
-    else if(message == "65 4 a 0 ff ff ff"){setLed2Color("white");}
-    else if(message == "65 4 2 0 ff ff ff"){setLed2Color("black");}
-    else if(message == "65 4 3 0 ff ff ff"){setLed2Color("red");}
-    else if(message == "65 4 4 0 ff ff ff"){setLed2Color("orange");}
-    else if(message == "65 4 5 0 ff ff ff"){setLed2Color("yellow");}
-    else if(message == "65 4 6 0 ff ff ff"){setLed2Color("green");}
-    else if(message == "65 4 7 0 ff ff ff"){setLed2Color("blue");}
-    else if(message == "65 4 8 0 ff ff ff"){setLed2Color("purple");}
-    else if(message == "65 4 9 0 ff ff ff"){setLed2Color("pink");}
+    else if(message == "65 4 2 0 ff ff ff"){setLed2Color(CRGB::Black);}
+    else if(message == "65 4 a 0 ff ff ff"){setLed2Color(CRGB::White);}
+    else if(message == "65 4 3 0 ff ff ff"){setLed2Color(CRGB::Red);}
+    else if(message == "65 4 4 0 ff ff ff"){setLed2Color(CRGB::OrangeRed);}
+    else if(message == "65 4 5 0 ff ff ff"){setLed2Color(CRGB::Yellow);}
+    else if(message == "65 4 6 0 ff ff ff"){setLed2Color(CRGB::Green);}
+    else if(message == "65 4 7 0 ff ff ff"){setLed2Color(CRGB::Blue);}
+    else if(message == "65 4 8 0 ff ff ff"){setLed2Color(CRGB::Purple);}
+    else if(message == "65 4 9 0 ff ff ff"){setLed2Color(CRGB::DeepPink);}
     else if(message == "65 5 4 0 ff ff ff"){display_sleepState = !display_sleepState; setDisplaySleep(display_sleepState);}
     else if(message == "65 5 3 0 ff ff ff"){display_brightness = myNextion.getComponentValue("conf_page.sli_brightness"); setDisplayBrightness(display_brightness);}
     else if(message == "65 5 e 0 ff ff ff"){saveToFlash();}
@@ -704,15 +703,15 @@ void setupWifiAndUI(){
   
   //LED2 color selector
   espui_led2ColorSelect_compID = ESPUI.addControl(ControlType::Select, "LED2 Color:", "", ControlColor::Peterriver, mainTab, &espui_select_led2Color_CALLBACK);
-  ESPUI.addControl(ControlType::Option, "Black (OFF)", "black", ControlColor::Peterriver, espui_led2ColorSelect_compID);
-  ESPUI.addControl(ControlType::Option, "White", "white", ControlColor::Peterriver, espui_led2ColorSelect_compID);
-  ESPUI.addControl(ControlType::Option, "Red", "red", ControlColor::Peterriver, espui_led2ColorSelect_compID);
-  ESPUI.addControl(ControlType::Option, "Orange", "orange", ControlColor::Peterriver, espui_led2ColorSelect_compID);
-  ESPUI.addControl(ControlType::Option, "Yellow", "yellow", ControlColor::Peterriver, espui_led2ColorSelect_compID);
-  ESPUI.addControl(ControlType::Option, "Green", "green", ControlColor::Peterriver, espui_led2ColorSelect_compID);
-  ESPUI.addControl(ControlType::Option, "Blue", "blue", ControlColor::Peterriver, espui_led2ColorSelect_compID);
-  ESPUI.addControl(ControlType::Option, "Purple", "purple", ControlColor::Peterriver, espui_led2ColorSelect_compID);
-  ESPUI.addControl(ControlType::Option, "Pink", "pink", ControlColor::Peterriver, espui_led2ColorSelect_compID);
+  ESPUI.addControl(ControlType::Option, "Black (OFF)", String(CRGB::Black), ControlColor::Peterriver, espui_led2ColorSelect_compID);
+  ESPUI.addControl(ControlType::Option, "White", String(CRGB::White), ControlColor::Peterriver, espui_led2ColorSelect_compID);
+  ESPUI.addControl(ControlType::Option, "Red", String(CRGB::Red), ControlColor::Peterriver, espui_led2ColorSelect_compID);
+  ESPUI.addControl(ControlType::Option, "Orange", String(CRGB::OrangeRed), ControlColor::Peterriver, espui_led2ColorSelect_compID);
+  ESPUI.addControl(ControlType::Option, "Yellow", String(CRGB::Yellow), ControlColor::Peterriver, espui_led2ColorSelect_compID);
+  ESPUI.addControl(ControlType::Option, "Green", String(CRGB::Green), ControlColor::Peterriver, espui_led2ColorSelect_compID);
+  ESPUI.addControl(ControlType::Option, "Blue", String(CRGB::Blue), ControlColor::Peterriver, espui_led2ColorSelect_compID);
+  ESPUI.addControl(ControlType::Option, "Purple", String(CRGB::Purple), ControlColor::Peterriver, espui_led2ColorSelect_compID);
+  ESPUI.addControl(ControlType::Option, "Pink", String(CRGB::DeepPink), ControlColor::Peterriver, espui_led2ColorSelect_compID);
 
   //LED2 mode selector
   espui_led2ModeSelect_compID = ESPUI.addControl(ControlType::Select, "LED2 Mode:", "", ControlColor::Peterriver, mainTab, &espui_select_led2Mode_CALLBACK);
@@ -864,19 +863,9 @@ void saveToFlash(){
   preferences.end();
   Serial.println("Finished saving to Flash!");
 }
-void setLed2Color(String color){
-  if(led2_mode_selected == 0){
-    if(color == "black"){led2_color_selected = CRGB::Black;}
-    else if(color == "white"){led2_color_selected = CRGB::White;}
-    else if(color == "red"){led2_color_selected = CRGB::Red;}
-    else if(color == "orange"){led2_color_selected = CRGB::OrangeRed;}
-    else if(color == "yellow"){led2_color_selected = CRGB::Yellow;}
-    else if(color == "green"){led2_color_selected = CRGB::Green;}
-    else if(color == "blue"){led2_color_selected = CRGB::Blue;}
-    else if(color == "purple"){led2_color_selected = CRGB::Purple;}
-    else if(color == "pink"){led2_color_selected = CRGB::DeepPink;}
-
-    ESPUI.updateSelect(espui_led2ColorSelect_compID, color);
+void setLed2Color(int color){
+  led2_color_selected = color;
+  ESPUI.updateSelect(espui_led2ColorSelect_compID, String(color));
 
     myNextion.setComponentValue("led_page.btn_black", 0);
     myNextion.setComponentValue("led_page.btn_white", 0);
@@ -887,15 +876,36 @@ void setLed2Color(String color){
     myNextion.setComponentValue("led_page.btn_blue", 0);
     myNextion.setComponentValue("led_page.btn_purple", 0);
     myNextion.setComponentValue("led_page.btn_pink", 0);
-    if(color == "black"){myNextion.setComponentValue("led_page.btn_black", 1);}
-    else if(color == "white"){myNextion.setComponentValue("led_page.btn_white", 1);}
-    else if(color == "red"){myNextion.setComponentValue("led_page.btn_red", 1);}
-    else if(color == "orange"){myNextion.setComponentValue("led_page.btn_orange", 1);}
-    else if(color == "yellow"){myNextion.setComponentValue("led_page.btn_yellow", 1);}
-    else if(color == "green"){myNextion.setComponentValue("led_page.btn_green", 1);}
-    else if(color == "blue"){myNextion.setComponentValue("led_page.btn_blue", 1);}
-    else if(color == "purple"){myNextion.setComponentValue("led_page.btn_purple", 1);}
-    else if(color == "pink"){myNextion.setComponentValue("led_page.btn_pink", 1);}
+
+    switch (color){
+    case CRGB::Black:
+      myNextion.setComponentValue("led_page.btn_black", 1);
+      break;
+    case CRGB::White:
+      myNextion.setComponentValue("led_page.btn_white", 1);
+      break;
+    case CRGB::Red:
+      myNextion.setComponentValue("led_page.btn_red", 1);
+      break;
+    case CRGB::OrangeRed:
+      myNextion.setComponentValue("led_page.btn_orange", 1);
+      break;
+    case CRGB::Yellow:
+      myNextion.setComponentValue("led_page.btn_yellow", 1);
+      break;
+    case CRGB::Green:
+      myNextion.setComponentValue("led_page.btn_green", 1);
+      break;
+    case CRGB::Blue:
+      myNextion.setComponentValue("led_page.btn_blue", 1);
+      break;
+    case CRGB::Purple:
+      myNextion.setComponentValue("led_page.btn_purple", 1);
+      break;
+    case CRGB::DeepPink:
+      myNextion.setComponentValue("led_page.btn_pink", 1);
+      break;
+    }
     
     if(led2_mode == "solid"){
       for(int i = 0; i < led2_numberOfLEDs; i++){
@@ -903,7 +913,6 @@ void setLed2Color(String color){
       }
       FastLED.show();
     }
-  }
   
 }
 void setLed2Mode(String mode){
@@ -984,6 +993,9 @@ void loadFromFlash(){
     case 0: led1_relay.off(); break;
     case 1: led1_relay.on(); break;
   }
+
+  setLed2Color(led2_color_selected);
+  setLed2Mode(led2_mode);
 
   if(display_brightness <= 20 || display_brightness > 100){
     display_brightness = 80;
