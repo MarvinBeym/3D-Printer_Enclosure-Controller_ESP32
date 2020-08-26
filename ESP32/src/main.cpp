@@ -456,11 +456,8 @@ int getFanSpeed(int fanID){
     if(fan1_dutyCycle == 0){
       return 0;
     }
-    if(fan1rpm <= fan1_max_rpm){
-      return fan1rpm;
-    }
     else{
-      return fan1_max_rpm;
+      return fan1rpm;
     }
   }
   else if(fanID == 2){
@@ -472,11 +469,8 @@ int getFanSpeed(int fanID){
     if(fan1_dutyCycle == 0){
       return 0;
     }
-    if(fan2rpm <= fan2_max_rpm){
-      return fan2rpm;
-    }
     else{
-      return fan2_max_rpm;
+      return fan2rpm;
     }
   }
   else

@@ -1,5 +1,3 @@
-const int fan1_max_rpm = 3000; //Prevents the fan1 tacho rpm from overshooting.
-const int fan2_max_rpm = 1800; //Prevents the fan1 tacho rpm from overshooting.
 const int led2_numberOfLEDs = 60; //The number of single addressable leds connected to the led2 port.
 const int led2_currentLimit = 1500; //current limit. Will prevent the leds from using to much current.
 									// In theory this can be max 5A (when using XL4015 buck converter -> take into account display, esp and other stuff).
