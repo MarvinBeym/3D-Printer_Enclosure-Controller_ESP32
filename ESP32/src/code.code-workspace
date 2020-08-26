@@ -1,0 +1,28 @@
+{
+	"folders": [
+		{
+			"path": "..\\..\\..\\3D-Printer_Enclosure-Controller_ESP32"
+		},
+		{
+			"name": "ESP32",
+			"path": ".."
+		},
+		{
+			"path": "..\\.."
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"ratio": "cpp",
+			"iosfwd": "cpp",
+			"xlocbuf": "cpp",
+			"functional": "cpp",
+			"optional": "cpp",
+			"regex": "cpp",
+			"system_error": "cpp",
+			"type_traits": "cpp",
+			"xlocmon": "cpp",
+			"xtr1common": "cpp"
+		}
+	}
+}

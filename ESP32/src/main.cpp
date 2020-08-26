@@ -408,7 +408,7 @@ void setup() {
 
   ledcSetup(0, 25000, 8);
   ledcSetup(1, 25000, 8);
-  //ledcSetup(2, 2000, 8);
+  //ledcSetup(2, 200, 8);
 
   ledcAttachPin(fan1_pwm_pin, 0);
   ledcAttachPin(fan2_pwm_pin, 1);
@@ -531,10 +531,9 @@ void HandleTempWarn(){
           myNextion.sendCommand("page message_page");
           delay(10);
         }
-        ledcWrite(2, 127);
-        delay(400);
-        ledcWrite(2, 0);
       }
+      //ledcWrite(2, 230);
+
     }
     else{
       if(normalState == false){
