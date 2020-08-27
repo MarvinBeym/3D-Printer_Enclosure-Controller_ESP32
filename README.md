@@ -35,7 +35,7 @@ This is an enclosure controller for 3d printers that runs on the dual core ESP32
   - At some point Danger warning is supposed to do everything to make your notice something going wrong.
   - Like buzzer alarm, led blinking, display blinking and such. This is supposed to be used when something is seriously wrong > xyzTemperature.
 
-***ices:***
+***Notices:***
 - The board uses a XL4015 buck converter which is rated for ~5A of power. 
 - Make sure to choose an led strip that won't overload the converter. As this could lead to overheating.
 - Also make sure to leave a bit of room for all other components like fans, 12v led strip, sensors and display.
