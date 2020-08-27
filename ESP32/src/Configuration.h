@@ -1,3 +1,20 @@
+/**
+ * 3D-Printer Enclosure Controller firmware for the ESP32
+ * Copyright (C) 2020  Marvin Beym
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ **/
 const int led2_numberOfLEDs = 60; //The number of single addressable leds connected to the led2 port.
 const int led2_currentLimit = 1500; //current limit. Will prevent the leds from using to much current.
 									// In theory this can be max 5A (when using XL4015 buck converter -> take into account display, esp and other stuff).
