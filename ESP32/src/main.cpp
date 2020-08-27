@@ -908,8 +908,8 @@ void setLed2Color(int color){
     }
     for(int i = 0; i < led2_numberOfLEDs; i++){
       leds[i] = led2_color_selected;
-      leds[i].fadeLightBy(255);
     }
+    FastLED.setBrightness(led2_brightness);
     FastLED.show();
   
 }
