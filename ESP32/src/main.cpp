@@ -246,6 +246,13 @@ void espui_number_TempDangerThreshold_CALLBACK(Control* sender, int value){
 
 void Led2EffectsHandler( void * parameter) {
   for(;;) {
+    if(led2_mode == "solid"){
+      for(int i = 0; i < led2_numberOfLEDs; i++){
+        leds[i] = led2_color_selected;
+      }
+      FastLED.show();
+    }
+
     if(led2_color_selected != CRGB::Black){
       if(led2_mode == "fade"){
         unsigned long led2_effect_currentMillis = millis();
@@ -906,10 +913,10 @@ void setLed2Color(int color){
       myNextion.setComponentValue("led_page.btn_pink", 1);
       break;
     }
+    
     for(int i = 0; i < led2_numberOfLEDs; i++){
       leds[i] = led2_color_selected;
     }
-    FastLED.setBrightness(led2_brightness);
     FastLED.show();
   
 }
