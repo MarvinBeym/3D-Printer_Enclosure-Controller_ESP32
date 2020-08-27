@@ -18,21 +18,15 @@
 #include "Relay.h"
 #include "PinDefinition.h"
 #include "Configuration.h"
+#include "Definitions.h"
 
 #include <Nextion.h>
 #define nextion Serial2
 
-#define BOOT_PAGE 0
-#define MAIN_PAGE 1
-#define FANS_PAGE 2
-#define SENSOR_PAGE 3
-#define LED_PAGE 4
-#define CONF_PAGE 5
-#define ABOUT_PAGE 6
-#define MESSAGE_PAGE 7
 
-const String esp32_version = "1.3";
-const String display_version = "1.3";
+
+const String esp32_version = "1.3.1";
+const String display_version = "1.3.1";
 
 //Storage
 Preferences preferences;
@@ -58,7 +52,6 @@ TaskHandle_t SensorTask;
 DHT dht_1(dht22_1_pin, DHT22);
 DHT dht_2(dht22_2_pin, DHT22);
 unsigned long dht_previous_millis = 0;
-
 float dht_1_humidity = 0;
 float dht_1_temperature = 0;
 float send_dht_1_humidity;
@@ -146,6 +139,8 @@ void HandleDisplay();
 String convertToLed2ModeString(int mode);
 int getFanSpeed(int fanID);
 void setupWifiAndUI();
+
+//Interupt for fan tacho
 void IRAM_ATTR interupt_fan1()
 {
   half_revolutionsFan1++;
@@ -197,7 +192,7 @@ void espui_switch_led1_control_CALLBACK(Control* sender, int value) {
 }
 void espui_button_reboot_CALLBACK(Control* sender, int value){
   if(value == B_UP){
-    delay(500);
+    delay(300);
     ESP.restart();
   }
 }
@@ -206,14 +201,12 @@ void espui_slider_fan1PWM_CALLBACK(Control* sender, int value) {
   if(sliderValue != fan1_dutyCycle){
     setFanPwm(0, sliderValue);
   }
-  
 }
 void espui_slider_fan2PWM_CALLBACK(Control* sender, int value) {
   int sliderValue = sender->value.toInt();
   if(fan2_dutyCycle != sliderValue){
     setFanPwm(1, sliderValue);
   }
-
 }
 void espui_select_led2Color_CALLBACK(Control* sender, int value) {
   setLed2Color(sender->value.toInt());
@@ -230,8 +223,9 @@ void espui_switch_displaySleep_CALLBACK(Control* sender, int value){
   setDisplaySleep(display_sleepState);
 }
 void espui_button_saveToFlash_CALLBACK(Control* sender, int value){
-  if(value == B_UP)
+  if(value == B_UP){
     saveToFlash();
+  }
 }
 void espui_switch_TempWarning_CALLBACK(Control* sender, int value){
   temperature_warnState = sender->value.toInt();
@@ -433,19 +427,16 @@ void setup() {
   myNextion.setComponentText("about_page.tf_display_v", displayVersion);
 
   setupWifiAndUI();
-
-
-
   loadFromFlash();
 }
 
 void loop() {
-  //dnsServer.processNextRequest();
   fan1rpm = getFanSpeed(1);
   fan2rpm = getFanSpeed(2);
   HandleTempWarn();
   HandleDisplay();
 }
+
 int getFanSpeed(int fanID){
   if(fanID == 1){
     if (half_revolutionsFan1 >= 40) { 
@@ -550,21 +541,10 @@ String message = myNextion.listen();
     else if(message == "65 1 2 0 ff ff ff"){currentPage = SENSOR_PAGE;}
     else if(message == "65 1 3 0 ff ff ff"){currentPage = LED_PAGE;}
     else if(message == "65 1 4 0 ff ff ff"){currentPage = CONF_PAGE;}
-    else if(message == "65 5 2 0 ff ff ff"){currentPage = ABOUT_PAGE;}
-    else if(message == "65 6 6 0 ff ff ff"){currentPage = ABOUT_PAGE;}
+    else if(message == "65 5 2 0 ff ff ff" || message == "65 6 6 0 ff ff ff"){currentPage = ABOUT_PAGE;}
     else if(message == "65 7 6 0 ff ff ff"){currentPage = MAIN_PAGE;}
     else if(message == "65 7 7 0 ff ff ff"){ESP.restart();}
     else if(message == "65 2 6 0 ff ff ff" || message == "65 3 2 0 ff ff ff" || message == "65 4 e 0 ff ff ff" || message == "65 5 1 0 ff ff ff"){currentPage = MAIN_PAGE;}
-    if(message == "65 4 1 0 ff ff ff"){
-      int btn_led1_value = myNextion.getComponentValue("led_page.btn_led1");
-      if(btn_led1_value != -1){
-
-        if(btn_led1_value == 1){led1_relay.on();}
-        else{led1_relay.off();}
-
-        ESPUI.updateSwitcher(espui_led1Control_compID, btn_led1_value);
-      }
-    }
     else if(message == "65 2 4 0 ff ff ff"){setFanPwm(0, myNextion.getComponentValue("fans_page.sli_speed_fan1"));}
     else if(message == "65 2 3 0 ff ff ff"){setFanPwm(1, myNextion.getComponentValue("fans_page.sli_speed_fan2"));}
     else if(message == "65 4 b 0 ff ff ff"){led2_mode_selected++; setLed2Mode(convertToLed2ModeString(led2_mode_selected));}
@@ -587,6 +567,16 @@ String message = myNextion.listen();
     else if(message == "65 5 b 0 ff ff ff"){temperature_warnThreshold += 1; setTempWarnDangThreshold(temperature_warnThreshold, 0);}
     else if(message == "65 5 c 0 ff ff ff"){temperature_dangThreshold -= 1; setTempWarnDangThreshold(temperature_dangThreshold, 1);}
     else if(message == "65 5 d 0 ff ff ff"){temperature_dangThreshold += 1; setTempWarnDangThreshold(temperature_dangThreshold, 1);}
+    else if(message == "65 4 1 0 ff ff ff"){
+      int btn_led1_value = myNextion.getComponentValue("led_page.btn_led1");
+      if(btn_led1_value != -1){
+
+        if(btn_led1_value == 1){led1_relay.on();}
+        else{led1_relay.off();}
+
+        ESPUI.updateSwitcher(espui_led1Control_compID, btn_led1_value);
+      }
+    }
   }
   unsigned long display_current_millis = millis();
   if (display_current_millis - display_previous_millis >= display_update_interval) {
@@ -867,16 +857,26 @@ void setLed2Color(int color){
   led2_color_selected = color;
   ESPUI.updateSelect(espui_led2ColorSelect_compID, String(color));
 
+/*
     myNextion.setComponentValue("led_page.btn_black", 0);
+    delay(100);
     myNextion.setComponentValue("led_page.btn_white", 0);
+    delay(100);
     myNextion.setComponentValue("led_page.btn_red", 0);
+    delay(100);
     myNextion.setComponentValue("led_page.btn_orange", 0);
+    delay(100);
     myNextion.setComponentValue("led_page.btn_yellow", 0);
+    delay(100);
     myNextion.setComponentValue("led_page.btn_green", 0);
+    delay(100);
     myNextion.setComponentValue("led_page.btn_blue", 0);
+    delay(100);
     myNextion.setComponentValue("led_page.btn_purple", 0);
+    delay(100);
     myNextion.setComponentValue("led_page.btn_pink", 0);
-
+    delay(100);
+*/
     switch (color){
     case CRGB::Black:
       myNextion.setComponentValue("led_page.btn_black", 1);
@@ -906,13 +906,11 @@ void setLed2Color(int color){
       myNextion.setComponentValue("led_page.btn_pink", 1);
       break;
     }
-    
-    if(led2_mode == "solid"){
-      for(int i = 0; i < led2_numberOfLEDs; i++){
-        leds[i] = led2_color_selected;
-      }
-      FastLED.show();
+    for(int i = 0; i < led2_numberOfLEDs; i++){
+      leds[i] = led2_color_selected;
+      leds[i].fadeLightBy(255);
     }
+    FastLED.show();
   
 }
 void setLed2Mode(String mode){
