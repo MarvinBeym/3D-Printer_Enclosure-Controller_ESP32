@@ -3,6 +3,23 @@ This is an enclosure controller for 3d printers that runs on the dual core ESP32
 - It uses a Nextion NX4832T035 3.5inch 480px320p color touch TFT display.
 - It also includes a simple Webinterface made with ESPUI for quick access without having to go to the display.
 
+- ***For detailed information and images please see the [Wiki](https://github.com/MarvinBeym/3D-Printer_Enclosure-Controller_ESP32/wiki "Wiki").***
+- ***STL files for 3D-Printing can be found on [Thingiverse](https://www.thingiverse.com/ "Thingiverse")***
+
+
+You can currently choose between 2 versions.
+1. The older cnc version
+This is a bit older (the first one I made). Features haven't changed yet.
+This is the version you want If you want to mill the pcb with a cnc mill because it is single side and has wider traces to make it easier for your mill.
+2. The newest, pretiest pcb version
+This is supposed to be made by a pcb factory like jlcpcb
+It has text on it for all the components.
+It also looks way better (I recommend ordering in black :D)
+
+If you choose 2. -> I ordered mine from JLCPCB. The Gerber files are inside the Eagle folder (Gerber(vx.x.x).7z)
+These were exported with the premade jlcpcb double sided cam processor. So you can just upload them to jlcpcb and order them.
+
+
 ***This project consists of 4 parts.***
 1. The ESP32 software.
 2. The Nextion display software (text, icons, images, ...).
