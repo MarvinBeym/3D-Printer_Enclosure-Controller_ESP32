@@ -1,3 +1,7 @@
+# 3D Printer Enclosure Controller ESP32
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=AQQD77B7G4TQ4&source=url)
+***
 This is an enclosure controller for 3d printers that runs on the dual core ESP32.
 
 - It uses a Nextion NX4832T035 3.5inch 480px320p color touch TFT display.
@@ -5,9 +9,6 @@ This is an enclosure controller for 3d printers that runs on the dual core ESP32
 
 - ***For detailed information and images please see the [Wiki](https://github.com/MarvinBeym/3D-Printer_Enclosure-Controller_ESP32/wiki "Wiki").***
 - ***STL files for 3D-Printing can be found on [Thingiverse](https://www.thingiverse.com/ "Thingiverse")***
-***
-If you like my work you can support me:
-[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=AQQD77B7G4TQ4&source=url)
 ***
 You can currently choose between 2 versions.
 1. The older cnc version
