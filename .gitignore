@@ -3,3 +3,12 @@ ESP32/.vscode/.browse.c_cpp.db*
 ESP32/.vscode/c_cpp_properties.json
 ESP32/.vscode/launch.json
 ESP32/.vscode/ipch
+PCB/*.b#?
+PCB/*.s#?
+PCB/*.pro
+PCB/*.job
+PCB/*.plc
+PCB/*.stc
+PCB/*.sts
+PCB/*.crc
+PCB/*.crs
