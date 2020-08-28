@@ -12,3 +12,4 @@ PCB/*.stc
 PCB/*.sts
 PCB/*.crc
 PCB/*.crs
+PCB/~*.xlsx
