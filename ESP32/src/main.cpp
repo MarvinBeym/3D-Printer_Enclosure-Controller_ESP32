@@ -36,13 +36,9 @@
 #include "PinDefinition.h"
 #include "Configuration.h"
 #include "Definitions.h"
+#include "SimpleNextion.h"
 
-#include <Nextion.h>
-#define nextion Serial2
-
-
-
-const String esp32_version = "1.3.2";
+const String esp32_version = "1.3.3";
 const String display_version = "1.3.1";
 
 //Storage
@@ -107,7 +103,7 @@ int led2_effect_counter2 = led2_numberOfLEDs;
 int led2_brightness = 80;
 unsigned long led2_effect_previousMillis = 0;
 //Display
-Nextion myNextion(nextion, 115200);
+SimpleNextion nextion(Serial2, 115200);
 
 unsigned long display_previous_millis = 0;
 int currentPage = MAIN_PAGE;
@@ -173,17 +169,17 @@ void wifiAP_CALLBACK (WiFiManager *myWiFiManager) {
       ESP.restart();
   }
   else{
-    myNextion.sendCommand("page message_page");
+    nextion.SendCommand("page message_page");
     delay(10);
-    myNextion.setComponentText("message_page.tf_headline", "Hotspot was created!");
-    myNextion.setComponentText("message_page.tf_message1", "Mode: Station");
-    myNextion.setComponentText("message_page.tf_message2", String("SSID: " + String(wifi_ap_ssid)));
+    nextion.SetCompText("message_page.tf_headline", "Hotspot was created!");
+    nextion.SetCompText("message_page.tf_message1", "Mode: Station");
+    nextion.SetCompText("message_page.tf_message2", String("SSID: " + String(wifi_ap_ssid)));
     if(wifiPassSecret)
-      myNextion.setComponentText("message_page.tf_message3", String("pass: " + String("********")));
+      nextion.SetCompText("message_page.tf_message3", String("pass: " + String("********")));
     else
-      myNextion.setComponentText("message_page.tf_message3", String("pass: " + String(wifi_ap_password)));
+      nextion.SetCompText("message_page.tf_message3", String("pass: " + String(wifi_ap_password)));
     
-    myNextion.setComponentText("message_page.tf_message4", String("IP: " + String(WiFi.softAPIP().toString())));
+    nextion.SetCompText("message_page.tf_message4", String("IP: " + String(WiFi.softAPIP().toString())));
     currentPage = MESSAGE_PAGE;
     Serial.println("Entered WiFi config mode");
     Serial.println(WiFi.softAPIP());
@@ -205,7 +201,7 @@ void espui_switch_led1_control_CALLBACK(Control* sender, int value) {
   else if(buttonValue == 1){
     led1_relay.on();
   }
-  myNextion.setComponentValue("led_page.btn_led1", buttonValue);
+  nextion.SetCompValue("led_page.btn_led1", buttonValue);
 }
 void espui_button_reboot_CALLBACK(Control* sender, int value){
   if(value == B_UP){
@@ -440,14 +436,14 @@ void setup() {
   FastLED.setMaxPowerInVoltsAndMilliamps(5, led2_currentLimit);
   FastLED.clear(true);
 
-  myNextion.init("boot_page");
+  nextion.SetPage("boot_page");
   String esp32Version = "ESP32: v";
   esp32Version.concat(esp32_version);
-  myNextion.setComponentText("about_page.tf_esp32_v", esp32Version);
+  nextion.SetCompText("about_page.tf_esp32_v", esp32Version);
 
   String displayVersion = "Display: v";
   displayVersion.concat(display_version);
-  myNextion.setComponentText("about_page.tf_display_v", displayVersion);
+  nextion.SetCompText("about_page.tf_display_v", displayVersion);
 
   setupWifiAndUI();
   loadFromFlash();
@@ -505,14 +501,14 @@ void HandleTempWarn(){
           ESPUI.getControl(espui_messageBox_compID)->color = ControlColor::Carrot;
           ESPUI.updateControl(espui_messageBox_compID);
 
-          myNextion.sendCommand("sleep=0");
+          nextion.SendCommand("sleep=0");
           delay(10);
-          myNextion.setComponentText("message_page.tf_headline", "Temperature Warning");
-          myNextion.setComponentText("message_page.tf_message1", "Values when Triggered: ");
-          myNextion.setComponentText("message_page.tf_message2", String("Warning Threshold: " + String(temperature_warnThreshold)));
-          myNextion.setComponentText("message_page.tf_message3", String("Temperature1: " + String(dht_1_temperature)));
-          myNextion.setComponentText("message_page.tf_message4", String("Temperature2: " + String(dht_2_temperature)));
-          myNextion.sendCommand("page message_page");
+          nextion.SetCompText("message_page.tf_headline", "Temperature Warning");
+          nextion.SetCompText("message_page.tf_message1", "Values when Triggered: ");
+          nextion.SetCompText("message_page.tf_message2", String("Warning Threshold: " + String(temperature_warnThreshold)));
+          nextion.SetCompText("message_page.tf_message3", String("Temperature1: " + String(dht_1_temperature)));
+          nextion.SetCompText("message_page.tf_message4", String("Temperature2: " + String(dht_2_temperature)));
+          nextion.SendCommand("page message_page");
           delay(10);
         }
         
@@ -529,14 +525,14 @@ void HandleTempWarn(){
           ESPUI.getControl(espui_messageBox_compID)->color = ControlColor::Alizarin;
           ESPUI.updateControl(espui_messageBox_compID);
 
-          myNextion.sendCommand("sleep=0");
+          nextion.SendCommand("sleep=0");
           delay(10);
-          myNextion.setComponentText("message_page.tf_headline", "Temperature Danger");
-          myNextion.setComponentText("message_page.tf_message1", "Values when Triggered: ");
-          myNextion.setComponentText("message_page.tf_message2", String("Danger Threshold: " + String(temperature_dangThreshold)));
-          myNextion.setComponentText("message_page.tf_message3", String("Temperature1: " + String(dht_1_temperature) + (char)176 + "C"));
-          myNextion.setComponentText("message_page.tf_message4", String("Temperature2: " + String(dht_2_temperature) + (char)176 + "C"));
-          myNextion.sendCommand("page message_page");
+          nextion.SetCompText("message_page.tf_headline", "Temperature Danger");
+          nextion.SetCompText("message_page.tf_message1", "Values when Triggered: ");
+          nextion.SetCompText("message_page.tf_message2", String("Danger Threshold: " + String(temperature_dangThreshold)));
+          nextion.SetCompText("message_page.tf_message3", String("Temperature1: " + String(dht_1_temperature) + (char)176 + "C"));
+          nextion.SetCompText("message_page.tf_message4", String("Temperature2: " + String(dht_2_temperature) + (char)176 + "C"));
+          nextion.SendCommand("page message_page");
           delay(10);
         }
       }
@@ -547,7 +543,7 @@ void HandleTempWarn(){
       if(normalState == false){
         normalState = true;
         currentPage = MAIN_PAGE;
-        myNextion.sendCommand("page main_page");
+        nextion.SendCommand("page main_page");
         delay(30);
         ESPUI.updateLabel(espui_messageBox_compID, "");
         ESPUI.getControl(espui_messageBox_compID)->color = ControlColor::Emerald;
@@ -558,7 +554,7 @@ void HandleTempWarn(){
   }
 }
 void HandleDisplay(){
-String message = myNextion.listen();
+  String message = nextion.ReadCommand();
   if(message != ""){
     if(message == "65 1 1 0 ff ff ff"){currentPage = FANS_PAGE;}
     else if(message == "65 1 2 0 ff ff ff"){currentPage = SENSOR_PAGE;}
@@ -568,8 +564,8 @@ String message = myNextion.listen();
     else if(message == "65 7 6 0 ff ff ff"){currentPage = MAIN_PAGE;}
     else if(message == "65 7 7 0 ff ff ff"){ESP.restart();}
     else if(message == "65 2 6 0 ff ff ff" || message == "65 3 2 0 ff ff ff" || message == "65 4 e 0 ff ff ff" || message == "65 5 1 0 ff ff ff"){currentPage = MAIN_PAGE;}
-    else if(message == "65 2 4 0 ff ff ff"){setFanPwm(0, myNextion.getComponentValue("fans_page.sli_speed_fan1"));}
-    else if(message == "65 2 3 0 ff ff ff"){setFanPwm(1, myNextion.getComponentValue("fans_page.sli_speed_fan2"));}
+    else if(message == "65 2 4 0 ff ff ff"){setFanPwm(0, nextion.GetCompValue("fans_page.sli_speed_fan1"));}
+    else if(message == "65 2 3 0 ff ff ff"){setFanPwm(1, nextion.GetCompValue("fans_page.sli_speed_fan2"));}
     else if(message == "65 4 b 0 ff ff ff"){led2_mode_selected++; setLed2Mode(convertToLed2ModeString(led2_mode_selected));}
     else if(message == "65 4 c 0 ff ff ff"){led2_mode_selected--; setLed2Mode(convertToLed2ModeString(led2_mode_selected));}
     else if(message == "65 4 2 0 ff ff ff"){setLed2Color(CRGB::Black);}
@@ -582,7 +578,7 @@ String message = myNextion.listen();
     else if(message == "65 4 8 0 ff ff ff"){setLed2Color(CRGB::Purple);}
     else if(message == "65 4 9 0 ff ff ff"){setLed2Color(CRGB::DeepPink);}
     else if(message == "65 5 4 0 ff ff ff"){display_sleepState = !display_sleepState; setDisplaySleep(display_sleepState);}
-    else if(message == "65 5 3 0 ff ff ff"){display_brightness = myNextion.getComponentValue("conf_page.sli_brightness"); setDisplayBrightness(display_brightness);}
+    else if(message == "65 5 3 0 ff ff ff"){display_brightness = nextion.GetCompValue("conf_page.sli_brightness"); setDisplayBrightness(display_brightness);}
     else if(message == "65 5 e 0 ff ff ff"){saveToFlash();}
     else if(message == "65 5 6 0 ff ff ff"){temperature_warnState = !temperature_warnState; setTempWarnDang(temperature_warnState, 0);}
     else if(message == "65 5 7 0 ff ff ff"){temperature_dangState = !temperature_dangState; setTempWarnDang(temperature_dangState, 1);}
@@ -591,7 +587,7 @@ String message = myNextion.listen();
     else if(message == "65 5 c 0 ff ff ff"){temperature_dangThreshold -= 1; setTempWarnDangThreshold(temperature_dangThreshold, 1);}
     else if(message == "65 5 d 0 ff ff ff"){temperature_dangThreshold += 1; setTempWarnDangThreshold(temperature_dangThreshold, 1);}
     else if(message == "65 4 1 0 ff ff ff"){
-      int btn_led1_value = myNextion.getComponentValue("led_page.btn_led1");
+      int btn_led1_value = nextion.GetCompValue("led_page.btn_led1");
       if(btn_led1_value != -1){
 
         if(btn_led1_value == 1){led1_relay.on();}
@@ -627,7 +623,7 @@ String message = myNextion.listen();
     else if(currentPage == FANS_PAGE){
       if(fan1rpm != send_fan1rpm){
         send_fan1rpm = fan1rpm;
-        setFanRpm(0, fan2rpm);
+        setFanRpm(0, fan1rpm);
       }
       if(fan2rpm != send_fan2rpm){
         send_fan2rpm = fan2rpm;
@@ -692,7 +688,7 @@ void setupWifiAndUI(){
 
   wifiManager.autoConnect(wifi_ap_ssid, wifi_ap_password);
   currentPage = MAIN_PAGE;
-  myNextion.sendCommand("page main_page");
+  nextion.SendCommand("page main_page");
   delay(10);
 
   Serial.println("Setting up WiFi done!");
@@ -769,18 +765,18 @@ void setupWifiAndUI(){
 void setFanPwm(int fanID, int pwmValue){
   if(fanID == 0){
     fan1_dutyCycle = pwmValue;
-    myNextion.setComponentText("main_page.tf_pwm_fan1", String(fan1_dutyCycle) + "%");
-    myNextion.setComponentText("fans_page.tf_pwm_fan1", String(fan1_dutyCycle) + "%");
-    myNextion.setComponentValue("fans_page.sli_speed_fan1", fan1_dutyCycle);
+    nextion.SetCompText("main_page.tf_pwm_fan1", String(fan1_dutyCycle) + "%");
+    nextion.SetCompText("fans_page.tf_pwm_fan1", String(fan1_dutyCycle) + "%");
+    nextion.SetCompValue("fans_page.sli_speed_fan1", fan1_dutyCycle);
     ESPUI.updateSlider(espui_fan1_pwm_compID, fan1_dutyCycle);
     int convertedValue = map(fan1_dutyCycle, 0, 100, 0, 255);
     ledcWrite(0, convertedValue);
   }
   else if(fanID == 1){
     fan2_dutyCycle = pwmValue;
-    myNextion.setComponentText("main_page.tf_pwm_fan2", String(fan2_dutyCycle) + "%");
-    myNextion.setComponentText("fans_page.tf_pwm_fan2", String(fan2_dutyCycle) + "%");
-    myNextion.setComponentValue("fans_page.sli_speed_fan2", fan2_dutyCycle);
+    nextion.SetCompText("main_page.tf_pwm_fan2", String(fan2_dutyCycle) + "%");
+    nextion.SetCompText("fans_page.tf_pwm_fan2", String(fan2_dutyCycle) + "%");
+    nextion.SetCompValue("fans_page.sli_speed_fan2", fan2_dutyCycle);
     ESPUI.updateSlider(espui_fan2_pwm_compID, fan2_dutyCycle);
     int convertedValue = map(fan2_dutyCycle, 0, 100, 0, 255);
     ledcWrite(1, convertedValue);
@@ -790,31 +786,31 @@ void setFanPwm(int fanID, int pwmValue){
 void setFanRpm(int fanID, int rpm){
   if(fanID == 0){
     ESPUI.updateLabel(espui_fan1_rpm_compID, String(rpm) + "rpm");
-    myNextion.setComponentText("main_page.tf_speed_fan1", String(rpm) + "rpm");
-    myNextion.setComponentText("fans_page.tf_speed_fan1", String(rpm) + "rpm");
+    nextion.SetCompText("main_page.tf_speed_fan1", String(rpm) + "rpm");
+    nextion.SetCompText("fans_page.tf_speed_fan1", String(rpm) + "rpm");
   }
   else if(fanID == 1){
     ESPUI.updateLabel(espui_fan2_rpm_compID, String(rpm) + "rpm");
-    myNextion.setComponentText("main_page.tf_speed_fan2", String(rpm) + "rpm");
-    myNextion.setComponentText("fans_page.tf_speed_fan2", String(rpm) + "rpm");
+    nextion.SetCompText("main_page.tf_speed_fan2", String(rpm) + "rpm");
+    nextion.SetCompText("fans_page.tf_speed_fan2", String(rpm) + "rpm");
   }
 }
 void setSensorValues(int sensorID, float temperature, float humidity){
   if(sensorID == 0){
     ESPUI.updateLabel(espui_sensor1_temp_compID, String(temperature) + "°C");
     ESPUI.updateLabel(espui_sensor1_humi_compID, String(humidity) + "%");
-    myNextion.setComponentText("main_page.tf_temp_sens1", String(temperature) + (char)176 + "C");
-    myNextion.setComponentText("main_page.tf_hum_sens1", String(humidity) + "%");
-    myNextion.setComponentText("sensor_page.tf_temp_sens1", String(temperature) + (char)176 + "C");
-    myNextion.setComponentText("sensor_page.tf_hum_sens1", String(humidity) + "%");
+    nextion.SetCompText("main_page.tf_temp_sens1", String(temperature) + (char)176 + "C");
+    nextion.SetCompText("main_page.tf_hum_sens1", String(humidity) + "%");
+    nextion.SetCompText("sensor_page.tf_temp_sens1", String(temperature) + (char)176 + "C");
+    nextion.SetCompText("sensor_page.tf_hum_sens1", String(humidity) + "%");
   }
   else if(sensorID == 1){
     ESPUI.updateLabel(espui_sensor2_temp_compID, String(temperature) + "°C");
     ESPUI.updateLabel(espui_sensor2_humi_compID, String(humidity) + "%");
-    myNextion.setComponentText("main_page.tf_temp_sens2", String(temperature) + (char)176 + "C");
-    myNextion.setComponentText("main_page.tf_hum_sens2", String(humidity) + "%");
-    myNextion.setComponentText("sensor_page.tf_temp_sens2", String(temperature) + (char)176 + "C");
-    myNextion.setComponentText("sensor_page.tf_hum_sens2", String(humidity) + "%");
+    nextion.SetCompText("main_page.tf_temp_sens2", String(temperature) + (char)176 + "C");
+    nextion.SetCompText("main_page.tf_hum_sens2", String(humidity) + "%");
+    nextion.SetCompText("sensor_page.tf_temp_sens2", String(temperature) + (char)176 + "C");
+    nextion.SetCompText("sensor_page.tf_hum_sens2", String(humidity) + "%");
   }
 }
 void setSensorGraphValues(int sensorID, float temperature){
@@ -823,7 +819,7 @@ void setSensorGraphValues(int sensorID, float temperature){
     if(currentPage == SENSOR_PAGE){
       String graphCommand = "add 1,0,";
       graphCommand.concat(map(temperature, dht_1_minTemp + 128, 255, 128, 255));
-      myNextion.sendCommand(string2char(graphCommand));
+      nextion.SendCommand(string2char(graphCommand));
       delay(10);
     }
   }
@@ -832,7 +828,7 @@ void setSensorGraphValues(int sensorID, float temperature){
     if(currentPage == SENSOR_PAGE){
       String graphCommand = "add 1,1,";
       graphCommand.concat(map(temperature, dht_2_minTemp + 0, 255, 0, 127));
-      myNextion.sendCommand(string2char(graphCommand));
+      nextion.SendCommand(string2char(graphCommand));
       delay(10);
     }
 
@@ -840,21 +836,21 @@ void setSensorGraphValues(int sensorID, float temperature){
 }
 void setDisplaySleep(bool value){
   if(value == false){
-      myNextion.sendCommand("sleep=0");
+      nextion.SendCommand("sleep=0");
       delay(10);
-      myNextion.sendCommand("thsp=0");
+      nextion.SendCommand("thsp=0");
       delay(10);
   }
   else{
-    myNextion.sendCommand("thsp=10");
+    nextion.SendCommand("thsp=10");
     delay(10);
   }
-  myNextion.setComponentValue("conf_page.btn_sleep", value);
+  nextion.SetCompValue("conf_page.btn_sleep", value);
   ESPUI.updateSwitcher(espui_display_sleep_compID, value);
 }
 void setDisplayBrightness(int value){
   ESPUI.updateSlider(espui_display_brightness_compID, value);
-  myNextion.sendCommand(string2char("dims=" + String(display_brightness)));
+  nextion.SendCommand(string2char("dims=" + String(display_brightness)));
   delay(10);
 }
 void saveToFlash(){
@@ -881,52 +877,52 @@ void setLed2Color(int color){
   ESPUI.updateSelect(espui_led2ColorSelect_compID, String(color));
 
 /*
-    myNextion.setComponentValue("led_page.btn_black", 0);
+    nextion.SetCompValue("led_page.btn_black", 0);
     delay(100);
-    myNextion.setComponentValue("led_page.btn_white", 0);
+    nextion.SetCompValue("led_page.btn_white", 0);
     delay(100);
-    myNextion.setComponentValue("led_page.btn_red", 0);
+    nextion.SetCompValue("led_page.btn_red", 0);
     delay(100);
-    myNextion.setComponentValue("led_page.btn_orange", 0);
+    nextion.SetCompValue("led_page.btn_orange", 0);
     delay(100);
-    myNextion.setComponentValue("led_page.btn_yellow", 0);
+    nextion.SetCompValue("led_page.btn_yellow", 0);
     delay(100);
-    myNextion.setComponentValue("led_page.btn_green", 0);
+    nextion.SetCompValue("led_page.btn_green", 0);
     delay(100);
-    myNextion.setComponentValue("led_page.btn_blue", 0);
+    nextion.SetCompValue("led_page.btn_blue", 0);
     delay(100);
-    myNextion.setComponentValue("led_page.btn_purple", 0);
+    nextion.SetCompValue("led_page.btn_purple", 0);
     delay(100);
-    myNextion.setComponentValue("led_page.btn_pink", 0);
+    nextion.SetCompValue("led_page.btn_pink", 0);
     delay(100);
 */
     switch (color){
     case CRGB::Black:
-      myNextion.setComponentValue("led_page.btn_black", 1);
+      nextion.SetCompValue("led_page.btn_black", 1);
       break;
     case CRGB::White:
-      myNextion.setComponentValue("led_page.btn_white", 1);
+      nextion.SetCompValue("led_page.btn_white", 1);
       break;
     case CRGB::Red:
-      myNextion.setComponentValue("led_page.btn_red", 1);
+      nextion.SetCompValue("led_page.btn_red", 1);
       break;
     case CRGB::OrangeRed:
-      myNextion.setComponentValue("led_page.btn_orange", 1);
+      nextion.SetCompValue("led_page.btn_orange", 1);
       break;
     case CRGB::Yellow:
-      myNextion.setComponentValue("led_page.btn_yellow", 1);
+      nextion.SetCompValue("led_page.btn_yellow", 1);
       break;
     case CRGB::Green:
-      myNextion.setComponentValue("led_page.btn_green", 1);
+      nextion.SetCompValue("led_page.btn_green", 1);
       break;
     case CRGB::Blue:
-      myNextion.setComponentValue("led_page.btn_blue", 1);
+      nextion.SetCompValue("led_page.btn_blue", 1);
       break;
     case CRGB::Purple:
-      myNextion.setComponentValue("led_page.btn_purple", 1);
+      nextion.SetCompValue("led_page.btn_purple", 1);
       break;
     case CRGB::DeepPink:
-      myNextion.setComponentValue("led_page.btn_pink", 1);
+      nextion.SetCompValue("led_page.btn_pink", 1);
       break;
     }
     
@@ -943,7 +939,7 @@ void setLed2Mode(String mode){
   led2_effect_counter2 = led2_numberOfLEDs;
   FastLED.clear(true);
   mode.toUpperCase();
-  myNextion.setComponentText("led_page.tf_mode", mode);
+  nextion.SetCompText("led_page.tf_mode", mode);
 }
 void setTempWarnDang(int state, int warnOrDanger){
   switch(warnOrDanger){
@@ -951,19 +947,19 @@ void setTempWarnDang(int state, int warnOrDanger){
       if(temperature_dangState == 1 && state == 1){
         temperature_dangState = 0;
         ESPUI.updateSwitcher(espui_temperature_danger_compID, 0); 
-        myNextion.setComponentValue("conf_page.btn_tempDang", 0);
+        nextion.SetCompValue("conf_page.btn_tempDang", 0);
       }
       ESPUI.updateSwitcher(espui_temperature_warning_compID, state); 
-      myNextion.setComponentValue("conf_page.btn_tempWarn", state);
+      nextion.SetCompValue("conf_page.btn_tempWarn", state);
       break;
     case 1:
       if(temperature_warnState == 1 && state == 1){
         temperature_warnState = 0;
         ESPUI.updateSwitcher(espui_temperature_warning_compID, 0); 
-        myNextion.setComponentValue("conf_page.btn_tempWarn", 0);
+        nextion.SetCompValue("conf_page.btn_tempWarn", 0);
       }
       ESPUI.updateSwitcher(espui_temperature_danger_compID, state); 
-      myNextion.setComponentValue("conf_page.btn_tempDang", state);
+      nextion.SetCompValue("conf_page.btn_tempDang", state);
       break;
   }
 }
@@ -972,12 +968,12 @@ void setTempWarnDangThreshold(int value, int warnOrDanger){
     case 0:
       if(value >= temperature_dangThreshold){value = temperature_dangThreshold - 1; temperature_warnThreshold = value;}
       ESPUI.updateNumber(espui_temperature_warningThreshhold_compID, value); 
-      myNextion.setComponentValue("conf_page.nbr_tempWT", value);
+      nextion.SetCompValue("conf_page.nbr_tempWT", value);
       break;
     case 1:
       if(value <= temperature_warnThreshold){value = temperature_warnThreshold + 1; temperature_dangThreshold = value;}
       ESPUI.updateNumber(espui_temperature_dangerThreshhold_compID, value); 
-      myNextion.setComponentValue("conf_page.nbr_tempDT", value);
+      nextion.SetCompValue("conf_page.nbr_tempDT", value);
       break;
   }
 }
