@@ -42,7 +42,7 @@
 
 
 
-const String esp32_version = "1.3.1";
+const String esp32_version = "1.3.2";
 const String display_version = "1.3.1";
 
 //Storage
@@ -363,23 +363,22 @@ void SensorHandler( void * parameter){
       dht_previous_millis = dht_current_millis;
       float tmp_humidity_1 = dht_1.readHumidity();
       float tmp_temperature_1 = dht_1.readTemperature();
-      if (isnan(tmp_humidity_1) || isnan(tmp_temperature_1)){
-
-      }
-      else{
-        dht_1_humidity = tmp_humidity_1;
+      
+      if(!isnan(tmp_temperature_1)){
         dht_1_temperature = tmp_temperature_1;
+      }
+      if (!isnan(tmp_humidity_1)){
+        dht_1_humidity = tmp_humidity_1;
       }
 
       float tmp_humidity_2 = dht_2.readHumidity();
       float tmp_temperature_2 = dht_2.readTemperature(); 
-
-      if (isnan(tmp_humidity_2) || isnan(tmp_temperature_2)){
-        
-      }
-      else{
-        dht_2_humidity = tmp_humidity_2;
+      
+      if (!isnan(tmp_temperature_2)){
         dht_2_temperature = tmp_temperature_2;
+      }
+      if (!isnan(tmp_humidity_2)){
+        dht_2_humidity = tmp_humidity_2;
       }
     }
   }
@@ -535,8 +534,8 @@ void HandleTempWarn(){
           myNextion.setComponentText("message_page.tf_headline", "Temperature Danger");
           myNextion.setComponentText("message_page.tf_message1", "Values when Triggered: ");
           myNextion.setComponentText("message_page.tf_message2", String("Danger Threshold: " + String(temperature_dangThreshold)));
-          myNextion.setComponentText("message_page.tf_message3", String("Temperature1: " + String(dht_1_temperature) + String("°C")));
-          myNextion.setComponentText("message_page.tf_message4", String("Temperature2: " + String(dht_2_temperature) + String("°C")));
+          myNextion.setComponentText("message_page.tf_message3", String("Temperature1: " + String(dht_1_temperature) + (char)176 + "C"));
+          myNextion.setComponentText("message_page.tf_message4", String("Temperature2: " + String(dht_2_temperature) + (char)176 + "C"));
           myNextion.sendCommand("page message_page");
           delay(10);
         }
@@ -549,7 +548,7 @@ void HandleTempWarn(){
         normalState = true;
         currentPage = MAIN_PAGE;
         myNextion.sendCommand("page main_page");
-        delay(10);
+        delay(30);
         ESPUI.updateLabel(espui_messageBox_compID, "");
         ESPUI.getControl(espui_messageBox_compID)->color = ControlColor::Emerald;
         ESPUI.updateControl(espui_messageBox_compID);
@@ -644,7 +643,7 @@ String message = myNextion.listen();
       if((dht_2_temperature != send_dht_2_temperature) || (dht_2_humidity != send_dht_2_humidity)){
         send_dht_2_temperature = dht_2_temperature;
         send_dht_2_humidity = dht_2_humidity;
-        setSensorValues(0, dht_2_temperature, dht_2_humidity);
+        setSensorValues(1, dht_2_temperature, dht_2_humidity);
       }
     }
     if(dht_1_temperature >= dht_1_minTemp){
@@ -804,17 +803,17 @@ void setSensorValues(int sensorID, float temperature, float humidity){
   if(sensorID == 0){
     ESPUI.updateLabel(espui_sensor1_temp_compID, String(temperature) + "°C");
     ESPUI.updateLabel(espui_sensor1_humi_compID, String(humidity) + "%");
-    myNextion.setComponentText("main_page.tf_temp_sens1", String(temperature) + "°C");
+    myNextion.setComponentText("main_page.tf_temp_sens1", String(temperature) + (char)176 + "C");
     myNextion.setComponentText("main_page.tf_hum_sens1", String(humidity) + "%");
-    myNextion.setComponentText("sensor_page.tf_temp_sens1", String(temperature) + "°C");
+    myNextion.setComponentText("sensor_page.tf_temp_sens1", String(temperature) + (char)176 + "C");
     myNextion.setComponentText("sensor_page.tf_hum_sens1", String(humidity) + "%");
   }
   else if(sensorID == 1){
     ESPUI.updateLabel(espui_sensor2_temp_compID, String(temperature) + "°C");
     ESPUI.updateLabel(espui_sensor2_humi_compID, String(humidity) + "%");
-    myNextion.setComponentText("main_page.tf_temp_sens2", String(temperature) + "°C");
+    myNextion.setComponentText("main_page.tf_temp_sens2", String(temperature) + (char)176 + "C");
     myNextion.setComponentText("main_page.tf_hum_sens2", String(humidity) + "%");
-    myNextion.setComponentText("sensor_page.tf_temp_sens2", String(temperature) + "°C");
+    myNextion.setComponentText("sensor_page.tf_temp_sens2", String(temperature) + (char)176 + "C");
     myNextion.setComponentText("sensor_page.tf_hum_sens2", String(humidity) + "%");
   }
 }
