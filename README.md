@@ -8,7 +8,7 @@ This is an enclosure controller for 3d printers that runs on the dual core ESP32
 - It also includes a simple Webinterface made with ESPUI for quick access without having to go to the display.
 
 - ***For detailed information and images please see the [Wiki](https://github.com/MarvinBeym/3D-Printer_Enclosure-Controller_ESP32/wiki "Wiki").***
-- ***STL files for 3D-Printing can be found on [Thingiverse](https://www.thingiverse.com/ "Thingiverse")***
+- ***STL files for 3D-Printing can be found on [Thingiverse](https://www.thingiverse.com/thing:4582196 "Thingiverse")***
 ***
 You can currently choose between 2 versions.
 1. The older cnc version
