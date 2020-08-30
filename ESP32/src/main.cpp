@@ -40,7 +40,7 @@
 #include "effects/EffectsLoader.h"
 
 
-const String esp32_version = "1.3.3";
+const String esp32_version = "1.3.4";
 const String display_version = "1.3.1";
 //Storage
 Preferences preferences;
@@ -777,7 +777,7 @@ void saveToFlash(){
 void setLed2Color(int color){
   led2_color_selected = color;
   ESPUI.updateSelect(espui_led2ColorSelect_compID, String(color));
-  
+
     switch (color){
     case CRGB::Black:
       nextion.SetCompValue("led_page.btn_black", 1);
