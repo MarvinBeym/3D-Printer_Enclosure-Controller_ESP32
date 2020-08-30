@@ -480,8 +480,8 @@ void HandleDisplay(){
     else if(message == "65 2 6 0 ff ff ff" || message == "65 3 2 0 ff ff ff" || message == "65 4 e 0 ff ff ff" || message == "65 5 1 0 ff ff ff"){currentPage = MAIN_PAGE;}
     else if(message == "65 2 4 0 ff ff ff"){setFanPwm(0, nextion.GetCompValue("fans_page.sli_speed_fan1"));}
     else if(message == "65 2 3 0 ff ff ff"){setFanPwm(1, nextion.GetCompValue("fans_page.sli_speed_fan2"));}
-    else if(message == "65 4 b 0 ff ff ff"){led2_mode_selected++; setLed2Mode(led2_mode_selected);}
-    else if(message == "65 4 c 0 ff ff ff"){led2_mode_selected--; setLed2Mode(led2_mode_selected);}
+    else if(message == "65 4 b 0 ff ff ff"){setLed2Mode(led2_mode_selected +1);}
+    else if(message == "65 4 c 0 ff ff ff"){setLed2Mode(led2_mode_selected -1);}
     else if(message == "65 4 2 0 ff ff ff"){setLed2Color(CRGB::Black);}
     else if(message == "65 4 a 0 ff ff ff"){setLed2Color(CRGB::White);}
     else if(message == "65 4 3 0 ff ff ff"){setLed2Color(CRGB::Red);}
@@ -815,12 +815,21 @@ void setLed2Color(int color){
   
 }
 void setLed2Mode(int mode){
-  ESPUI.updateSelect(espui_led2ModeSelect_compID, String(mode));
-  led2_mode_selected = mode;
-  led2_effect_counter1 = 0;
-  led2_effect_counter2 = led2_numberOfLEDs;
-  FastLED.clear(true);
-  nextion.SetCompText("led_page.tf_mode", effectsLoader.getNameOfEffect(mode));
+  if(mode >= effectsLoader.getNumberOfEffects() -1){
+    mode = effectsLoader.getNumberOfEffects() -1;
+  }
+  if(mode <= 0){
+    mode = 0;
+  }
+  
+  if(led2_mode_selected != mode){
+    ESPUI.updateSelect(espui_led2ModeSelect_compID, String(mode));
+    led2_mode_selected = mode;
+    led2_effect_counter1 = 0;
+    led2_effect_counter2 = led2_numberOfLEDs;
+    FastLED.clear(true);
+    nextion.SetCompText("led_page.tf_mode", effectsLoader.getNameOfEffect(mode));
+  }
 }
 void setTempWarnDang(int state, int warnOrDanger){
   switch(warnOrDanger){
