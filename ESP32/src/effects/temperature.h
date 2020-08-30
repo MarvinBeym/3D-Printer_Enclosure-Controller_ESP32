@@ -1,4 +1,3 @@
-#include <Arduino.h>
 /*
 additionalValues[0] = dht_1_temperature
 additionalValues[1] = dht_2_temperature

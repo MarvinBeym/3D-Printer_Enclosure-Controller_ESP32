@@ -1,5 +1,3 @@
-#include <Arduino.h>
-
 class Effect {
     public:
         const char* name = "";

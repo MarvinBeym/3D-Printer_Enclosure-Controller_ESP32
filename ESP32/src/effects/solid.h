@@ -1,5 +1,3 @@
-#include <Arduino.h>
-
 class Solid: public Effect{
     public:
         Solid(const char* name){

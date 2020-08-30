@@ -1,5 +1,3 @@
-#include <Arduino.h>
-
 class Pulse: public Effect{
     private:
         unsigned long led2_effect_previousMillis = 0;
