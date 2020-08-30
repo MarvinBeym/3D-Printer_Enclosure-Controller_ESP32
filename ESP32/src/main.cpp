@@ -37,10 +37,11 @@
 #include "Configuration.h"
 #include "Definitions.h"
 #include "SimpleNextion.h"
+#include "effects/EffectsLoader.h"
+
 
 const String esp32_version = "1.3.3";
 const String display_version = "1.3.1";
-
 //Storage
 Preferences preferences;
 
@@ -93,8 +94,6 @@ Relay led1_relay(relay_in_pin, false);
 //LED2
 CRGB leds[led2_numberOfLEDs];
 int led2_mode_selected = 0;
-String led2_mode = "solid";
-int led2_numberOfModes = 6;
 int led2_color_selected = 0;
 int led2_effect_brightness = 0;
 int led2_effect_fadeAmount = 1;
@@ -102,6 +101,10 @@ int led2_effect_counter1 = 0;
 int led2_effect_counter2 = led2_numberOfLEDs;
 int led2_brightness = 80;
 unsigned long led2_effect_previousMillis = 0;
+
+//Effects
+EffectsLoader effectsLoader(leds, led2_numberOfLEDs);
+
 //Display
 SimpleNextion nextion(Serial2, 115200);
 
@@ -135,7 +138,7 @@ uint16_t espui_temperature_dangerThreshhold_compID;
 
 void fill_solid_fromTo(struct CRGB * leds, int fromToFill, int toToFill, const struct CRGB& color);
 void setLed2Color(int color);
-void setLed2Mode(String mode);
+void setLed2Mode(int mode);
 void setDisplaySleep(bool value);
 void setDisplayBrightness(int value);
 void saveToFlash();
@@ -225,7 +228,7 @@ void espui_select_led2Color_CALLBACK(Control* sender, int value) {
   setLed2Color(sender->value.toInt());
 }
 void espui_select_led2Mode_CALLBACK(Control* sender, int value){
-  setLed2Mode(sender->value);
+  setLed2Mode(sender->value.toInt());
 }
 void espui_slider_displayBrightness_CALLBACK(Control* sender, int value){
   display_brightness = sender->value.toInt();
@@ -259,97 +262,8 @@ void espui_number_TempDangerThreshold_CALLBACK(Control* sender, int value){
 
 void Led2EffectsHandler( void * parameter) {
   for(;;) {
-    if(led2_mode == "solid"){
-      for(int i = 0; i < led2_numberOfLEDs; i++){
-        leds[i] = led2_color_selected;
-      }
-      FastLED.show();
-    }
-
-    if(led2_color_selected != CRGB::Black){
-      if(led2_mode == "fade"){
-        unsigned long led2_effect_currentMillis = millis();
-        if (led2_effect_currentMillis - led2_effect_previousMillis >= 8) {
-          for(int i = 0; i < led2_numberOfLEDs; i++ )
-          {
-            leds[i] = led2_color_selected;
-            leds[i].fadeLightBy(triwave8(led2_effect_brightness));
-          }
-          FastLED.show();
-          led2_effect_brightness = led2_effect_brightness + led2_effect_fadeAmount;
-          // reverse the direction of the fading at the ends of the fade: 
-          if(led2_effect_brightness >= 255)
-          {
-            led2_effect_brightness = 0; 
-          }    
-        }
-      }
-      else if(led2_mode == "running"){
-        unsigned long led2_effect_currentMillis = millis();
-        if (led2_effect_currentMillis - led2_effect_previousMillis >= 50) {
-          led2_effect_previousMillis = led2_effect_currentMillis;
-          if(led2_effect_counter1 <= led2_numberOfLEDs){
-            leds[led2_effect_counter1] = led2_color_selected;
-            if(led2_effect_counter1 > 0){
-              leds[led2_effect_counter1 - 1] = CRGB::Black;
-            }
-            led2_effect_counter1++;
-          }
-
-          if(led2_effect_counter1 >= led2_numberOfLEDs){
-            leds[led2_effect_counter2] = led2_color_selected;
-            if(led2_effect_counter2 < led2_numberOfLEDs){
-              leds[led2_effect_counter2 + 1] = CRGB::Black;
-            }
-            led2_effect_counter2--;
-          }
-
-          if(led2_effect_counter1 > led2_numberOfLEDs && led2_effect_counter2 < 0){
-            led2_effect_counter1 = 0;
-            led2_effect_counter2 = led2_numberOfLEDs;
-          }
-          FastLED.show();
-        }
-      }
-      else if(led2_mode == "pulse"){
-        unsigned long led2_effect_currentMillis = millis();
-        if (led2_effect_currentMillis - led2_effect_previousMillis >= 50) {
-          led2_effect_previousMillis = led2_effect_currentMillis;
-          if(led2_effect_counter1 <= led2_numberOfLEDs){
-            leds[led2_effect_counter1] = led2_color_selected;
-            led2_effect_counter1++;
-          }
-          if(led2_effect_counter1 >= led2_numberOfLEDs){
-            leds[led2_effect_counter2] = CRGB::Black;
-            led2_effect_counter2--;
-          }
-
-          if(led2_effect_counter1 > led2_numberOfLEDs && led2_effect_counter2 < 0){
-            led2_effect_counter1 = 0;
-            led2_effect_counter2 = led2_numberOfLEDs;
-          }
-          FastLED.show();
-        }
-      }
-    }
-    if(led2_mode == "rainbow"){
-      uint8_t fillNumber = beat8(100,300);
-      fill_rainbow(leds, led2_numberOfLEDs, fillNumber, 255/led2_numberOfLEDs); 
-      fadeToBlackBy(leds, led2_numberOfLEDs, led2_brightness);
-      FastLED.show();
-    }
-    else if(led2_mode == "temperature"){
-      if(dht_1_temperature <= 0){fill_solid_fromTo(leds, 0, 29, CRGB::SkyBlue);}
-      else if(dht_1_temperature < temperature_warnThreshold){fill_solid_fromTo(leds, 0, 29, CRGB::Green);}
-      else if(dht_1_temperature < temperature_dangThreshold){fill_solid_fromTo(leds, 0, 29, CRGB::OrangeRed);}
-      else if(dht_1_temperature > temperature_dangThreshold){fill_solid_fromTo(leds, 0, 29, CRGB::Red);}
-
-      if(dht_2_temperature <= 0){fill_solid_fromTo(leds, 30, 60, CRGB::SkyBlue);}
-      else if(dht_2_temperature < temperature_warnThreshold){fill_solid_fromTo(leds, 30, 60, CRGB::Green);}
-      else if(dht_2_temperature < temperature_dangThreshold){fill_solid_fromTo(leds, 30, 60, CRGB::OrangeRed);}
-      else if(dht_2_temperature > temperature_dangThreshold){fill_solid_fromTo(leds, 30, 60, CRGB::Red);}
-      FastLED.show();
-    }
+    int additionalValues[] = {(int)dht_1_temperature, (int)dht_2_temperature, temperature_warnThreshold, temperature_dangThreshold};
+    effectsLoader.HandleEffects(led2_mode_selected, led2_color_selected, additionalValues);
   }
 }
 void SensorHandler( void * parameter){
@@ -566,8 +480,8 @@ void HandleDisplay(){
     else if(message == "65 2 6 0 ff ff ff" || message == "65 3 2 0 ff ff ff" || message == "65 4 e 0 ff ff ff" || message == "65 5 1 0 ff ff ff"){currentPage = MAIN_PAGE;}
     else if(message == "65 2 4 0 ff ff ff"){setFanPwm(0, nextion.GetCompValue("fans_page.sli_speed_fan1"));}
     else if(message == "65 2 3 0 ff ff ff"){setFanPwm(1, nextion.GetCompValue("fans_page.sli_speed_fan2"));}
-    else if(message == "65 4 b 0 ff ff ff"){led2_mode_selected++; setLed2Mode(convertToLed2ModeString(led2_mode_selected));}
-    else if(message == "65 4 c 0 ff ff ff"){led2_mode_selected--; setLed2Mode(convertToLed2ModeString(led2_mode_selected));}
+    else if(message == "65 4 b 0 ff ff ff"){led2_mode_selected++; setLed2Mode(led2_mode_selected);}
+    else if(message == "65 4 c 0 ff ff ff"){led2_mode_selected--; setLed2Mode(led2_mode_selected);}
     else if(message == "65 4 2 0 ff ff ff"){setLed2Color(CRGB::Black);}
     else if(message == "65 4 a 0 ff ff ff"){setLed2Color(CRGB::White);}
     else if(message == "65 4 3 0 ff ff ff"){setLed2Color(CRGB::Red);}
@@ -650,29 +564,13 @@ void HandleDisplay(){
     }
   }
 }
-String convertToLed2ModeString(int mode){
-  String returnValue = "solid";
-  if(mode >= led2_numberOfModes -1){
-    mode = led2_numberOfModes -1;
-  }
-  else if(mode <= 0){
-    mode = 0;
-  }
-
-  switch(mode){
-    case 0: returnValue = "solid"; break;
-    case 1: returnValue = "fade"; break;
-    case 2: returnValue = "rainbow"; break;
-    case 3: returnValue = "running"; break;
-    case 4: returnValue = "pulse"; break;
-    case 5: returnValue = "temperature"; break;
-  }
-  return returnValue;
-}
 char* string2char(String command){
   char *p = const_cast<char*>(command.c_str());
   return p;
 }
+
+
+
 void setupWifiAndUI(){
   wifiManager.setAPCallback(wifiAP_CALLBACK);
   wifiManager.setAPStaticIPConfig(IPAddress(192, 168, 200, 1), IPAddress(192, 168, 200, 1), IPAddress(255,255,255,0));
@@ -724,12 +622,17 @@ void setupWifiAndUI(){
 
   //LED2 mode selector
   espui_led2ModeSelect_compID = ESPUI.addControl(ControlType::Select, "LED2 Mode:", "", ControlColor::Peterriver, mainTab, &espui_select_led2Mode_CALLBACK);
-  ESPUI.addControl(ControlType::Option, "SOLID -> needs LED2 Color", "solid", ControlColor::Peterriver, espui_led2ModeSelect_compID);
-  ESPUI.addControl(ControlType::Option, "FADE -> needs LED2 Color", "fade", ControlColor::Peterriver, espui_led2ModeSelect_compID);
-  ESPUI.addControl(ControlType::Option, "RUNNING -> needs LED2 Color", "running", ControlColor::Peterriver, espui_led2ModeSelect_compID);
-  ESPUI.addControl(ControlType::Option, "PULSE -> needs LED2 Color", "pulse", ControlColor::Peterriver, espui_led2ModeSelect_compID);
-  ESPUI.addControl(ControlType::Option, "TEMPERATURE", "temperature", ControlColor::Peterriver, espui_led2ModeSelect_compID);
-  ESPUI.addControl(ControlType::Option, "RAINBOW", "rainbow", ControlColor::Peterriver, espui_led2ModeSelect_compID);
+   
+  for(int i = 0; i < effectsLoader.getNumberOfEffects(); i++){
+    ESPUI.addControl(ControlType::Option, effectsLoader.getNameOfEffect(i), String(i), ControlColor::Peterriver, espui_led2ModeSelect_compID);
+  }
+  //ESPUI.addControl(ControlType::Option, "SOLID -> needs LED2 Color", "solid", ControlColor::Peterriver, espui_led2ModeSelect_compID);
+  //ESPUI.addControl(ControlType::Option, "FADE -> needs LED2 Color", "fade", ControlColor::Peterriver, espui_led2ModeSelect_compID);
+  //ESPUI.addControl(ControlType::Option, "RUNNING -> needs LED2 Color", "running", ControlColor::Peterriver, espui_led2ModeSelect_compID);
+  ///ESPUI.addControl(ControlType::Option, "PULSE -> needs LED2 Color", "pulse", ControlColor::Peterriver, espui_led2ModeSelect_compID);
+  //ESPUI.addControl(ControlType::Option, "TEMPERATURE", "temperature", ControlColor::Peterriver, espui_led2ModeSelect_compID);
+  //ESPUI.addControl(ControlType::Option, "RAINBOW", "rainbow", ControlColor::Peterriver, espui_led2ModeSelect_compID);
+  
   //Sensor value display
   espui_sensor1_temp_compID = ESPUI.addControl(ControlType::Label, "Sensor 1 Temperature", "0°C", ControlColor::Peterriver, mainTab);
   espui_sensor1_humi_compID = ESPUI.addControl(ControlType::Label, "Sensor 1 Humidity", "0%", ControlColor::Peterriver, mainTab);
@@ -861,7 +764,6 @@ void saveToFlash(){
   preferences.putInt("led1_rlyState", led1_relay.getState());
   preferences.putInt("led2_color_sel", led2_color_selected);
   preferences.putInt("led2_mode_sel", led2_mode_selected);
-  preferences.putString("led2_mod", led2_mode);
   preferences.putInt("disp_brt", display_brightness);
   preferences.putInt("disp_slpState", display_sleepState);
   preferences.putBool("temp_warnState", temperature_warnState);
@@ -875,27 +777,7 @@ void saveToFlash(){
 void setLed2Color(int color){
   led2_color_selected = color;
   ESPUI.updateSelect(espui_led2ColorSelect_compID, String(color));
-
-/*
-    nextion.SetCompValue("led_page.btn_black", 0);
-    delay(100);
-    nextion.SetCompValue("led_page.btn_white", 0);
-    delay(100);
-    nextion.SetCompValue("led_page.btn_red", 0);
-    delay(100);
-    nextion.SetCompValue("led_page.btn_orange", 0);
-    delay(100);
-    nextion.SetCompValue("led_page.btn_yellow", 0);
-    delay(100);
-    nextion.SetCompValue("led_page.btn_green", 0);
-    delay(100);
-    nextion.SetCompValue("led_page.btn_blue", 0);
-    delay(100);
-    nextion.SetCompValue("led_page.btn_purple", 0);
-    delay(100);
-    nextion.SetCompValue("led_page.btn_pink", 0);
-    delay(100);
-*/
+  
     switch (color){
     case CRGB::Black:
       nextion.SetCompValue("led_page.btn_black", 1);
@@ -932,14 +814,13 @@ void setLed2Color(int color){
     FastLED.show();
   
 }
-void setLed2Mode(String mode){
-  ESPUI.updateSelect(espui_led2ModeSelect_compID, mode);
-  led2_mode = mode;
+void setLed2Mode(int mode){
+  ESPUI.updateSelect(espui_led2ModeSelect_compID, String(mode));
+  led2_mode_selected = mode;
   led2_effect_counter1 = 0;
   led2_effect_counter2 = led2_numberOfLEDs;
   FastLED.clear(true);
-  mode.toUpperCase();
-  nextion.SetCompText("led_page.tf_mode", mode);
+  nextion.SetCompText("led_page.tf_mode", effectsLoader.getNameOfEffect(mode));
 }
 void setTempWarnDang(int state, int warnOrDanger){
   switch(warnOrDanger){
@@ -989,7 +870,6 @@ void loadFromFlash(){
   int led1_relayState = preferences.getInt("led1_rlyState", 0);
   led2_color_selected = preferences.getInt("led2_color_sel", 0);
   led2_mode_selected = preferences.getInt("led2_mode_sel", 0);
-  led2_mode = preferences.getString("led2_mod", "solid");
   display_brightness = preferences.getInt("disp_brt", 80);
   display_sleepState = preferences.getInt("disp_slpState", 0);
   temperature_warnState = preferences.getBool("temp_warnState", false);
@@ -1012,7 +892,7 @@ void loadFromFlash(){
   }
 
   setLed2Color(led2_color_selected);
-  setLed2Mode(led2_mode);
+  setLed2Mode(led2_mode_selected);
 
   if(display_brightness <= 20 || display_brightness > 100){
     display_brightness = 80;
