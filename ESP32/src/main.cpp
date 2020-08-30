@@ -901,7 +901,10 @@ void loadFromFlash(){
   }
 
   setLed2Color(led2_color_selected);
-  setLed2Mode(led2_mode_selected);
+  
+  ESPUI.updateSelect(espui_led2ModeSelect_compID, String(led2_mode_selected));
+  FastLED.clear(true);
+  nextion.SetCompText("led_page.tf_mode", effectsLoader.getNameOfEffect(led2_mode_selected));
 
   if(display_brightness <= 20 || display_brightness > 100){
     display_brightness = 80;
