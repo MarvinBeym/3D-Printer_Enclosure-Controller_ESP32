@@ -50,13 +50,11 @@ void IRAM_ATTR fan2TachoInterrupt()
 void setup()
 {
 	Serial.begin(serial1BaudRate);
-	while (!Serial)
-	{
+	while (!Serial) {
 	}
-	Serial.println("3D-Print-Enclosure-Controler booting v" + esp32Version);
+	Serial.println("3D-Print-Enclosure-Controller booting v" + esp32Version);
 	Serial2.begin(serial2BaudRate, SERIAL_8N1, nextionDisplayRX, nextionDisplayTX);
-	while (!Serial2)
-	{
+	while (!Serial2) {
 	}
 	delay(300);
 
@@ -85,30 +83,24 @@ void setup()
 	//Display
 	nextionDisplay = new NextionDisplay(Serial2, serial2BaudRate);
 
-	Serial.println("3D-Print-Enclosure-Controler booted");
+	Serial.println("3D-Print-Enclosure-Controller booted");
 }
 
 void HandleDisplayCompClicked(int pageId, int compId)
 {
 	//Todo.
-	switch (pageId)
-	{
-	case MAIN_PAGE:
-		switch (compId)
-		{
-		case 1:
-			nextionDisplay->setPage(FANS_PAGE);
+	switch (pageId) {
+		case MAIN_PAGE:
+			switch (compId) {
+				case 1: nextionDisplay->setPage(FANS_PAGE);
+					break;
+				case 2: nextionDisplay->setPage(SENSOR_PAGE);
+					break;
+				case 3: nextionDisplay->setPage(LED_PAGE);
+					break;
+				case 4: nextionDisplay->setPage(CONF_PAGE);
+			}
 			break;
-		case 2:
-			nextionDisplay->setPage(SENSOR_PAGE);
-			break;
-		case 3:
-			nextionDisplay->setPage(LED_PAGE);
-			break;
-		case 4:
-			nextionDisplay->setPage(CONF_PAGE);
-		}
-		break;
 	}
 }
 
@@ -122,8 +114,7 @@ void loop()
 	int pageId = -1;
 	int compId = -1;
 	nextionDisplay->getComponentClicked(pageId, compId);
-	if (pageId != -1 && compId != -1)
-	{
+	if (pageId != -1 && compId != -1) {
 		Serial.print(pageId);
 		Serial.print(" | ");
 		Serial.println(compId);

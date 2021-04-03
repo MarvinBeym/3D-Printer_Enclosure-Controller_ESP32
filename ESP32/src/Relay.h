@@ -3,8 +3,10 @@
   Created by Marvin Beym, 02.04.2021.
 */
 #include <Arduino.h>
-class Relay{
-		public:
+
+class Relay
+{
+	public:
 		Relay(int pin, bool _offOnHigh);
 		void begin();
 		bool getState();
@@ -15,5 +17,4 @@ class Relay{
 		int pin;
 		bool relayState;
 		bool offOnHigh;
-
 };

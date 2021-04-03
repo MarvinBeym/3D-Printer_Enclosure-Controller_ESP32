@@ -14,6 +14,7 @@
 #define CONF_PAGE 5
 #define ABOUT_PAGE 6
 #define MESSAGE_PAGE 7
+
 #include <Arduino.h>
 
 class NextionDisplay
@@ -22,11 +23,11 @@ class NextionDisplay
 		NextionDisplay(HardwareSerial &hwSerial, int baudRate);
 		String readCommand();
 		void getComponentClicked(int &pageId, int &compId);
-		void setPage(int pageId);
+		void setPage(int _pageId);
 		void sendCommand(const char *cmdToSend);
 		int pageId;
 	private:
-		
+
 };
 
 #endif

@@ -20,23 +20,20 @@ Sensor::Sensor(char *_name, int pin, int _senseInterval)
 void Sensor::taskHandler(void *parameter)
 {
 	Sensor *sensor = reinterpret_cast<Sensor *>(parameter);
-	sensor->taskRunnner();
+	sensor->taskRunner();
 }
 
 //Runs the actual task code.
-void Sensor::taskRunnner()
+void Sensor::taskRunner()
 {
-	for (;;)
-	{
+	for (;;) {
 		float tmpHumidity = dht->readHumidity();
 		float tmpTemperature = dht->readTemperature();
 
-		if (!isnan(tmpTemperature))
-		{
+		if (!isnan(tmpTemperature)) {
 			temperature = tmpTemperature;
 		}
-		if (!isnan(tmpHumidity))
-		{
+		if (!isnan(tmpHumidity)) {
 			humidity = tmpHumidity;
 		}
 		vTaskDelay(pdMS_TO_TICKS(senseInterval));

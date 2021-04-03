@@ -10,17 +10,17 @@
 class Fan
 {
 	public:
-		Fan(char* _name, int _channel, int tachoPin, int pwmPin);
+		Fan(char *_name, int _channel, int tachoPin, int pwmPin);
 		void incrementHalfRevolution();
-		void setDutyCycle(int dutyCycle);
-		void setSpeed(int speed);
-		char* name;
+		void setDutyCycle(int _dutyCycle);
+		void setSpeed(int _speed);
+		char *name;
 		unsigned int rpm;
 		unsigned int speed;
-		unsigned int dutyCycle; 
+		unsigned int dutyCycle;
 	private:
 		static void taskHandler(void *parameter);
-		void taskRunnner();
+		void taskRunner();
 		int channel;
 		volatile int halfRevolution;
 		unsigned long timeOld;

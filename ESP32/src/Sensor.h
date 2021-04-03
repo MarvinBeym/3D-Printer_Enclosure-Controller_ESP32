@@ -12,15 +12,15 @@
 class Sensor
 {
 	public:
-		Sensor(char* _name, int pin, int _senseInterval);
+		Sensor(char *_name, int pin, int _senseInterval);
 		float temperature;
 		float humidity;
-		char* name;
+		char *name;
 	private:
 		static void taskHandler(void *parameter);
-		void taskRunnner();
+		void taskRunner();
 		DHT *dht;
-		int senseInterval;		
+		int senseInterval;
 };
 
 #endif

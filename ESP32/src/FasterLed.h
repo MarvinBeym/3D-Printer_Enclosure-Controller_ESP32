@@ -6,7 +6,7 @@
 #define FasterLed_h
 
 #include <Arduino.h>
-#include <FastLed.h>
+#include <FastLED.h>
 
 class FasterLed
 {
@@ -18,7 +18,6 @@ class FasterLed
 		CRGB *leds;
 		void clear();
 	private:
-		
 };
 
 #endif
