@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **/
-const long dhtSenseInterval = 2000;
+const int dhtSenseInterval = 2000;
 const int led2NumberOfLeds = 60;
 const int led2CurrentLimit = 1500;
 const int led2Brightness = 80;

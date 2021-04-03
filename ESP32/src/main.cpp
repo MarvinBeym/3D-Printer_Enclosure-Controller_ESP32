@@ -54,10 +54,10 @@ void setup()
 	{
 	}
 	delay(300);
-
+	
 	//Temp & Humidity sensor setup
-	sensor1 = new Sensor(dht22_1_pin, dhtSenseInterval);
-	sensor2 = new Sensor(dht22_2_pin, dhtSenseInterval);
+	sensor1 = new Sensor("sensor1", dht22_1_pin, dhtSenseInterval);
+	sensor2 = new Sensor("sensor2", dht22_2_pin, dhtSenseInterval);
 
 	//Led1 (relay) setup
 	led1 = new Relay(led1_relay_pin, false);
@@ -80,6 +80,9 @@ void setup()
 
 void loop()
 {
-	sensor1->handle();
-	sensor2->handle();
+	/*
+	Serial.print(sensor1->temperature);
+	Serial.print(" | ");
+	Serial.println(sensor2->temperature);
+	*/
 }
