@@ -16,23 +16,26 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **/
 #include <Arduino.h>
+#include <soc/timer_group_struct.h>
+#include <soc/timer_group_reg.h>
+
+//Own classes
 #include "Sensor.h"
 #include "PinDefinition.h"
 #include "Configuration.h"
 #include "Relay.h"
 #include "FasterLed.h"
 #include "Fan.h"
-#include "soc/timer_group_struct.h"
-#include "soc/timer_group_reg.h"
+#include "NextionDisplay.h"
 
 const String esp32Version = "2.0.0";
-const String displayVersion = "1.3.1";
 Sensor *sensor1;
 Sensor *sensor2;
 Relay *led1;
 FasterLed *led2;
 Fan *fan1;
 Fan *fan2;
+NextionDisplay *nextionDisplay;
 
 void IRAM_ATTR fan1TachoInterrupt()
 {
@@ -46,11 +49,15 @@ void IRAM_ATTR fan2TachoInterrupt()
 
 void setup()
 {
-	Serial.begin(115200);
-	while (!Serial){}
+	Serial.begin(serial1BaudRate);
+	while (!Serial)
+	{
+	}
 	Serial.println("3D-Print-Enclosure-Controler booting v" + esp32Version);
-	Serial2.begin(115200, SERIAL_8N1, 16, 17);
-	while (!Serial2){}
+	Serial2.begin(serial2BaudRate, SERIAL_8N1, nextionDisplayRX, nextionDisplayTX);
+	while (!Serial2)
+	{
+	}
 	delay(300);
 
 	//Temp & Humidity sensor setup
@@ -74,8 +81,35 @@ void setup()
 	fan2 = new Fan("fan2", 1, fan2_tacho_pin, fan2_pwm_pin);
 	attachInterrupt(digitalPinToInterrupt(fan1_tacho_pin), fan1TachoInterrupt, FALLING);
 	attachInterrupt(digitalPinToInterrupt(fan2_tacho_pin), fan2TachoInterrupt, FALLING);
-	
+
+	//Display
+	nextionDisplay = new NextionDisplay(Serial2, serial2BaudRate);
+
 	Serial.println("3D-Print-Enclosure-Controler booted");
+}
+
+void HandleDisplayCompClicked(int pageId, int compId)
+{
+	//Todo.
+	switch (pageId)
+	{
+	case MAIN_PAGE:
+		switch (compId)
+		{
+		case 1:
+			nextionDisplay->setPage(FANS_PAGE);
+			break;
+		case 2:
+			nextionDisplay->setPage(SENSOR_PAGE);
+			break;
+		case 3:
+			nextionDisplay->setPage(LED_PAGE);
+			break;
+		case 4:
+			nextionDisplay->setPage(CONF_PAGE);
+		}
+		break;
+	}
 }
 
 void loop()
@@ -85,4 +119,14 @@ void loop()
 	TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
 	TIMERG0.wdt_feed = 1;
 	TIMERG0.wdt_wprotect = 0;
+	int pageId = -1;
+	int compId = -1;
+	nextionDisplay->getComponentClicked(pageId, compId);
+	if (pageId != -1 && compId != -1)
+	{
+		Serial.print(pageId);
+		Serial.print(" | ");
+		Serial.println(compId);
+		HandleDisplayCompClicked(pageId, compId);
+	}
 }

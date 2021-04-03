@@ -19,3 +19,6 @@ const int dhtSenseInterval = 2000;
 const int led2NumberOfLeds = 60;
 const int led2CurrentLimit = 1500;
 const int led2Brightness = 80;
+
+const int serial1BaudRate = 115200;
+const int serial2BaudRate = 115200;
