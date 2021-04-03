@@ -13,3 +13,4 @@ PCB/*.sts
 PCB/*.crc
 PCB/*.crs
 PCB/~*.xlsx
+.idea
