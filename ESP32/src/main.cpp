@@ -22,6 +22,8 @@
 #include "Relay.h"
 #include "FasterLed.h"
 #include "Fan.h"
+#include "soc/timer_group_struct.h"
+#include "soc/timer_group_reg.h"
 
 const String esp32Version = "2.0.0";
 const String displayVersion = "1.3.1";
@@ -45,16 +47,12 @@ void IRAM_ATTR fan2TachoInterrupt()
 void setup()
 {
 	Serial.begin(115200);
-	while (!Serial)
-	{
-	}
+	while (!Serial){}
 	Serial.println("3D-Print-Enclosure-Controler booting v" + esp32Version);
 	Serial2.begin(115200, SERIAL_8N1, 16, 17);
-	while (!Serial2)
-	{
-	}
+	while (!Serial2){}
 	delay(300);
-	
+
 	//Temp & Humidity sensor setup
 	sensor1 = new Sensor("sensor1", dht22_1_pin, dhtSenseInterval);
 	sensor2 = new Sensor("sensor2", dht22_2_pin, dhtSenseInterval);
@@ -72,17 +70,19 @@ void setup()
 	pinMode(buzzer_pin, OUTPUT);
 
 	//Fan
-	fan1 = new Fan(0, fan1_tacho_pin, fan1_pwm_pin);
-	fan2 = new Fan(1, fan2_tacho_pin, fan2_pwm_pin);
+	fan1 = new Fan("fan1", 0, fan1_tacho_pin, fan1_pwm_pin);
+	fan2 = new Fan("fan2", 1, fan2_tacho_pin, fan2_pwm_pin);
 	attachInterrupt(digitalPinToInterrupt(fan1_tacho_pin), fan1TachoInterrupt, FALLING);
 	attachInterrupt(digitalPinToInterrupt(fan2_tacho_pin), fan2TachoInterrupt, FALLING);
+	
+	Serial.println("3D-Print-Enclosure-Controler booted");
 }
 
 void loop()
 {
-	/*
-	Serial.print(sensor1->temperature);
-	Serial.print(" | ");
-	Serial.println(sensor2->temperature);
-	*/
+	//Prevents the esp32 from crashing (watchdog not getting feed)
+	//This is required as code is split into tasks and no code is run inside the loop
+	TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
+	TIMERG0.wdt_feed = 1;
+	TIMERG0.wdt_wprotect = 0;
 }

@@ -16,7 +16,7 @@ Sensor::Sensor(char *_name, int pin, int _senseInterval)
 	xTaskCreate(&Sensor::taskHandler, name, 1000, this, 1, NULL);
 }
 
-//A wrapper staticc function to allow creation of tasks inside the class
+//A wrapper static function to allow creation of tasks inside the class
 void Sensor::taskHandler(void *parameter)
 {
 	Sensor *sensor = reinterpret_cast<Sensor *>(parameter);
