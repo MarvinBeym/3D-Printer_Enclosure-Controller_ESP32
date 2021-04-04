@@ -11,6 +11,7 @@ class Fan
 {
 	public:
 		Fan(char *_name, int _channel, int tachoPin, int pwmPin);
+		void begin();
 		void incrementHalfRevolution();
 		void setDutyCycle(int _dutyCycle);
 		void setSpeed(int _speed);

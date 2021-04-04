@@ -16,8 +16,14 @@ const int NEXTION_READY = 0x88;
 
 NextionDisplay::NextionDisplay(HardwareSerial &hwSerial, int baudRate)
 {
-	pageId = MAIN_PAGE;
+	pageId = BOOT_PAGE;
 	//hwSerial->begin(baudRate);
+}
+
+void NextionDisplay::begin(int bootDelay) {
+	setPage(BOOT_PAGE);
+	delay(bootDelay);
+	setPage(MAIN_PAGE);
 }
 
 void NextionDisplay::setPage(int _pageId)
@@ -37,6 +43,12 @@ void NextionDisplay::sendCommand(const char *cmdToSend)
 	Serial2.write(0xff);
 	Serial2.write(0xff);
 	Serial2.write(0xff);
+}
+
+void NextionDisplay::setCompText(String compName, String text)
+{
+	String newText = compName + ".txt=\"" + text + "\"";
+	sendCommand(newText.c_str());
 }
 
 void NextionDisplay::getComponentClicked(int &pageId, int &compId)

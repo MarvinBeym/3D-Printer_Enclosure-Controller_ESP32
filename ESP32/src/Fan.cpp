@@ -15,6 +15,9 @@ Fan::Fan(char *_name, int _channel, int tachoPin, int pwmPin)
 	speed = 0;
 	ledcSetup(channel, 25000, 8);
 	ledcAttachPin(pwmPin, channel);
+}
+
+void Fan::begin() {
 	setDutyCycle(0);
 	delay(20);
 	xTaskCreate(&Fan::taskHandler, name, 1000, this, 1, nullptr);

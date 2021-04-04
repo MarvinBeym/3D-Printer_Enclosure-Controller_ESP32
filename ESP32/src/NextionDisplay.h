@@ -21,10 +21,12 @@ class NextionDisplay
 {
 	public:
 		NextionDisplay(HardwareSerial &hwSerial, int baudRate);
+		void begin(int bootDelay);
 		String readCommand();
 		void getComponentClicked(int &pageId, int &compId);
 		void setPage(int _pageId);
 		void sendCommand(const char *cmdToSend);
+		void setCompText(String compName, String text);
 		int pageId;
 	private:
 

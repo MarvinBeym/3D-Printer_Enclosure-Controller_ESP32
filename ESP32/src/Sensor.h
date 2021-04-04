@@ -13,6 +13,7 @@ class Sensor
 {
 	public:
 		Sensor(char *_name, int pin, int _senseInterval);
+		void begin();
 		float temperature;
 		float humidity;
 		char *name;

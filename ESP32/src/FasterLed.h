@@ -11,13 +11,15 @@
 class FasterLed
 {
 	public:
-		FasterLed(int pin, int _numberOfLeds, int _brightness, int _currentLimit);
+		FasterLed(int _pin, int _numberOfLeds, int _brightness, int _currentLimit);
+		void begin();
 		int numberOfLeds;
 		int brightness;
 		int currentLimit;
 		CRGB *leds;
 		void clear();
 	private:
+		int pin;
 };
 
 #endif

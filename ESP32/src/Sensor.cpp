@@ -10,10 +10,12 @@ Sensor::Sensor(char *_name, int pin, int _senseInterval)
 	temperature = 0;
 	humidity = 0;
 	dht = new DHT(pin, DHT22);
-	dht->begin();
-	delay(200); //Required to wait a bit. This prevents the first Sensor object from being able to read the dht22
+}
 
-	xTaskCreate(&Sensor::taskHandler, name, 1000, this, 1, NULL);
+void Sensor::begin() {
+	dht->begin();
+	delay(100); //Required to wait a bit. This prevents the first Sensor object from being able to read the dht22
+	xTaskCreate(&Sensor::taskHandler, name, 1000, this, 3, nullptr);
 }
 
 //A wrapper static function to allow creation of tasks inside the class
@@ -29,6 +31,12 @@ void Sensor::taskRunner()
 	for (;;) {
 		float tmpHumidity = dht->readHumidity();
 		float tmpTemperature = dht->readTemperature();
+
+		Serial.print(name);
+		Serial.print(": ");
+		Serial.print(tmpTemperature);
+		Serial.print(" | ");
+		Serial.println(tmpHumidity);
 
 		if (!isnan(tmpTemperature)) {
 			temperature = tmpTemperature;
