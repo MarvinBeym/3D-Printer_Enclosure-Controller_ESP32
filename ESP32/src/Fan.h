@@ -16,8 +16,8 @@ class Fan
 		void setDutyCycle(int _dutyCycle);
 		void setSpeed(int _speed);
 		char *name;
-		unsigned int rpm;
-		unsigned int speed;
+		int rpm;
+		int speed;
 		unsigned int dutyCycle;
 	private:
 		static void taskHandler(void *parameter);

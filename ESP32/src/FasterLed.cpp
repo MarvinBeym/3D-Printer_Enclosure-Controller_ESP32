@@ -14,7 +14,8 @@ FasterLed::FasterLed(int _pin, int _numberOfLeds, int _brightness, int _currentL
 	pinMode(pin, OUTPUT);
 }
 
-void FasterLed::begin() {
+void FasterLed::begin()
+{
 	FastLED.setBrightness(brightness);
 	FastLED.setMaxPowerInVoltsAndMilliamps(5, currentLimit);
 	clear();

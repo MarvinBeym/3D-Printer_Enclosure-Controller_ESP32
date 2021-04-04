@@ -20,7 +20,8 @@ NextionDisplay::NextionDisplay(HardwareSerial &hwSerial, int baudRate)
 	//hwSerial->begin(baudRate);
 }
 
-void NextionDisplay::begin(int bootDelay) {
+void NextionDisplay::begin(int bootDelay)
+{
 	setPage(BOOT_PAGE);
 	delay(bootDelay);
 	setPage(MAIN_PAGE);
@@ -45,10 +46,44 @@ void NextionDisplay::sendCommand(const char *cmdToSend)
 	Serial2.write(0xff);
 }
 
-void NextionDisplay::setCompText(String compName, String text)
+NextionDisplay *NextionDisplay::setCompValue(String compName, int value)
+{
+	String newValue = compName + ".val=" + value;
+	sendCommand(newValue.c_str());
+	return this;
+}
+
+NextionDisplay *NextionDisplay::setCompText(String compName, String text)
 {
 	String newText = compName + ".txt=\"" + text + "\"";
 	sendCommand(newText.c_str());
+	return this;
+}
+
+NextionDisplay *NextionDisplay::addGraphValue(int waveFormId, int channel, int value)
+{
+	String graphCommand = "add ";
+	graphCommand.concat(waveFormId);
+	graphCommand.concat(",");
+	graphCommand.concat(channel);
+	graphCommand.concat(",");
+
+	//Making sure value is limited to the supported values of the nextion displays.
+	if (value >= 255) {
+		value = 255;
+	} else if (value <= 0) {
+		value = 0;
+	}
+
+	graphCommand.concat(value);
+
+	sendCommand(string2char(graphCommand));
+}
+
+char *NextionDisplay::string2char(const String &command)
+{
+	char *p = const_cast<char *>(command.c_str());
+	return p;
 }
 
 void NextionDisplay::getComponentClicked(int &pageId, int &compId)
@@ -64,7 +99,8 @@ void NextionDisplay::getComponentClicked(int &pageId, int &compId)
 	}
 
 	switch (cmd[0]) {
-		case TOUCH_EVENT: pageId = cmd[1];
+		case TOUCH_EVENT:
+			pageId = cmd[1];
 			compId = cmd[2];
 			break;
 	}

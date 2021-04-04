@@ -28,6 +28,8 @@
 #include "Fan.h"
 #include "NextionDisplay.h"
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunknown-pragmas"
 const String esp32Version = "2.0.0";
 Sensor *sensor1;
 Sensor *sensor2;
@@ -35,7 +37,7 @@ Relay *led1;
 FasterLed *led2;
 Fan *fan1;
 Fan *fan2;
-NextionDisplay *nextionDisplay;
+NextionDisplay *nextion;
 
 void HandleDisplayPage(void *parameter);
 
@@ -47,6 +49,31 @@ void IRAM_ATTR fan1TachoInterrupt()
 void IRAM_ATTR fan2TachoInterrupt()
 {
 	fan2->incrementHalfRevolution();
+}
+
+String valueToPercentString(int value)
+{
+	return String(value) + "%";
+}
+
+String valueToPercentString(float value)
+{
+	return String(value) + "%";
+}
+
+String valueToRpmString(int value)
+{
+	return String(value) + "rpm";
+}
+
+String valueToTempString(int value)
+{
+	return String(value) + (char) 176 + "C";
+}
+
+String valueToTempString(float value)
+{
+	return String(value) + (char) 176 + "C";
 }
 
 void setup()
@@ -89,8 +116,8 @@ void setup()
 	fan2->begin();
 
 	//Display
-	nextionDisplay = new NextionDisplay(Serial2, serial2BaudRate);
-	nextionDisplay->begin(displayBootDelay);
+	nextion = new NextionDisplay(Serial2, serial2BaudRate);
+	nextion->begin(displayBootDelay);
 
 	xTaskCreate(HandleDisplayPage, "handleDisplayPage", 5000, nullptr, 2, nullptr);
 
@@ -105,99 +132,126 @@ void HandleDisplayPageChanging(int pageId, int compId)
 		case MAIN_PAGE:
 			switch (compId) {
 				case 1:
-					nextionDisplay->setPage(FANS_PAGE);
+					nextion->setPage(FANS_PAGE);
 					break;
 				case 2:
-					nextionDisplay->setPage(SENSOR_PAGE);
+					nextion->setPage(SENSOR_PAGE);
 					break;
 				case 3:
-					nextionDisplay->setPage(LED_PAGE);
+					nextion->setPage(LED_PAGE);
 					break;
 				case 4:
-					nextionDisplay->setPage(CONF_PAGE);
+					nextion->setPage(CONF_PAGE);
 			}
 			break;
 		case FANS_PAGE:
 			switch (compId) {
 				case 6:
-					nextionDisplay->setPage(MAIN_PAGE);
+					nextion->setPage(MAIN_PAGE);
 					break;
 			}
 			break;
 		case SENSOR_PAGE:
 			switch (compId) {
 				case 2:
-					nextionDisplay->setPage(MAIN_PAGE);
+					nextion->setPage(MAIN_PAGE);
 					break;
 			}
 			break;
 		case LED_PAGE:
 			switch (compId) {
 				case 14:
-					nextionDisplay->setPage(MAIN_PAGE);
+					nextion->setPage(MAIN_PAGE);
 					break;
 			}
 			break;
 		case CONF_PAGE:
 			switch (compId) {
 				case 1:
-					nextionDisplay->setPage(MAIN_PAGE);
+					nextion->setPage(MAIN_PAGE);
 					break;
 				case 2:
-					nextionDisplay->setPage(ABOUT_PAGE);
+					nextion->setPage(ABOUT_PAGE);
 					break;
 			}
 			break;
 		case ABOUT_PAGE:
 			switch (compId) {
 				case 6:
-					nextionDisplay->setPage(CONF_PAGE);
+					nextion->setPage(CONF_PAGE);
 					break;
 			}
 			break;
 	}
 }
 
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "Simplify"
+#pragma ide diagnostic ignored "UnreachableCode"
+
 void HandleDisplayPage(void *parameter)
 {
 	for (;;) {
-		switch (nextionDisplay->pageId) {
+		if (alwaysUpdateDisplayGraph) {
+			nextion
+					->addGraphValue(1, 0,
+									map((int) sensor1->temperature, displayGraphMinTemp, 255, 0, displayGraphHeight))
+					->addGraphValue(1, 1,
+									map((int) sensor2->temperature, displayGraphMinTemp, 255, 0, displayGraphHeight));
+		}
+
+		switch (nextion->pageId) {
 			case MAIN_PAGE:
-				nextionDisplay->setCompText("main_page.tf_speed_fan1", String(fan1->rpm) + "rpm");
-				nextionDisplay->setCompText("main_page.tf_pwm_fan1", String(fan1->speed) + "%");
-
-				nextionDisplay->setCompText("main_page.tf_speed_fan2", String(fan2->rpm) + "rpm");
-				nextionDisplay->setCompText("main_page.tf_pwm_fan2", String(fan2->speed) + "%");
-
-				nextionDisplay->setCompText("main_page.tf_temp_sens1", String(sensor1->temperature) + (char) 176 + "C");
-				nextionDisplay->setCompText("main_page.tf_hum_sens1", String(sensor1->humidity) + "%");
-
-				nextionDisplay->setCompText("main_page.tf_temp_sens2", String(sensor2->temperature) + (char) 176 + "C");
-				nextionDisplay->setCompText("main_page.tf_hum_sens2", String(sensor2->humidity) + "%");
+				nextion
+						->setCompText("main_page.tf_speed_fan1", valueToRpmString(fan1->rpm))
+						->setCompText("main_page.tf_pwm_fan1", valueToPercentString(fan1->speed))
+						->setCompText("main_page.tf_speed_fan2", valueToRpmString(fan2->rpm))
+						->setCompText("main_page.tf_pwm_fan2", valueToPercentString(fan2->speed))
+						->setCompText("main_page.tf_temp_sens1", valueToTempString(sensor1->temperature))
+						->setCompText("main_page.tf_hum_sens1", valueToPercentString(sensor1->humidity))
+						->setCompText("main_page.tf_temp_sens2", valueToTempString(sensor2->temperature))
+						->setCompText("main_page.tf_hum_sens2", valueToPercentString(sensor2->humidity));
 				break;
 			case FANS_PAGE:
-
+				nextion
+						->setCompText("fans_page.tf_speed_fan1", valueToRpmString(fan1->rpm))
+						->setCompText("fans_page.tf_pwm_fan1", valueToPercentString(fan1->speed))
+						->setCompText("fans_page.tf_speed_fan2", valueToRpmString(fan2->rpm))
+						->setCompText("fans_page.tf_pwm_fan2", valueToPercentString(fan2->speed));
 				break;
 			case SENSOR_PAGE:
-
+				nextion
+						->setCompText("sensor_page.tf_temp_sens1", valueToTempString(sensor1->temperature))
+						->setCompText("sensor_page.tf_hum_sens1", valueToPercentString(sensor1->humidity))
+						->setCompText("sensor_page.tf_temp_sens2", valueToTempString(sensor2->temperature))
+						->setCompText("sensor_page.tf_hum_sens2", valueToPercentString(sensor2->humidity));
+				if (!alwaysUpdateDisplayGraph) {
+					nextion
+							->addGraphValue(1, 0, map((int) sensor1->temperature, displayGraphMinTemp, 255, 0,
+													  displayGraphHeight))
+							->addGraphValue(1, 1, map((int) sensor2->temperature, displayGraphMinTemp, 255, 0,
+													  displayGraphHeight));
+				}
 				break;
 			case LED_PAGE:
-
-				break;
 			case CONF_PAGE:
-
 				break;
 			case ABOUT_PAGE:
 				String version = "ESP32: v";
 				version.concat(esp32Version);
-				nextionDisplay->setCompText("about_page.tf_esp32_v", version);
+				nextion->setCompText("about_page.tf_esp32_v", version);
 				break;
 		}
 
-		Serial.println(uxTaskGetStackHighWaterMark(nullptr));
+		/*
+			->setCompValue("fans_page.sli_speed_fan1", fan1->speed)
+			->setCompValue("fans_page.sli_speed_fan2", fan2->speed)
+		*/
 		vTaskDelay(pdMS_TO_TICKS(displayPageRefreshInterval));
 	}
 }
+
+#pragma clang diagnostic pop
 
 void loop()
 {
@@ -209,7 +263,7 @@ void loop()
 
 	int pageId = -1;
 	int compId = -1;
-	nextionDisplay->getComponentClicked(pageId, compId);
+	nextion->getComponentClicked(pageId, compId);
 	if (pageId != -1 && compId != -1) {
 		Serial.print(pageId);
 		Serial.print(" | ");
@@ -217,3 +271,5 @@ void loop()
 		HandleDisplayPageChanging(pageId, compId);
 	}
 }
+
+#pragma clang diagnostic pop

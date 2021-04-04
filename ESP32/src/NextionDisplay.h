@@ -26,7 +26,10 @@ class NextionDisplay
 		void getComponentClicked(int &pageId, int &compId);
 		void setPage(int _pageId);
 		void sendCommand(const char *cmdToSend);
-		void setCompText(String compName, String text);
+		NextionDisplay *setCompValue(String compName, int value);
+		NextionDisplay *addGraphValue(int waveFormId, int channel, int value);
+		char *string2char(const String &command);
+		NextionDisplay *setCompText(String compName, String text);
 		int pageId;
 	private:
 
