@@ -46,16 +46,34 @@ void NextionDisplay::sendCommand(const char *cmdToSend)
 	Serial2.write(0xff);
 }
 
-NextionDisplay *NextionDisplay::setCompValue(String compName, int value)
+NextionDisplay *NextionDisplay::setCompValue(String compVarString, int value)
 {
-	String newValue = compName + ".val=" + value;
+	String newValue = compVarString + ".val=" + value;
 	sendCommand(newValue.c_str());
 	return this;
 }
 
-NextionDisplay *NextionDisplay::setCompText(String compName, String text)
+int NextionDisplay::getCompValue(String compVarString)
 {
-	String newText = compName + ".txt=\"" + text + "\"";
+	int value = 0;
+	String cmd = "get " + compVarString + ".val";
+	sendCommand(cmd.c_str());
+	Serial2.setTimeout(100);
+	uint8_t receivedBytes[8] = {0};
+	if(sizeof(receivedBytes) != Serial2.readBytes((char *)receivedBytes, sizeof(receivedBytes))){
+		return -1;
+	}
+
+	//Check if value is the value requested
+	if(receivedBytes[0] == 0x71 && receivedBytes[5] == 0xff && receivedBytes[6] == 0xff && receivedBytes[7] == 0xff){
+		value = (receivedBytes[4] << 24) | (receivedBytes[3] << 16) | (receivedBytes[2] << 8) | (receivedBytes[1]);//Little-endian convertion
+	}
+	return value;
+}
+
+NextionDisplay *NextionDisplay::setCompText(String compVarString, String text)
+{
+	String newText = compVarString + ".txt=\"" + text + "\"";
 	sendCommand(newText.c_str());
 	return this;
 }
@@ -78,6 +96,7 @@ NextionDisplay *NextionDisplay::addGraphValue(int waveFormId, int channel, int v
 	graphCommand.concat(value);
 
 	sendCommand(string2char(graphCommand));
+	return this;
 }
 
 char *NextionDisplay::string2char(const String &command)

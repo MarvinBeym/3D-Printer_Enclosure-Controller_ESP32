@@ -126,7 +126,7 @@ void setup()
 	Serial.println("3D-Print-Enclosure-Controller booted");
 }
 
-void HandleDisplayPageChanging(int pageId, int compId)
+void HandleDisplayInteraction(int pageId, int compId)
 {
 	switch (pageId) {
 		case MAIN_PAGE:
@@ -146,6 +146,17 @@ void HandleDisplayPageChanging(int pageId, int compId)
 			break;
 		case FANS_PAGE:
 			switch (compId) {
+				case 3:
+					delay(20);
+					fan2->setSpeed(nextion->getCompValue("fans_page.sli_speed_fan2"));
+					delay(20);
+
+					break;
+				case 4:
+					delay(20);
+					fan1->setSpeed(nextion->getCompValue("fans_page.sli_speed_fan1"));
+					delay(20);
+					break;
 				case 6:
 					nextion->setPage(MAIN_PAGE);
 					break;
@@ -242,11 +253,6 @@ void HandleDisplayPage(void *parameter)
 				nextion->setCompText("about_page.tf_esp32_v", version);
 				break;
 		}
-
-		/*
-			->setCompValue("fans_page.sli_speed_fan1", fan1->speed)
-			->setCompValue("fans_page.sli_speed_fan2", fan2->speed)
-		*/
 		vTaskDelay(pdMS_TO_TICKS(displayPageRefreshInterval));
 	}
 }
@@ -268,7 +274,7 @@ void loop()
 		Serial.print(pageId);
 		Serial.print(" | ");
 		Serial.println(compId);
-		HandleDisplayPageChanging(pageId, compId);
+		HandleDisplayInteraction(pageId, compId);
 	}
 }
 
