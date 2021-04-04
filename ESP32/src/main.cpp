@@ -15,6 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **/
+#include <ESP8266React.h>
 #include <Arduino.h>
 #include <soc/timer_group_struct.h>
 #include <soc/timer_group_reg.h>
@@ -30,7 +31,11 @@
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunknown-pragmas"
+
 const String esp32Version = "2.0.0";
+
+AsyncWebServer server(80);
+ESP8266React esp8266React(&server);
 Sensor *sensor1;
 Sensor *sensor2;
 Relay *led1;
@@ -123,6 +128,9 @@ void setup()
 
 	fan1->setSpeed(50);
 	fan2->setSpeed(80);
+
+	esp8266React.begin();
+	server.begin();
 	Serial.println("3D-Print-Enclosure-Controller booted");
 }
 
@@ -276,6 +284,7 @@ void loop()
 		Serial.println(compId);
 		HandleDisplayInteraction(pageId, compId);
 	}
+	esp8266React.loop();
 }
 
 #pragma clang diagnostic pop
