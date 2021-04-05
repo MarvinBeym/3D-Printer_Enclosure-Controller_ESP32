@@ -1,12 +1,17 @@
 import React from "react";
 import {CartesianGrid, Legend, Line, LineChart, Tooltip, XAxis, YAxis} from "recharts";
 import moment from 'moment'
-import {Paper} from "@material-ui/core";
+import {Paper, Typography} from "@material-ui/core";
 import {makeStyles} from "@material-ui/core/styles";
 
 const useStyles = makeStyles((theme) => ({
 	tooltip: {
 		padding: "0.5rem 1rem",
+	},
+	quickLineChart: {
+		display: "flex",
+		flexDirection: "column",
+		alignItems: "center",
 	}
 }));
 
@@ -42,36 +47,38 @@ const CustomTooltip = ({active, payload, label, yAxisValueSuffix}) => {
 	return null;
 };
 
-const QuickLineChart = ({data, yAxisLabel, xAxisLabel, dataKey, yAxisValueSuffix = ""}) => {
-
+const QuickLineChart = ({title, data, yAxisLabel, xAxisLabel, dataKey, yAxisValueSuffix = ""}) => {
+	const styles = useStyles();
 	return (
-		<LineChart
-			margin={{bottom: 20, left: 20}}
-			width={400}
-			height={400}
-			data={data}>
-			<YAxis
-				domain={[(dataMin) => (Math.floor(dataMin) - 20), (dataMax) => (Math.ceil(dataMax) + 20)]}
-				label={{value: yAxisLabel, position: "inside", dx: -15, fontSize: 20, angle: -90}}/>
-			<XAxis
-				tick={<CustomizedAxisTick/>}
-				domain={[0, "auto"]}
-				dataKey="time"
-				label={{
-					value: xAxisLabel,
-					position: "insideBottomRight",
-					dy: 15,
-					fontSize: 20
-				}}
-				interval={60}
-				tickFormatter={(unixTime) => moment(unixTime).format('HH:mm')}
-				scale="time"
-			/>
-			<Legend/>
-			<Tooltip content={<CustomTooltip yAxisValueSuffix={yAxisValueSuffix}/>}/>
-			<CartesianGrid strokeDasharray="3 3" stroke="#5c5c5c"/>
-			<Line type="monotone" dataKey={dataKey} stroke="#ff6300"/>
-		</LineChart>
+		<div className={styles.quickLineChart}>
+			<Typography variant="h6">{title}</Typography>
+			<LineChart
+				margin={{bottom: 25, left: 20}}
+				width={400}
+				height={400}
+				data={data}>
+				<YAxis
+					domain={[(dataMin) => (Math.floor(dataMin) - 20), (dataMax) => (Math.ceil(dataMax) + 20)]}
+					label={{value: yAxisLabel, position: "inside", dx: -15, fontSize: 20, angle: -90}}/>
+				<XAxis
+					tick={<CustomizedAxisTick/>}
+					domain={[0, "auto"]}
+					dataKey="time"
+					label={{
+						value: xAxisLabel,
+						position: "insideBottomRight",
+						dy: 15,
+						fontSize: 20
+					}}
+					interval={60}
+					tickFormatter={(unixTime) => moment(unixTime).format('HH:mm')}
+					scale="time"
+				/>
+				<Tooltip content={<CustomTooltip yAxisValueSuffix={yAxisValueSuffix}/>}/>
+				<CartesianGrid strokeDasharray="3 3" stroke="#5c5c5c"/>
+				<Line type="monotone" dataKey={dataKey} stroke="#ff6300"/>
+			</LineChart>
+		</div>
 	)
 }
 

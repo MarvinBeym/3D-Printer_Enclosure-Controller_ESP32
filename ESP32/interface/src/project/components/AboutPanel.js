@@ -1,6 +1,5 @@
-import React, {Component} from 'react';
-import {SectionContent} from "../../components";
-import {Divider, Grid, List, ListItem, ListItemText, Paper, Typography} from "@material-ui/core";
+import React from 'react';
+import {Divider, Grid} from "@material-ui/core";
 import {makeStyles} from "@material-ui/core/styles";
 import GridPaper from "./GridPaper";
 import PaperSection from "./PaperSection";
@@ -33,12 +32,12 @@ const AboutPanel = () => {
                 <GridPaper className={styles.paper} title="Creator">{process.env.REACT_APP_MAKER}</GridPaper>
                 <GridPaper className={styles.paper} title="Github">
                     <span>Repository: {process.env.REACT_APP_GITHUB_URL}</span>
-                    <Divider className={styles.divider} variant="fullWidth" />
+                    <Divider className={styles.divider} variant="fullWidth"/>
                     <span>Licence: {process.env.REACT_APP_PROJECT_LICENCE}</span>
                 </GridPaper>
                 <GridPaper className={styles.paper} title="Software versions">
                     <span>ESP32: {process.env.REACT_APP_SOFTWARE_VERSION_ESP32}</span>
-                    <Divider className={styles.divider} variant="fullWidth" />
+                    <Divider className={styles.divider} variant="fullWidth"/>
                     <span>Display: {process.env.REACT_APP_SOFTWARE_VERSION_DISPLAY}</span>
                 </GridPaper>
             </Grid>

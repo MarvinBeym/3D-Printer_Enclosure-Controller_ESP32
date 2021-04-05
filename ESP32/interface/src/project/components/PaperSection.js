@@ -1,4 +1,5 @@
 import React from "react";
+import clsx from 'clsx';
 import {Paper, Typography} from "@material-ui/core";
 import {makeStyles} from "@material-ui/core/styles";
 
@@ -9,13 +10,15 @@ const useStyles = makeStyles((theme) => ({
 	}
 }));
 
-const PaperSection = ({title, elevation = 3, children}) => {
+const PaperSection = ({paperClassName, className, title, elevation = 5, children}) => {
 	const styles = useStyles();
 
 	return (
-		<Paper elevation={elevation} className={styles.paper}>
+		<Paper elevation={elevation} className={clsx(styles.paper, paperClassName)}>
 			<Typography variant="h6">{title}</Typography>
-			{children}
+			<div className={className}>
+				{children}
+			</div>
 		</Paper>
 	)
 }
