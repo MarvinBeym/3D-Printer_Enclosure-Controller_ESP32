@@ -15,6 +15,7 @@
     "@types/react-router-dom": "^5.1.6",
     "clsx": "^1.1.1",
     "compression-webpack-plugin": "^4.0.0",
+    "framer-motion": "^4.1.2",
     "jwt-decode": "^3.1.2",
     "lodash": "^4.17.20",
     "mime-types": "^2.1.28",
