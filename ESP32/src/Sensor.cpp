@@ -1,6 +1,3 @@
-#include <Arduino.h>
-#include <Adafruit_Sensor.h>
-#include <DHT.h>
 #include "Sensor.h"
 
 Sensor::Sensor(char *_name, int pin, int _senseInterval)
@@ -24,6 +21,12 @@ void Sensor::taskHandler(void *parameter)
 {
 	Sensor *sensor = reinterpret_cast<Sensor *>(parameter);
 	sensor->taskRunner();
+}
+
+void Sensor::addToJson(DynamicJsonDocument *doc) const {
+	JsonObject json = doc->createNestedObject(name);
+	json["humidity"] = humidity;
+	json["temperature"] = temperature;
 }
 
 //Runs the actual task code.

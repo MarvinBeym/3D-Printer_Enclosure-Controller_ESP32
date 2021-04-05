@@ -8,12 +8,13 @@
 #include <Arduino.h>
 #include <Adafruit_Sensor.h>
 #include <DHT.h>
-
+#include <ArduinoJson.h>
 class Sensor
 {
 	public:
 		Sensor(char *_name, int pin, int _senseInterval);
 		void begin();
+		void addToJson(DynamicJsonDocument *doc) const;
 		float temperature;
 		float humidity;
 		char *name;
