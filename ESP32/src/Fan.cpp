@@ -1,4 +1,3 @@
-#include <Arduino.h>
 #include "Fan.h"
 
 Fan::Fan(char *_name, int _channel, int tachoPin, int pwmPin)
@@ -12,7 +11,7 @@ Fan::Fan(char *_name, int _channel, int tachoPin, int pwmPin)
 	timeOld = 0;
 	rpm = 0;
 	dutyCycle = 0;
-	speed = 0;
+	percent = 0;
 	ledcSetup(channel, 25000, 8);
 	ledcAttachPin(pwmPin, channel);
 }
@@ -48,6 +47,14 @@ void Fan::taskRunner()
 	}
 }
 
+void Fan::addToJson(DynamicJsonDocument *doc) const
+{
+	JsonObject json = doc->createNestedObject(name);
+	json["percent"] = percent;
+	json["rpm"] = rpm;
+	json["dutyCycle"] = dutyCycle;
+}
+
 void Fan::incrementHalfRevolution()
 {
 	halfRevolution++;
@@ -59,8 +66,8 @@ void Fan::setDutyCycle(int _dutyCycle)
 	ledcWrite(channel, _dutyCycle);
 }
 
-void Fan::setSpeed(int _speed)
+void Fan::setPercent(int _percent)
 {
-	speed = _speed;
-	setDutyCycle(map(_speed, 0, 100, 0, 255));
+	percent = _percent;
+	setDutyCycle(map(_percent, 0, 100, 0, 255));
 }

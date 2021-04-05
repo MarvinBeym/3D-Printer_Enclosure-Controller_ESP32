@@ -1,12 +1,11 @@
-import React, {Component} from 'react';
+import React from 'react';
+import IntervalFetchWrapper from "../components/IntervalFetchWrapper";
 
-class Fans extends Component {
-
-    render() {
-        return (
-            <div>T</div>
-        )
-    }
+const Fans = () => {
+    // @ts-ignore
+    return <IntervalFetchWrapper fetchEndpoint="fans/data" render={(data) => (
+        <div>TTT</div>
+    )}/>
 
 }
 

@@ -1,5 +1,4 @@
 import React, {Component} from 'react';
-import {SectionContent} from "../../components";
 import {Typography} from "@material-ui/core";
 import PaperSection from "./PaperSection";
 

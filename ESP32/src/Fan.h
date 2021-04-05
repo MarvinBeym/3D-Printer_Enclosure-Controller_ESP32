@@ -6,6 +6,7 @@
 #define Fan_h
 
 #include <Arduino.h>
+#include <ArduinoJson.h>
 
 class Fan
 {
@@ -14,10 +15,11 @@ class Fan
 		void begin();
 		void incrementHalfRevolution();
 		void setDutyCycle(int _dutyCycle);
-		void setSpeed(int _speed);
+		void setPercent(int _percent);
+		void addToJson(DynamicJsonDocument *doc) const;
 		char *name;
 		int rpm;
-		int speed;
+		int percent;
 		unsigned int dutyCycle;
 	private:
 		static void taskHandler(void *parameter);

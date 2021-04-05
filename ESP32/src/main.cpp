@@ -19,6 +19,8 @@
 #include <Arduino.h>
 #include <soc/timer_group_struct.h>
 #include <soc/timer_group_reg.h>
+#include <ESPAsyncWebServer.h>
+#include <ArduinoJson.h>
 
 //Own classes
 #include "Sensor.h"
@@ -126,11 +128,31 @@ void setup()
 
 	xTaskCreate(HandleDisplayPage, "handleDisplayPage", 5000, nullptr, 2, nullptr);
 
-	fan1->setSpeed(50);
-	fan2->setSpeed(80);
+	fan1->setPercent(50);
+	fan2->setPercent(80);
 
 	esp8266React.begin();
+
+	server.on("/rest/fans/data", HTTP_GET, [](AsyncWebServerRequest *request){
+		AsyncResponseStream *response = request->beginResponseStream("application/json");
+		DynamicJsonDocument doc(192);
+		fan1->addToJson(&doc);
+		fan2->addToJson(&doc);
+		serializeJson(doc, *response);
+		request->send(response);
+	});
+	server.on("/rest/sensors/data", HTTP_GET, [](AsyncWebServerRequest *request){
+		AsyncResponseStream *response = request->beginResponseStream("application/json");
+		DynamicJsonDocument doc(1024);
+		sensor1->addToJson(&doc);
+		sensor2->addToJson(&doc);
+		serializeJson(doc, *response);
+		request->send(response);
+	});
+
 	server.begin();
+
+
 	Serial.println("3D-Print-Enclosure-Controller booted");
 }
 
@@ -156,13 +178,13 @@ void HandleDisplayInteraction(int pageId, int compId)
 			switch (compId) {
 				case 3:
 					delay(20);
-					fan2->setSpeed(nextion->getCompValue("fans_page.sli_speed_fan2"));
+					fan2->setPercent(nextion->getCompValue("fans_page.sli_speed_fan2"));
 					delay(20);
 
 					break;
 				case 4:
 					delay(20);
-					fan1->setSpeed(nextion->getCompValue("fans_page.sli_speed_fan1"));
+					fan1->setPercent(nextion->getCompValue("fans_page.sli_speed_fan1"));
 					delay(20);
 					break;
 				case 6:
@@ -223,9 +245,9 @@ void HandleDisplayPage(void *parameter)
 			case MAIN_PAGE:
 				nextion
 						->setCompText("main_page.tf_speed_fan1", valueToRpmString(fan1->rpm))
-						->setCompText("main_page.tf_pwm_fan1", valueToPercentString(fan1->speed))
+						->setCompText("main_page.tf_pwm_fan1", valueToPercentString(fan1->percent))
 						->setCompText("main_page.tf_speed_fan2", valueToRpmString(fan2->rpm))
-						->setCompText("main_page.tf_pwm_fan2", valueToPercentString(fan2->speed))
+						->setCompText("main_page.tf_pwm_fan2", valueToPercentString(fan2->percent))
 						->setCompText("main_page.tf_temp_sens1", valueToTempString(sensor1->temperature))
 						->setCompText("main_page.tf_hum_sens1", valueToPercentString(sensor1->humidity))
 						->setCompText("main_page.tf_temp_sens2", valueToTempString(sensor2->temperature))
@@ -234,9 +256,9 @@ void HandleDisplayPage(void *parameter)
 			case FANS_PAGE:
 				nextion
 						->setCompText("fans_page.tf_speed_fan1", valueToRpmString(fan1->rpm))
-						->setCompText("fans_page.tf_pwm_fan1", valueToPercentString(fan1->speed))
+						->setCompText("fans_page.tf_pwm_fan1", valueToPercentString(fan1->percent))
 						->setCompText("fans_page.tf_speed_fan2", valueToRpmString(fan2->rpm))
-						->setCompText("fans_page.tf_pwm_fan2", valueToPercentString(fan2->speed));
+						->setCompText("fans_page.tf_pwm_fan2", valueToPercentString(fan2->percent));
 				break;
 			case SENSOR_PAGE:
 				nextion

@@ -1,13 +1,18 @@
-import React, {Component} from 'react';
+import React, {useState} from 'react';
+import {fetchBackend, useInterval} from "../helper";
 
-class Sensors extends Component {
+// @ts-ignore
+const Sensors = () => {
+    const [sensorsData, setSensorsData] = useState(null);
+    useInterval(() => {
+        fetchBackend("sensors/data").then((response) => {
+            setSensorsData(response);
+        })
+    }, 2000);
 
-    render() {
-        return (
-            <div>T</div>
-        )
-    }
-
+    return (
+        <div>TTTT</div>
+    )
 }
 
 export default Sensors;
