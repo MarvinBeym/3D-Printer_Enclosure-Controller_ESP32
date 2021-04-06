@@ -1,6 +1,7 @@
 import React from "react";
 import {TextField} from "@material-ui/core";
 import {makeStyles} from "@material-ui/core/styles";
+import clsx from "clsx";
 
 const useStyles = makeStyles((theme) => ({
 	valueField: {
@@ -23,10 +24,10 @@ const useStyles = makeStyles((theme) => ({
 	},
 }));
 
-const ValueField = ({label, value, endAdornment}) => {
+const ValueField = ({label, value, className}) => {
 	const styles = useStyles();
 	return (
-		<TextField className={styles.valueField} color="primary" InputProps={{
+		<TextField className={clsx(styles.valueField, className)} color="primary" InputProps={{
 			readOnly: true
 		}} variant="outlined" label={label} value={value}/>
 	)

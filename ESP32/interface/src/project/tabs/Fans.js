@@ -10,16 +10,14 @@ import ValueField from "../components/ValueField";
 const useStyles = makeStyles((theme) => ({
 	fanPaper: {
 		display: "flex",
-
+		alignItems: "center",
 	},
 	fanInfo: {
 		display: "flex",
 		flexDirection: "column",
-		padding: "2rem 0",
+		height: "60%",
 		marginRight: "2rem",
 		marginLeft: "2rem",
-		minWidth: "12rem",
-		minHeight: "12rem",
 		justifyContent: "space-between",
 	},
 	fans: {
@@ -32,12 +30,16 @@ const useStyles = makeStyles((theme) => ({
 	},
 	fanImageWrapper: {
 
-		width: "12rem",
-		height: "12rem",
+		width: "8rem",
+		height: "8rem",
 	},
 	fanImage: {
 		width: "100%",
 		height: "100%",
+	},
+	valueFieldsContainer: {
+		display: "flex",
+		paddingTop: "1rem",
 	}
 }));
 
@@ -73,7 +75,7 @@ const Fans = () => {
 							<div className={styles.fanInfo}>
 								<Slider min={0} max={100} step={1} marks={sliderMarks} valueLabelDisplay="auto"
 										defaultValue={fan[1].percent}/>
-								<div style={{display: "flex", justifyContent: "space-evenly"}}>
+								<div className={styles.valueFieldsContainer}>
 									<ValueField label="Rpm" value={fan[1].rpm}/>
 									<ValueField label="Duty cycle" valueSuffix="%" value={fan[1].dutyCycle}/>
 								</div>
