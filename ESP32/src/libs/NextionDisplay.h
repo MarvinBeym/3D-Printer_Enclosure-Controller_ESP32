@@ -20,7 +20,7 @@
 class NextionDisplay
 {
 	public:
-		NextionDisplay(HardwareSerial &hwSerial, int baudRate);
+		NextionDisplay(int baudRate, int rxPin, int txPin);
 		void begin(int bootDelay);
 		String readCommand();
 		void getComponentClicked(int &pageId, int &compId);

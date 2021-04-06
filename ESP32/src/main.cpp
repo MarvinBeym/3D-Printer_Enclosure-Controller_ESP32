@@ -68,11 +68,7 @@ void setup()
 	Serial.begin(serial1BaudRate);
 	while (!Serial) {}
 	Serial.println("3D-Print-Enclosure-Controller booting v" + esp32Version);
-#ifdef NEXTION_DISPLAY_ENABLED
-	Serial2.begin(serial2BaudRate, SERIAL_8N1, nextionDisplayRX, nextionDisplayTX);
-	while (!Serial2) {}
-#endif
-	delay(300);
+	delay(100);
 
 	//Temp & Humidity sensor setup
 	sensor1 = new Sensor("sensor1", dht22_1_pin, dhtSenseInterval);
@@ -101,7 +97,7 @@ void setup()
 
 #ifdef NEXTION_DISPLAY_ENABLED
 	//Display
-	nextion = new NextionDisplay(Serial2, serial2BaudRate);
+	nextion = new NextionDisplay(serial2BaudRate, nextionDisplayRX, nextionDisplayTX);
 	nextion->begin(displayBootDelay);
 
 	xTaskCreate(HandleDisplayPage, "handleDisplayPage", 5000, nullptr, 2, nullptr);
@@ -184,7 +180,7 @@ void setup()
 
 	Serial.println("3D-Print-Enclosure-Controller booted");
 }
-#ifdef WEBINTERFACE_ENABLED
+#ifdef NEXTION_DISPLAY_ENABLED
 void HandleDisplayInteraction(int pageId, int compId)
 {
 	switch (pageId) {
@@ -320,9 +316,9 @@ void loop()
 	TIMERG0.wdt_feed = 1;
 	TIMERG0.wdt_wprotect = 0;
 
+#ifdef NEXTION_DISPLAY_ENABLED
 	int pageId = -1;
 	int compId = -1;
-#ifdef WEBINTERFACE_ENABLED
 	nextion->getComponentClicked(pageId, compId);
 	if (pageId != -1 && compId != -1) {
 		Serial.print(pageId);

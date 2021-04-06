@@ -14,10 +14,11 @@ const int AUTO_ENTERED_SLEEP = 0x86;
 const int AUTO_WAKE_FROM_SLEEP = 0x87;
 const int NEXTION_READY = 0x88;
 
-NextionDisplay::NextionDisplay(HardwareSerial &hwSerial, int baudRate)
+NextionDisplay::NextionDisplay(int baudRate, int rxPin, int txPin)
 {
 	pageId = BOOT_PAGE;
-	//hwSerial->begin(baudRate);
+	Serial2.begin(baudRate, SERIAL_8N1, rxPin, txPin);
+	while (!Serial2) {}
 }
 
 void NextionDisplay::begin(int bootDelay)
@@ -66,7 +67,7 @@ int NextionDisplay::getCompValue(String compVarString)
 
 	//Check if value is the value requested
 	if(receivedBytes[0] == 0x71 && receivedBytes[5] == 0xff && receivedBytes[6] == 0xff && receivedBytes[7] == 0xff){
-		value = (receivedBytes[4] << 24) | (receivedBytes[3] << 16) | (receivedBytes[2] << 8) | (receivedBytes[1]);//Little-endian convertion
+		value = (receivedBytes[4] << 24) | (receivedBytes[3] << 16) | (receivedBytes[2] << 8) | (receivedBytes[1]);//Little-endian conversion
 	}
 	return value;
 }
@@ -105,12 +106,12 @@ char *NextionDisplay::string2char(const String &command)
 	return p;
 }
 
-void NextionDisplay::getComponentClicked(int &pageId, int &compId)
+void NextionDisplay::getComponentClicked(int &_pageId, int &compId)
 {
 	String cmd;
 	while (Serial2.available()) {
 		delay(20);
-		char byte = Serial2.read();
+		int byte = Serial2.read();
 		if (byte == 0xff) {
 			break;
 		}
@@ -119,7 +120,7 @@ void NextionDisplay::getComponentClicked(int &pageId, int &compId)
 
 	switch (cmd[0]) {
 		case TOUCH_EVENT:
-			pageId = cmd[1];
+			_pageId = cmd[1];
 			compId = cmd[2];
 			break;
 	}
@@ -130,7 +131,7 @@ String NextionDisplay::readCommand()
 	String cmd;
 	while (Serial2.available()) {
 		delay(20);
-		char byte = Serial2.read();
+		int byte = Serial2.read();
 
 		if (byte == 0xff) {
 			break;

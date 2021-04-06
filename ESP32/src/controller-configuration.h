@@ -15,6 +15,9 @@ const int displayGraphMinTemp = -10;
 const int displayGraphHeight = 120;
 
 //Comment out to disable the feature
-//#define WEBINTERFACE_ENABLED
+
+//At least one of them has to be enabled or the esp will crash as nobody is feeding the watchdog
+#define WEBINTERFACE_ENABLED
+#define NEXTION_DISPLAY_ENABLED
+
 //#define ALWAYS_UPDATE_DISPLAY_GRAPH
-//#define NEXTION_DISPLAY_ENABLED
