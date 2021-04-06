@@ -15,65 +15,63 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **/
+
+#define FASTLED_INTERNAL
+
 #include <Arduino.h>
 #include <soc/timer_group_struct.h>
 #include <soc/timer_group_reg.h>
-#include <ESPAsyncWebServer.h>
-#include <ArduinoJson.h>
 
 #include "helper.h"
-#include "PinDefinition.h"
-#include "Configuration.h"
+#include "controller-pin-definition.h"
+#include "controller-configuration.h"
 #include "./libs/Sensor.h"
 #include "./libs/Relay.h"
 #include "./libs/FasterLed.h"
 #include "./libs/Fan.h"
-#include "./libs/NextionDisplay.h"
+
+
+#ifdef WEBINTERFACE_ENABLED
+#include <ESPAsyncWebServer.h>
 #include "../lib/framework/ESP8266React.h"
-
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunknown-pragmas"
-
-const String esp32Version = "2.0.0";
-
 AsyncWebServer server(80);
 ESP8266React esp8266React(&server);
+#endif
+
 Sensor *sensor1;
 Sensor *sensor2;
 Relay *led1;
 FasterLed *led2;
 Fan *fan1;
 Fan *fan2;
-NextionDisplay *nextion;
 
-int f1 = 0;
-int f2 = 0;
+#ifdef NEXTION_DISPLAY_ENABLED
+#include "./libs/NextionDisplay.h"
+NextionDisplay *nextion;
+#endif
 
 void HandleDisplayPage(void *parameter);
 
 void IRAM_ATTR fan1TachoInterrupt()
 {
-	f1++;
 	fan1->incrementHalfRevolution();
 }
 
 void IRAM_ATTR fan2TachoInterrupt()
 {
-	f2++;
 	fan2->incrementHalfRevolution();
 }
-
 
 
 void setup()
 {
 	Serial.begin(serial1BaudRate);
-	while (!Serial) {
-	}
+	while (!Serial) {}
 	Serial.println("3D-Print-Enclosure-Controller booting v" + esp32Version);
+#ifdef NEXTION_DISPLAY_ENABLED
 	Serial2.begin(serial2BaudRate, SERIAL_8N1, nextionDisplayRX, nextionDisplayTX);
-	while (!Serial2) {
-	}
+	while (!Serial2) {}
+#endif
 	delay(300);
 
 	//Temp & Humidity sensor setup
@@ -101,15 +99,18 @@ void setup()
 	fan1->begin();
 	fan2->begin();
 
+#ifdef NEXTION_DISPLAY_ENABLED
 	//Display
 	nextion = new NextionDisplay(Serial2, serial2BaudRate);
 	nextion->begin(displayBootDelay);
 
 	xTaskCreate(HandleDisplayPage, "handleDisplayPage", 5000, nullptr, 2, nullptr);
+#endif
 
 	fan1->setPercent(50);
 	fan2->setPercent(80);
 
+#ifdef WEBINTERFACE_ENABLED
 	esp8266React.begin();
 
 	server.on("/rest/fans/data", HTTP_GET, [](AsyncWebServerRequest *request) {
@@ -176,12 +177,14 @@ void setup()
 	//Delay and attaching interrupt after everything is
 	//required to prevent crashes from happening on boot caused by weird interrupt stuff
 	delay(2000);
+#endif
+
 	attachInterrupt(digitalPinToInterrupt(fan1_tacho_pin), fan1TachoInterrupt, FALLING);
 	attachInterrupt(digitalPinToInterrupt(fan2_tacho_pin), fan2TachoInterrupt, FALLING);
 
 	Serial.println("3D-Print-Enclosure-Controller booted");
 }
-
+#ifdef WEBINTERFACE_ENABLED
 void HandleDisplayInteraction(int pageId, int compId)
 {
 	switch (pageId) {
@@ -252,21 +255,16 @@ void HandleDisplayInteraction(int pageId, int compId)
 	}
 }
 
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "Simplify"
-#pragma ide diagnostic ignored "UnreachableCode"
-
-void HandleDisplayPage()
+void HandleDisplayPage(void *parameter)
 {
 	for (;;) {
-		if (alwaysUpdateDisplayGraph) {
-			nextion
-					->addGraphValue(1, 0,
-									map((int) sensor1->temperature, displayGraphMinTemp, 255, 0, displayGraphHeight))
-					->addGraphValue(1, 1,
-									map((int) sensor2->temperature, displayGraphMinTemp, 255, 0, displayGraphHeight));
-		}
-
+#ifdef ALWAYS_UPDATE_DISPLAY_GRAPH
+		nextion
+				->addGraphValue(1, 0,
+								map((int) sensor1->temperature, displayGraphMinTemp, 255, 0, displayGraphHeight))
+				->addGraphValue(1, 1,
+								map((int) sensor2->temperature, displayGraphMinTemp, 255, 0, displayGraphHeight));
+#endif
 		switch (nextion->pageId) {
 			case MAIN_PAGE:
 				nextion
@@ -292,13 +290,13 @@ void HandleDisplayPage()
 						->setCompText("sensor_page.tf_hum_sens1", valueToPercentString(sensor1->humidity))
 						->setCompText("sensor_page.tf_temp_sens2", valueToTempString(sensor2->temperature))
 						->setCompText("sensor_page.tf_hum_sens2", valueToPercentString(sensor2->humidity));
-				if (!alwaysUpdateDisplayGraph) {
-					nextion
-							->addGraphValue(1, 0, map((int) sensor1->temperature, displayGraphMinTemp, 255, 0,
-													  displayGraphHeight))
-							->addGraphValue(1, 1, map((int) sensor2->temperature, displayGraphMinTemp, 255, 0,
-													  displayGraphHeight));
-				}
+#ifndef ALWAYS_UPDATE_DISPLAY_GRAPH
+				nextion
+						->addGraphValue(1, 0, map((int) sensor1->temperature, displayGraphMinTemp, 255, 0,
+												  displayGraphHeight))
+						->addGraphValue(1, 1, map((int) sensor2->temperature, displayGraphMinTemp, 255, 0,
+												  displayGraphHeight));
+#endif
 				break;
 			case LED_PAGE:
 			case CONF_PAGE:
@@ -312,8 +310,7 @@ void HandleDisplayPage()
 		vTaskDelay(pdMS_TO_TICKS(displayPageRefreshInterval));
 	}
 }
-
-#pragma clang diagnostic pop
+#endif
 
 void loop()
 {
@@ -325,6 +322,7 @@ void loop()
 
 	int pageId = -1;
 	int compId = -1;
+#ifdef WEBINTERFACE_ENABLED
 	nextion->getComponentClicked(pageId, compId);
 	if (pageId != -1 && compId != -1) {
 		Serial.print(pageId);
@@ -332,7 +330,9 @@ void loop()
 		Serial.println(compId);
 		HandleDisplayInteraction(pageId, compId);
 	}
-	esp8266React.loop();
-}
+#endif
 
-#pragma clang diagnostic pop
+#ifdef WEBINTERFACE_ENABLED
+	esp8266React.loop();
+#endif
+}
