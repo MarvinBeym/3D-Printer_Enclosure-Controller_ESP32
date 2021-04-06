@@ -1,13 +1,15 @@
-import React from 'react';
+import React, {useState} from 'react';
 import IntervalFetchWrapper from "../components/IntervalFetchWrapper";
-import PaperSection from "../components/PaperSection";
 import {makeStyles} from "@material-ui/core/styles";
-import {motion} from "framer-motion";
-import fanImage from "../images/fan.png";
-import speedIcon from "../images/speed_icon_x32.png";
-import percentIcon from "../images/percent_icon_x32.png";
+import {authorizedFetch} from "../../authentication";
+import {ENDPOINT_ROOT} from "../../api";
+import PaperSection from "../components/PaperSection";
 import {Slider} from "@material-ui/core";
 import ValueField from "../components/ValueField";
+import {motion} from "framer-motion";
+import speedIcon from "../images/speed_icon_x32.png";
+import percentIcon from "../images/percent_icon_x32.png";
+import fanImage from "../images/fan.png";
 import Img from "../components/Img";
 
 const useStyles = makeStyles((theme) => ({
@@ -52,6 +54,22 @@ const spinTransition = {
 	duration: 1
 };
 
+const onSliderCommitted = (fanName, newPercent) => {
+	switch (fanName) {
+		case "fan1":
+		case "fan2":
+			const data = {};
+			data[fanName] = newPercent;
+			authorizedFetch(ENDPOINT_ROOT + "fans/setSpeed", {
+				method: "POST",
+				body: JSON.stringify(data),
+			})
+			break;
+	}
+
+
+}
+
 const Fans = () => {
 	const styles = useStyles();
 
@@ -63,11 +81,23 @@ const Fans = () => {
 		{value: 100, label: "100%"},
 	];
 
-	return <IntervalFetchWrapper fetchInterval={500} fetchEndpoint="fans/data" render={(data) => (
-		<div className={styles.fans}>
-			{data
-				? Object.entries(data).map((fan, index) => {
-					return (
+	const [sliderDefaultValues, setSliderDefaultValues] = useState({fan1: -1, fan2: -1});
+
+	return <IntervalFetchWrapper fetchInterval={500} fetchEndpoint="fans/data" render={(data) => {
+		const entries = Object.entries(data);
+		const fans = [entries[0][1], entries[1][1]];
+
+		if (sliderDefaultValues.fan1 === -1) {
+			sliderDefaultValues.fan1 = fans[0].percent;
+		}
+		if (sliderDefaultValues.fan2 === -1) {
+			sliderDefaultValues.fan2 = fans[1].percent;
+		}
+
+		return (
+			(
+				<div className={styles.fans}>
+					{fans.map((fan, index) => (
 						<PaperSection key={index} className={styles.fanPaper} title={"Fan " + (index + 1)}>
 							<div className={styles.fanWrapper}>
 								<motion.div className={styles.fanImageWrapper} animate={{rotate: 360}}
@@ -76,28 +106,29 @@ const Fans = () => {
 								</motion.div>
 							</div>
 							<div className={styles.fanInfo}>
-								<Slider min={0} max={100} step={1} marks={sliderMarks} valueLabelDisplay="auto"
-										defaultValue={fan[1].percent}/>
+								<Slider min={0} max={100} step={1}
+										onChangeCommitted={(event, value) => onSliderCommitted("fan" + (index + 1), value)}
+										marks={sliderMarks} valueLabelDisplay="auto"
+										defaultValue={sliderDefaultValues["fan" + (index + 1)]}/>
 								<div className={styles.valueFieldsContainer}>
 									<ValueField
 										endAdornment={<Img src={speedIcon}/>}
 										label="Rpm"
-										value={fan[1].rpm}
+										value={fan.rpm}
 									/>
 									<ValueField
 										endAdornment={<Img src={percentIcon}/>}
 										label="Duty cycle"
-										value={fan[1].dutyCycle}
+										value={fan.dutyCycle}
 									/>
 								</div>
 							</div>
 						</PaperSection>
-					)
-				})
-				: null
-			}
-		</div>
-	)}/>
+					))}
+				</div>
+			)
+		)
+	}}/>
 
 }
 

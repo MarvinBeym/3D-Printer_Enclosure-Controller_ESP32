@@ -51,11 +51,11 @@ const ValueField = ({label, value, className, endAdornment, valueEnding}) => {
 	const styles = useStyles();
 
 	let endAdor = null;
-	if(endAdornment && !valueEnding) {
+	if (endAdornment && !valueEnding) {
 		endAdor = <InputAdornment position="end">{endAdornment}</InputAdornment>;
-	} else if(!endAdornment && valueEnding) {
+	} else if (!endAdornment && valueEnding) {
 		endAdor = <InputAdornment position="end"><ValueEnding value={valueEnding}/></InputAdornment>;
-	} else if(endAdornment && valueEnding) {
+	} else if (endAdornment && valueEnding) {
 		endAdor = <InputAdornment position="end"><ValueEnding value={valueEnding}/> {endAdornment}</InputAdornment>;
 	}
 
@@ -63,7 +63,7 @@ const ValueField = ({label, value, className, endAdornment, valueEnding}) => {
 		<TextField className={clsx(styles.valueField, className)} color="primary" InputProps={{
 			endAdornment: endAdor,
 			readOnly: true,
-		}} variant="outlined" label={label} value={value ? value : " "}/>
+		}} variant="outlined" label={label} value={value ? value : typeof value == "number" ? value : " "}/>
 	)
 }
 

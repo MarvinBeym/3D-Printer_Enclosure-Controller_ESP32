@@ -21,6 +21,7 @@
 #include <soc/timer_group_reg.h>
 #include <ESPAsyncWebServer.h>
 #include <ArduinoJson.h>
+#include <AsyncJson.h>
 
 //Own classes
 #include "Sensor.h"
@@ -133,7 +134,7 @@ void setup()
 
 	esp8266React.begin();
 
-	server.on("/rest/fans/data", HTTP_GET, [](AsyncWebServerRequest *request){
+	server.on("/rest/fans/data", HTTP_GET, [](AsyncWebServerRequest *request) {
 		AsyncResponseStream *response = request->beginResponseStream("application/json");
 		DynamicJsonDocument doc(192);
 		fan1->addToJson(&doc);
@@ -141,7 +142,7 @@ void setup()
 		serializeJson(doc, *response);
 		request->send(response);
 	});
-	server.on("/rest/sensors/data", HTTP_GET, [](AsyncWebServerRequest *request){
+	server.on("/rest/sensors/data", HTTP_GET, [](AsyncWebServerRequest *request) {
 		AsyncResponseStream *response = request->beginResponseStream("application/json");
 		DynamicJsonDocument doc(128);
 		sensor1->addToJson(&doc);
@@ -149,7 +150,7 @@ void setup()
 		serializeJson(doc, *response);
 		request->send(response);
 	});
-	server.on("/rest/main/data", HTTP_GET, [](AsyncWebServerRequest *request){
+	server.on("/rest/main/data", HTTP_GET, [](AsyncWebServerRequest *request) {
 		AsyncResponseStream *response = request->beginResponseStream("application/json");
 		DynamicJsonDocument doc(256);
 		fan1->addToJson(&doc);
@@ -159,6 +160,44 @@ void setup()
 		serializeJson(doc, *response);
 		request->send(response);
 	});
+
+	server.on(
+			"/rest/fans/setSpeed",
+			HTTP_POST,
+			[](AsyncWebServerRequest * request) {
+
+			},  // Route handling function
+			NULL,
+			[](AsyncWebServerRequest * request, uint8_t *data, size_t len, size_t index, size_t total) {
+				char* jsonString = (char*)data;
+				DynamicJsonDocument doc(256);
+				DeserializationError error = deserializeJson(doc, jsonString);
+
+				if (error) {
+					AsyncResponseStream *errorResponse = request->beginResponseStream("application/json");
+					DynamicJsonDocument errorDoc(256);
+					String errorMessage = "deserializeJson() failed: ";
+					errorMessage += error.f_str();
+					errorDoc["message"] =  errorMessage;
+					serializeJson(errorDoc, *errorResponse);
+					request->send(errorResponse);
+					return;
+				}
+
+				AsyncResponseStream *response = request->beginResponseStream("application/json");
+				DynamicJsonDocument messageDoc(256);
+				if(doc.containsKey("fan1")) {
+					int fan1Value = doc["fan1"];
+					fan1->setPercent(fan1Value);
+				}
+				if(doc.containsKey("fan2")) {
+					int fan2Value = doc["fan2"];
+					fan2->setPercent(fan2Value);
+				}
+				messageDoc["message"] = "Fan speed was updated";
+				serializeJson(messageDoc, *response);
+				request->send(response);
+			});
 
 	server.begin();
 
