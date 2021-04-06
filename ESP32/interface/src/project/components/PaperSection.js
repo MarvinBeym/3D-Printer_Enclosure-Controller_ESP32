@@ -7,15 +7,20 @@ const useStyles = makeStyles((theme) => ({
 	paper: {
 		padding: theme.spacing(2),
 		margin: theme.spacing(3),
+	},
+	header: {
+		display: "flex",
+		marginBottom: "1rem",
 	}
 }));
 
-const PaperSection = ({paperClassName, className, title, elevation = 5, children}) => {
+const PaperSection = ({paperClassName, className, title, headerJustification = "center", elevation = 5, children}) => {
 	const styles = useStyles();
 
 	return (
 		<Paper elevation={elevation} className={clsx(styles.paper, paperClassName)}>
-			<Typography variant="h6">{title}</Typography>
+			<Typography className={styles.header} styles={{justifyContent: headerJustification}}
+						variant="h6">{title}</Typography>
 			<div className={className}>
 				{children}
 			</div>

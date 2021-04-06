@@ -143,7 +143,17 @@ void setup()
 	});
 	server.on("/rest/sensors/data", HTTP_GET, [](AsyncWebServerRequest *request){
 		AsyncResponseStream *response = request->beginResponseStream("application/json");
-		DynamicJsonDocument doc(1024);
+		DynamicJsonDocument doc(128);
+		sensor1->addToJson(&doc);
+		sensor2->addToJson(&doc);
+		serializeJson(doc, *response);
+		request->send(response);
+	});
+	server.on("/rest/main/data", HTTP_GET, [](AsyncWebServerRequest *request){
+		AsyncResponseStream *response = request->beginResponseStream("application/json");
+		DynamicJsonDocument doc(256);
+		fan1->addToJson(&doc);
+		fan2->addToJson(&doc);
 		sensor1->addToJson(&doc);
 		sensor2->addToJson(&doc);
 		serializeJson(doc, *response);
