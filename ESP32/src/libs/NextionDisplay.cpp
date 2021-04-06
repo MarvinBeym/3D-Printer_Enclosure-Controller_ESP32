@@ -111,7 +111,7 @@ void NextionDisplay::getComponentClicked(int &_pageId, int &compId)
 	String cmd;
 	while (Serial2.available()) {
 		delay(20);
-		int byte = Serial2.read();
+		char byte = Serial2.read();
 		if (byte == 0xff) {
 			break;
 		}
@@ -131,7 +131,7 @@ String NextionDisplay::readCommand()
 	String cmd;
 	while (Serial2.available()) {
 		delay(20);
-		int byte = Serial2.read();
+		char byte = Serial2.read();
 
 		if (byte == 0xff) {
 			break;
