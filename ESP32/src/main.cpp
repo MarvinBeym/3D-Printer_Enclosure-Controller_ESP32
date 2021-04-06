@@ -15,15 +15,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  **/
-#include <ESP8266React.h>
 #include <Arduino.h>
 #include <soc/timer_group_struct.h>
 #include <soc/timer_group_reg.h>
 #include <ESPAsyncWebServer.h>
 #include <ArduinoJson.h>
-#include <AsyncJson.h>
 
-//Own classes
 #include "Sensor.h"
 #include "PinDefinition.h"
 #include "Configuration.h"
@@ -31,6 +28,8 @@
 #include "FasterLed.h"
 #include "Fan.h"
 #include "NextionDisplay.h"
+#include "helper.h"
+#include "../lib/framework/ESP8266React.h"
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunknown-pragmas"
@@ -47,42 +46,24 @@ Fan *fan1;
 Fan *fan2;
 NextionDisplay *nextion;
 
+int f1 = 0;
+int f2 = 0;
+
 void HandleDisplayPage(void *parameter);
 
 void IRAM_ATTR fan1TachoInterrupt()
 {
+	f1++;
 	fan1->incrementHalfRevolution();
 }
 
 void IRAM_ATTR fan2TachoInterrupt()
 {
+	f2++;
 	fan2->incrementHalfRevolution();
 }
 
-String valueToPercentString(int value)
-{
-	return String(value) + "%";
-}
 
-String valueToPercentString(float value)
-{
-	return String(value) + "%";
-}
-
-String valueToRpmString(int value)
-{
-	return String(value) + "rpm";
-}
-
-String valueToTempString(int value)
-{
-	return String(value) + (char) 176 + "C";
-}
-
-String valueToTempString(float value)
-{
-	return String(value) + (char) 176 + "C";
-}
 
 void setup()
 {
@@ -117,9 +98,6 @@ void setup()
 	//Fan
 	fan1 = new Fan("fan1", 0, fan1_tacho_pin, fan1_pwm_pin);
 	fan2 = new Fan("fan2", 1, fan2_tacho_pin, fan2_pwm_pin);
-	attachInterrupt(digitalPinToInterrupt(fan1_tacho_pin), fan1TachoInterrupt, FALLING);
-	attachInterrupt(digitalPinToInterrupt(fan2_tacho_pin), fan2TachoInterrupt, FALLING);
-
 	fan1->begin();
 	fan2->begin();
 
@@ -161,13 +139,7 @@ void setup()
 		request->send(response);
 	});
 
-	server.on(
-			"/rest/fans/setSpeed",
-			HTTP_POST,
-			[](AsyncWebServerRequest * request) {
-
-			},  // Route handling function
-			NULL,
+	server.on("/rest/fans/setSpeed", HTTP_POST, nullptr, nullptr,
 			[](AsyncWebServerRequest * request, uint8_t *data, size_t len, size_t index, size_t total) {
 				char* jsonString = (char*)data;
 				DynamicJsonDocument doc(256);
@@ -201,6 +173,11 @@ void setup()
 
 	server.begin();
 
+	//Delay and attaching interrupt after everything is
+	//required to prevent crashes from happening on boot caused by weird interrupt stuff
+	delay(2000);
+	attachInterrupt(digitalPinToInterrupt(fan1_tacho_pin), fan1TachoInterrupt, FALLING);
+	attachInterrupt(digitalPinToInterrupt(fan2_tacho_pin), fan2TachoInterrupt, FALLING);
 
 	Serial.println("3D-Print-Enclosure-Controller booted");
 }
@@ -279,7 +256,7 @@ void HandleDisplayInteraction(int pageId, int compId)
 #pragma ide diagnostic ignored "Simplify"
 #pragma ide diagnostic ignored "UnreachableCode"
 
-void HandleDisplayPage(void *parameter)
+void HandleDisplayPage()
 {
 	for (;;) {
 		if (alwaysUpdateDisplayGraph) {
