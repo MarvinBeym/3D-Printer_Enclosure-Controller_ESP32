@@ -21,14 +21,14 @@
 #include <ESPAsyncWebServer.h>
 #include <ArduinoJson.h>
 
-#include "Sensor.h"
+#include "helper.h"
 #include "PinDefinition.h"
 #include "Configuration.h"
-#include "Relay.h"
-#include "FasterLed.h"
-#include "Fan.h"
-#include "NextionDisplay.h"
-#include "helper.h"
+#include "./libs/Sensor.h"
+#include "./libs/Relay.h"
+#include "./libs/FasterLed.h"
+#include "./libs/Fan.h"
+#include "./libs/NextionDisplay.h"
 #include "../lib/framework/ESP8266React.h"
 
 #pragma clang diagnostic push

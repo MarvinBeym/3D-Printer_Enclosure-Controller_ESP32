@@ -10,14 +10,3 @@ const int led2_data_pin = 22;
 
 const int nextionDisplayRX = 16;
 const int nextionDisplayTX = 17;
-
-//EEPROM TABLE
-/* ADR | Value saved in ADR
-0 | fan1_dutyCycle 
-1 | fan2_dutyCycle
-2 | led1_enabled
-3 | led2_color(byte converted)
-4 | led2_mode(byte converted)
-5 | display brightness
-6 | display sleep
-*/
