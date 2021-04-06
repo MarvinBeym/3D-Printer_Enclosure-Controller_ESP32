@@ -10,6 +10,7 @@ const useStyles = makeStyles((theme) => ({
 			padding: "0.5rem",
 		},
 		"& .MuiOutlinedInput-input": {
+			cursor: "default",
 			textAlign: "center",
 			fontSize: "1.5rem",
 			fontWeight: "bolder",
@@ -22,21 +23,48 @@ const useStyles = makeStyles((theme) => ({
 		},
 		"& .MuiOutlinedInput-root": {
 			borderRadius: "2rem",
+			cursor: "default",
 		},
 		"& .MuiOutlinedInput-notchedOutline": {
 			borderColor: theme.palette.primary.main,
 			borderWidth: "2px",
 		},
 	},
+	valueEnding: {
+		color: theme.palette.primary.main,
+		fontWeight: "bolder",
+		fontSize: "1.5rem",
+		marginRight: "0.5rem",
+	}
 }));
 
-const ValueField = ({label, value, className, endAdornment}) => {
+const ValueEnding = ({value}) => {
 	const styles = useStyles();
 	return (
+		<div className={styles.valueEnding}>
+			{value}
+		</div>
+	)
+}
+
+const ValueField = ({label, value, className, endAdornment, valueEnding}) => {
+	const styles = useStyles();
+
+	let endAdor = null;
+	if(endAdornment && !valueEnding) {
+		endAdor = <InputAdornment position="end">{endAdornment}</InputAdornment>;
+	} else if(!endAdornment && valueEnding) {
+		endAdor = <InputAdornment position="end"><ValueEnding value={valueEnding}/></InputAdornment>;
+	} else if(endAdornment && valueEnding) {
+		endAdor = <InputAdornment position="end"><ValueEnding value={valueEnding}/> {endAdornment}</InputAdornment>;
+	}
+
+	return (
 		<TextField className={clsx(styles.valueField, className)} color="primary" InputProps={{
-			endAdornment: endAdornment ? <InputAdornment position="end">{endAdornment}</InputAdornment> : null,
-			readOnly: true
-		}} variant="outlined" label={label} value={value}/>
+			endAdornment: endAdor,
+			readOnly: true,
+			shrink: true,
+		}} variant="outlined" label={label} value={value ? value : " "}/>
 	)
 }
 

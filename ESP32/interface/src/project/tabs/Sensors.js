@@ -12,9 +12,13 @@ import {
 	setSensor2Data
 } from "../redux/reducers/sensorsSlice";
 import PaperSection from "../components/PaperSection";
-import {Button, Typography} from "@material-ui/core";
+import {Button} from "@material-ui/core";
+import ValueField from "../components/ValueField";
+import temperatureIcon from "../images/temp_icon_x32.png";
+import humidityIcon from "../images/humidity_icon_x32.png";
+import Img from "../components/Img";
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
 	graphSection: {
 		display: "flex",
 	},
@@ -27,7 +31,15 @@ const useStyles = makeStyles((theme) => ({
 	},
 	actionButton: {
 		margin: "0.5rem 0",
-	}
+	},
+	sensorPaper: {
+		maxWidth: "15rem",
+		display: "flex",
+		flexDirection: "column",
+	},
+	valueField: {
+		margin: "0.5rem 0",
+	},
 }));
 
 const Sensors = () => {
@@ -68,17 +80,51 @@ const Sensors = () => {
 	const currentSensor1Data = sensor1Data[sensor1Temps.length - 1];
 	const currentSensor2Data = sensor2Data[sensor2Temps.length - 1];
 
+	const data = [
+		{
+			title: "Sensor 1", fields: [
+				{
+					label: "Temperature",
+					ending: "°C",
+					adornment: temperatureIcon,
+					value: currentSensor1Data?.temperature
+				},
+				{label: "Humidity", ending: "%", adornment: humidityIcon, value: currentSensor1Data?.humidity},
+			]
+		},
+		{
+			title: "Sensor 2", fields: [
+				{
+					label: "Temperature",
+					ending: "°C",
+					adornment: temperatureIcon,
+					value: currentSensor2Data?.temperature
+				},
+				{label: "Humidity", ending: "%", adornment: humidityIcon, value: currentSensor2Data?.humidity},
+			]
+		}
+	];
+
 	return (
 		<div>
 			<div className={styles.currentSensorData}>
-				<PaperSection title="Sensor 1">
-					<Typography>Temperature: {currentSensor1Data?.temperature} °C</Typography>
-					<Typography>Humidity: {currentSensor1Data?.humidity} %</Typography>
-				</PaperSection>
-				<PaperSection title="Sensor 2">
-					<Typography>Temperature: {currentSensor2Data?.temperature} °C</Typography>
-					<Typography>Humidity: {currentSensor2Data?.humidity} %</Typography>
-				</PaperSection>
+				{data.map((sensor) => {
+					return (
+						<PaperSection className={styles.sensorPaper} title={sensor.title}>
+							{sensor.fields.map((field) => {
+								return (
+									<ValueField
+										className={styles.valueField}
+										label={field.label}
+										valueEnding={field.ending}
+										value={field.value}
+										endAdornment={<Img src={field.adornment}/>}
+									/>
+								)
+							})}
+						</PaperSection>
+					)
+				})}
 				<PaperSection className={styles.actionsPaper} title="Actions">
 					<Button className={styles.actionButton} variant="contained" color="primary"
 							onClick={clearSensor1Data}>Clear sensor 1 data</Button>
