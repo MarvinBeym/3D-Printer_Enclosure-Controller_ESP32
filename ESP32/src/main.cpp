@@ -135,8 +135,21 @@ void setup()
 		serializeJson(doc, *response);
 		request->send(response);
 	});
+	server.on("/rest/leds/data", HTTP_GET, [](AsyncWebServerRequest *request) {
+		AsyncResponseStream *response = request->beginResponseStream("application/json");
+		DynamicJsonDocument doc(256);
+		doc["temporary"] = "tempResponse";
+		serializeJson(doc, *response);
+		request->send(response);
+	});
 
-	server.on("/rest/fans/setSpeed", HTTP_POST, nullptr, nullptr,
+	server.on(
+			"/rest/fans/setSpeed",
+			HTTP_POST,
+			[](AsyncWebServerRequest * request) {
+
+			},
+			NULL,
 			[](AsyncWebServerRequest * request, uint8_t *data, size_t len, size_t index, size_t total) {
 				char* jsonString = (char*)data;
 				DynamicJsonDocument doc(256);
@@ -167,7 +180,6 @@ void setup()
 				serializeJson(messageDoc, *response);
 				request->send(response);
 			});
-
 	server.begin();
 
 	//Delay and attaching interrupt after everything is
