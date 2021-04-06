@@ -1,5 +1,5 @@
 import React from "react";
-import {CartesianGrid, Legend, Line, LineChart, Tooltip, XAxis, YAxis} from "recharts";
+import {CartesianGrid, Line, LineChart, Tooltip, XAxis, YAxis} from "recharts";
 import moment from 'moment'
 import {Paper, Typography} from "@material-ui/core";
 import {makeStyles} from "@material-ui/core/styles";

@@ -63,7 +63,6 @@ const ValueField = ({label, value, className, endAdornment, valueEnding}) => {
 		<TextField className={clsx(styles.valueField, className)} color="primary" InputProps={{
 			endAdornment: endAdor,
 			readOnly: true,
-			shrink: true,
 		}} variant="outlined" label={label} value={value ? value : " "}/>
 	)
 }

@@ -110,10 +110,11 @@ const Sensors = () => {
 			<div className={styles.currentSensorData}>
 				{data.map((sensor) => {
 					return (
-						<PaperSection className={styles.sensorPaper} title={sensor.title}>
+						<PaperSection key={sensor.title} className={styles.sensorPaper} title={sensor.title}>
 							{sensor.fields.map((field) => {
 								return (
 									<ValueField
+										key={field.label}
 										className={styles.valueField}
 										label={field.label}
 										valueEnding={field.ending}
