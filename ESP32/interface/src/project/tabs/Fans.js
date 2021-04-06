@@ -4,8 +4,11 @@ import PaperSection from "../components/PaperSection";
 import {makeStyles} from "@material-ui/core/styles";
 import {motion} from "framer-motion";
 import fanImage from "../images/fan.png";
+import speedIcon from "../images/speed_icon_x32.png";
+import percentIcon from "../images/percent_icon_x32.png";
 import {Slider} from "@material-ui/core";
 import ValueField from "../components/ValueField";
+import Img from "../components/Img";
 
 const useStyles = makeStyles((theme) => ({
 	fanPaper: {
@@ -65,19 +68,27 @@ const Fans = () => {
 			{data
 				? Object.entries(data).map((fan, index) => {
 					return (
-						<PaperSection key={index} className={styles.fanPaper} title={"Fan " + index + 1}>
+						<PaperSection key={index} className={styles.fanPaper} title={"Fan " + (index + 1)}>
 							<div className={styles.fanWrapper}>
 								<motion.div className={styles.fanImageWrapper} animate={{rotate: 360}}
 											transition={spinTransition}>
-									<img className={styles.fanImage} src={fanImage} alt="fan image"/>
+									<img className={styles.fanImage} src={fanImage} alt=""/>
 								</motion.div>
 							</div>
 							<div className={styles.fanInfo}>
 								<Slider min={0} max={100} step={1} marks={sliderMarks} valueLabelDisplay="auto"
 										defaultValue={fan[1].percent}/>
 								<div className={styles.valueFieldsContainer}>
-									<ValueField label="Rpm" value={fan[1].rpm}/>
-									<ValueField label="Duty cycle" valueSuffix="%" value={fan[1].dutyCycle}/>
+									<ValueField
+										endAdornment={<Img src={speedIcon}/>}
+										label="Rpm"
+										value={fan[1].rpm}
+									/>
+									<ValueField
+										endAdornment={<Img src={percentIcon}/>}
+										label="Duty cycle"
+										value={fan[1].dutyCycle}
+									/>
 								</div>
 							</div>
 						</PaperSection>
