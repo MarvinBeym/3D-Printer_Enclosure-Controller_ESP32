@@ -29,7 +29,7 @@
 #include "./libs/Relay.h"
 #include "./libs/FasterLed.h"
 #include "./libs/Fan.h"
-
+#include "./effects/EffectLoader.h"
 
 #ifdef WEBINTERFACE_ENABLED
 #include <ESPAsyncWebServer.h>
@@ -44,7 +44,7 @@ Relay *led1;
 FasterLed *led2;
 Fan *fan1;
 Fan *fan2;
-
+EffectLoader *effectLoader;
 #ifdef NEXTION_DISPLAY_ENABLED
 #include "./libs/NextionDisplay.h"
 NextionDisplay *nextion;
@@ -85,6 +85,8 @@ void setup()
 	led2 = new FasterLed(led2_data_pin, led2NumberOfLeds, led2Brightness, led2CurrentLimit);
 	FastLED.addLeds<WS2812B, led2_data_pin, GRB>(led2->leds, led2NumberOfLeds);
 	led2->begin();
+	effectLoader = new EffectLoader(led2);
+	effectLoader->changeEffect(1);
 
 	//Buzzer
 	pinMode(buzzer_pin, OUTPUT);
@@ -137,8 +139,20 @@ void setup()
 	});
 	server.on("/rest/leds/data", HTTP_GET, [](AsyncWebServerRequest *request) {
 		AsyncResponseStream *response = request->beginResponseStream("application/json");
-		DynamicJsonDocument doc(256);
-		doc["temporary"] = "tempResponse";
+		DynamicJsonDocument doc(1024);
+		effectLoader->addToJson(&doc);
+		serializeJson(doc, *response);
+		request->send(response);
+	});
+
+	server.on("^\\/rest\\/leds\\/changeEffect\\/([0-9]+)$", HTTP_GET, [](AsyncWebServerRequest *request) {
+		int effectId = request->pathArg(0).toInt();
+		AsyncResponseStream *response = request->beginResponseStream("application/json");
+		DynamicJsonDocument doc(1024);
+		doc["effectId"] = effectId;
+
+		effectLoader->changeEffect(effectId);
+
 		serializeJson(doc, *response);
 		request->send(response);
 	});
@@ -338,6 +352,7 @@ void loop()
 		Serial.println(compId);
 		HandleDisplayInteraction(pageId, compId);
 	}
+
 #endif
 
 #ifdef WEBINTERFACE_ENABLED

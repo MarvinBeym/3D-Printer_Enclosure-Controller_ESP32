@@ -74,11 +74,11 @@ const Sensors = () => {
 			setCurrentSensor1Data(newSensor1Data);
 			setCurrentSensor2Data(newSensor2Data);
 
-			if(sensor1Data.length === 0 || newSensor1Data.temperature !== sensor1Data[sensor1Data.length - 1].temperature) {
+			if (sensor1Data.length === 0 || newSensor1Data.temperature !== sensor1Data[sensor1Data.length - 1].temperature) {
 				setSensor1Temps([...sensor1Temps, {temperature: newSensor1Data.temperature, time: newSensor1Data.time}])
 			}
 
-			if(sensor2Data.length === 0 || newSensor2Data.temperature !== sensor2Data[sensor2Data.length - 1].temperature) {
+			if (sensor2Data.length === 0 || newSensor2Data.temperature !== sensor2Data[sensor2Data.length - 1].temperature) {
 				setSensor2Temps([...sensor2Temps, {temperature: newSensor2Data.temperature, time: newSensor2Data.time}])
 			}
 
