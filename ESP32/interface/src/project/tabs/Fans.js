@@ -117,7 +117,6 @@ const Fans = () => {
 										value={fan.rpm}
 									/>
 									<ValueField
-										endAdornment={<Img src={percentIcon}/>}
 										label="Duty cycle"
 										value={fan.dutyCycle}
 									/>

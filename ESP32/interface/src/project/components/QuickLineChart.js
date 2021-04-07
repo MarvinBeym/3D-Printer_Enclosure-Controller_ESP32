@@ -58,6 +58,7 @@ const QuickLineChart = ({title, data, yAxisLabel, xAxisLabel, dataKey, yAxisValu
 				height={400}
 				data={data}>
 				<YAxis
+					scale="linear"
 					domain={[(dataMin) => (Math.floor(dataMin) - 20), (dataMax) => (Math.ceil(dataMax) + 20)]}
 					label={{value: yAxisLabel, position: "inside", dx: -15, fontSize: 20, angle: -90}}/>
 				<XAxis
@@ -72,7 +73,7 @@ const QuickLineChart = ({title, data, yAxisLabel, xAxisLabel, dataKey, yAxisValu
 					}}
 					interval={60}
 					tickFormatter={(unixTime) => moment(unixTime).format('HH:mm')}
-					scale="time"
+					scale="auto"
 				/>
 				<Tooltip content={<CustomTooltip yAxisValueSuffix={yAxisValueSuffix}/>}/>
 				<CartesianGrid strokeDasharray="3 3" stroke="#5c5c5c"/>
