@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {fetchBackend, useInterval} from "../helper";
 import QuickLineChart from "../components/QuickLineChart";
 import {makeStyles} from "@material-ui/core/styles";
@@ -46,15 +46,14 @@ const Sensors = () => {
 	const dispatch = useDispatch();
 	const styles = useStyles();
 
+	const [currentSensor1Data, setCurrentSensor1Data] = useState(null);
+	const [currentSensor2Data, setCurrentSensor2Data] = useState(null);
+
+	const [sensor1Temps, setSensor1Temps] = useState([]);
+	const [sensor2Temps, setSensor2Temps] = useState([]);
+
 	const sensor1Data = useSelector((state) => selectSensor1Data(state));
 	const sensor2Data = useSelector((state) => selectSensor2Data(state));
-
-	const sensor1Temps = sensor1Data.map((data) => {
-		return {temperature: data.temperature, time: data.time};
-	});
-	const sensor2Temps = sensor2Data.map((data) => {
-		return {temperature: data.temperature, time: data.time};
-	});
 
 	const clearSensor1Data = () => {
 		dispatch(setSensor1Data([]));
@@ -67,18 +66,26 @@ const Sensors = () => {
 	useInterval(() => {
 		fetchBackend("sensors/data").then((response) => {
 			let currentTicks = new Date().getTime();
-			let sensor1Data = response.sensor1;
-			let sensor2Data = response.sensor2;
-			sensor1Data.time = currentTicks;
-			sensor2Data.time = currentTicks;
+			let newSensor1Data = response.sensor1;
+			let newSensor2Data = response.sensor2;
+			newSensor1Data.time = currentTicks;
+			newSensor2Data.time = currentTicks;
 
-			dispatch(addSensor1Data(sensor1Data));
-			dispatch(addSensor2Data(sensor2Data));
+			setCurrentSensor1Data(newSensor1Data);
+			setCurrentSensor2Data(newSensor2Data);
+
+			if(sensor1Data.length === 0 || newSensor1Data.temperature !== sensor1Data[sensor1Data.length - 1].temperature) {
+				setSensor1Temps([...sensor1Temps, {temperature: newSensor1Data.temperature, time: newSensor1Data.time}])
+			}
+
+			if(sensor2Data.length === 0 || newSensor2Data.temperature !== sensor2Data[sensor2Data.length - 1].temperature) {
+				setSensor2Temps([...sensor2Temps, {temperature: newSensor2Data.temperature, time: newSensor2Data.time}])
+			}
+
+			dispatch(addSensor1Data(newSensor1Data));
+			dispatch(addSensor2Data(newSensor2Data));
 		})
 	}, 2000);
-
-	const currentSensor1Data = sensor1Data[sensor1Temps.length - 1];
-	const currentSensor2Data = sensor2Data[sensor2Temps.length - 1];
 
 	const data = [
 		{
