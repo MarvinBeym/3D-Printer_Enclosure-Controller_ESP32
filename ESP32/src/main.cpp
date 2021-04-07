@@ -137,22 +137,60 @@ void setup()
 		serializeJson(doc, *response);
 		request->send(response);
 	});
-	server.on("/rest/leds/data", HTTP_GET, [](AsyncWebServerRequest *request) {
+
+	server.on("/rest/leds/led1/currentState", HTTP_GET, [](AsyncWebServerRequest *request) {
 		AsyncResponseStream *response = request->beginResponseStream("application/json");
-		DynamicJsonDocument doc(1024);
-		effectLoader->addToJson(&doc);
+		DynamicJsonDocument doc(32);
+		JsonObject led1Json = doc.createNestedObject("led1");
+		led1Json["currentState"] = led1->getState();
 		serializeJson(doc, *response);
 		request->send(response);
 	});
 
-	server.on("^\\/rest\\/leds\\/changeEffect\\/([0-9]+)$", HTTP_GET, [](AsyncWebServerRequest *request) {
-		int effectId = request->pathArg(0).toInt();
+	server.on("^\\/rest\\/leds\\/led1\\/changeState\\/([0-1]+)$", HTTP_GET, [](AsyncWebServerRequest *request) {
+		bool newState = request->pathArg(0).toInt();
+		AsyncResponseStream *response = request->beginResponseStream("application/json");
+		DynamicJsonDocument doc(32);
+		JsonObject led1Json = doc.createNestedObject("led1");
+		newState ? led1->on() : led1->off();
+		led1Json["currentState"] = newState;
+		serializeJson(doc, *response);
+		request->send(response);
+	});
+
+	server.on("/rest/leds/led2/currentEffect", HTTP_GET, [](AsyncWebServerRequest *request) {
 		AsyncResponseStream *response = request->beginResponseStream("application/json");
 		DynamicJsonDocument doc(1024);
-		doc["effectId"] = effectId;
+		JsonObject led2Json = doc.createNestedObject("led2");
+		led2Json["currentEffect"] = effectLoader->getCurrentEffect();
+		serializeJson(doc, *response);
+		request->send(response);
+	});
 
+	server.on("/rest/leds/led2/effects", HTTP_GET, [](AsyncWebServerRequest *request) {
+		AsyncResponseStream *response = request->beginResponseStream("application/json");
+		DynamicJsonDocument doc(1024);
+		JsonObject led2Json = doc.createNestedObject("led2");
+
+		JsonArray jsonArray = led2Json.createNestedArray("effects");
+		for (std::size_t i = 0; i < effectLoader->effects.size(); ++i) {
+			auto effect = effectLoader->effects[i];
+			JsonObject effectObject = jsonArray.createNestedObject();
+
+			effectObject["name"] = effect->getName();
+			effectObject["id"] = effect->getEffectId();
+		}
+		serializeJson(doc, *response);
+		request->send(response);
+	});
+
+	server.on("^\\/rest\\/leds\\/led2\\/changeEffect\\/([0-9]+)$", HTTP_GET, [](AsyncWebServerRequest *request) {
+		int effectId = request->pathArg(0).toInt();
+		AsyncResponseStream *response = request->beginResponseStream("application/json");
+		DynamicJsonDocument doc(32);
+		JsonObject led2Json = doc.createNestedObject("led2");
 		effectLoader->changeEffect(effectId);
-
+		led2Json["currentEffect"] = effectId;
 		serializeJson(doc, *response);
 		request->send(response);
 	});

@@ -1,10 +1,16 @@
-import React, {useState} from 'react';
+import React, {useEffect} from 'react';
 import PaperSection from "../components/PaperSection";
 import {makeStyles} from "@material-ui/core/styles";
 import {FormControl, InputLabel, MenuItem, Select, Switch} from "@material-ui/core";
 import {useDispatch, useSelector} from "react-redux";
-import {selectLed1State, selectLed2, setLed1State} from "../redux/reducers/ledsSlice";
-import {fetchBackend, useInterval} from "../helper";
+import {
+	changeLed2Effect,
+	changeLed1State, fetchCurrentLed2Effect,
+	fetchLed2Effects, fetchLed1State,
+	selectLed1,
+	selectLed2,
+} from "../redux/reducers/ledsSlice";
+import {useInterval} from "../helper";
 
 const useStyles = makeStyles((theme) => ({
 	leds: {
@@ -39,50 +45,44 @@ const useStyles = makeStyles((theme) => ({
 const Leds = () => {
 	const styles = useStyles();
 	const dispatch = useDispatch();
-	const led1State = useSelector((state) => selectLed1State(state));
+
+	const led1 = useSelector((state) => selectLed1(state));
 	const led2 = useSelector((state) => selectLed2(state));
 	const onLed1Change = (event) => {
-		dispatch(setLed1State(event.target.checked));
+		dispatch(changeLed1State(event.target.checked));
 	}
-
-	const [effects, setEffects] = useState(null);
-	const [currentEffect, setCurrentEffect] = useState(0);
 
 	const onLed2EffectChange = (event) => {
-		let effectId = event.target.value;
-		fetchBackend(`leds/changeEffect/${effectId}`);
-		setCurrentEffect(effectId);
+		dispatch(changeLed2Effect(event.target.value));
 	}
 
+	useEffect(() => {
+		dispatch(fetchLed2Effects());
+	}, [dispatch]);
+	
 	useInterval(() => {
-		fetchBackend("leds/data").then((response) => {
-			const effectLoader = response.effectLoader;
-			if (!effects) {
-				setEffects(effectLoader.effects);
-			}
-			setCurrentEffect(effectLoader.currentEffect);
-		});
+		dispatch(fetchLed1State());
+		dispatch(fetchCurrentLed2Effect());
 	}, 2000);
 
 	return (
 		<PaperSection className={styles.leds}>
 			<PaperSection paperClassName={styles.effectChooserSection} title="Leds">
 				<PaperSection title="Led 1" paperClassName={styles.led1Section}>
-					<Switch checked={led1State} onChange={onLed1Change}/>
+					<Switch checked={led1.currentState} onChange={onLed1Change}/>
 				</PaperSection>
 				<PaperSection title="Led 2" paperClassName={styles.ledSection}>
 					<FormControl fullWidth variant="filled">
 						<InputLabel id="demo-simple-select-outlined-label">Effect</InputLabel>
-						<Select value={currentEffect ? currentEffect : 0} onChange={onLed2EffectChange} className={styles.effectChooser}>
-
-							{effects ? effects.map((effect) => (
+						<Select value={led2.currentEffect ? led2.currentEffect : 1} onChange={onLed2EffectChange} className={styles.effectChooser}>
+							{led2.effects.map((effect) => (
 								<MenuItem key={effect.id} value={effect.id}>{effect.name}</MenuItem>
-							)) : <MenuItem value={0}>none</MenuItem>}
+							))}
 						</Select>
 					</FormControl>
 				</PaperSection>
 			</PaperSection>
-			{led2?.selectedEffect
+			{led2.effects[led2.currentEffect]?.configuration
 				? (
 					<PaperSection paperClassName={styles.led2ConfigSection} title="Led 2 Configuration">
 						ZZZ

@@ -11,6 +11,7 @@ class EffectLoader{
 	public:
 		std::vector<Effect*> effects;
 		void changeEffect(int newEffectId);
+		int getCurrentEffect();
 		EffectLoader(FasterLed *_led2) {
 			effects.push_back(new None("none", true));
 			effects.push_back(new Solid("solid", true));
@@ -19,7 +20,6 @@ class EffectLoader{
 			led2 = _led2;
 			setupEffects();
 		}
-		void addToJson(DynamicJsonDocument *doc);
 	private:
 		FasterLed *led2;
 		static void taskHandler(void *parameter);

@@ -32,3 +32,11 @@ export const useInterval = (callback, delay) => {
 		return () => clearInterval(id)
 	}, [delay])
 }
+
+export const setLoadingState = (state, action) => {
+	state.status = 'loading';
+}
+export const setFailureState = (state, action) => {
+	state.status = 'failed'
+	state.error = action.error.message
+}

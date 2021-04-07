@@ -41,15 +41,7 @@ void EffectLoader::changeEffect(int newEffectId)
 	}
 }
 
-void EffectLoader::addToJson(DynamicJsonDocument *doc) {
-	JsonObject json = doc->createNestedObject("effectLoader");
-	JsonArray effectsArray = json.createNestedArray("effects");
-	for (std::size_t i = 0; i < effects.size(); ++i) {
-		auto effect = effects[i];
-		JsonObject effectObject = effectsArray.createNestedObject();
-		effectObject["name"] = effect->getName();
-		effectObject["id"] = effect->getEffectId();
-	}
-
-	json["currentEffect"] = currentEffect;
+int EffectLoader::getCurrentEffect()
+{
+	return currentEffect;
 }
