@@ -1,4 +1,5 @@
 #include "Fan.h"
+#include "../controller-configuration.h"
 
 Fan::Fan(char *_name, int _channel, int tachoPin, int pwmPin, void (*rpmUpdateCallback)(void *))
 {
@@ -37,10 +38,10 @@ void Fan::taskRunner()
 	for (;;) {
 		if (dutyCycle == 0) {
 			rpm = 0;
-			continue;
+			vTaskDelay(fanSenseInterval * 2);
 		}
-		if (halfRevolution < 40) {
-			continue;
+		if (halfRevolution < fanSenseInterval) {
+			vTaskDelay(fanSenseInterval - halfRevolution);
 		}
 		rpm = 30 * 1000 / (millis() - timeOld) * halfRevolution;
 		timeOld = millis();
@@ -53,6 +54,7 @@ void Fan::taskRunner()
 				1,
 				NULL
 		);
+		vTaskDelay(fanSenseInterval);
 	}
 }
 

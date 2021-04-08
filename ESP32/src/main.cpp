@@ -19,8 +19,6 @@
 #define FASTLED_INTERNAL
 
 #include <Arduino.h>
-#include <soc/timer_group_struct.h>
-#include <soc/timer_group_reg.h>
 
 #include "helper.h"
 #include "controller-pin-definition.h"
@@ -233,7 +231,7 @@ void setup()
 	attachInterrupt(digitalPinToInterrupt(fan2_tacho_pin), fan2TachoInterrupt, FALLING);
 
 	Serial.println("3D-Print-Enclosure-Controller booted");
-	//booted = true;
+	booted = true;
 }
 
 void onWsEvent(AsyncWebSocket *webSocket, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data,
@@ -362,12 +360,6 @@ void HandleDisplayPage(void *parameter)
 
 void loop()
 {
-	//Prevents the esp32 from crashing (watchdog not getting feed)
-	//This is required as code is split into tasks and no code is run inside the loop
-	TIMERG0.wdt_wprotect = TIMG_WDT_WKEY_VALUE;
-	TIMERG0.wdt_feed = 1;
-	TIMERG0.wdt_wprotect = 0;
-
 #ifdef NEXTION_DISPLAY_ENABLED
 	int pageId = -1;
 	int compId = -1;
@@ -386,7 +378,7 @@ void loop()
 
 	static unsigned long lastT = 0;
 	unsigned long t = millis();
-	if (t - lastT >= 5000) {
+	if (t - lastT >= 500) {
 		Serial.printf("Free heap: %d\n", ESP.getFreeHeap());
 		lastT = t;
 	}
