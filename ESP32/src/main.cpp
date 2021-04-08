@@ -70,8 +70,10 @@ void IRAM_ATTR fan2TachoInterrupt()
 	fan2->incrementHalfRevolution();
 }
 
-void sensor1TemperatureUpdated(void *params){
-	float temperature = *((float*)params);
+void sensor1TemperatureUpdated(void *params)
+{
+	if(!booted) vTaskDelete(NULL);
+	float temperature = *((float *) params);
 	String value = valueToTempString(temperature);
 	nextion->setCompText("main_page.tf_temp_sens1", value);
 	nextion->setCompText("sensor_page.tf_temp_sens1", value);
@@ -82,13 +84,14 @@ void sensor1TemperatureUpdated(void *params){
 	sensor1->addToJson(&json, true, false);
 	String response;
 	serializeJson(json, response);
-	Serial.println(response);
 	ws.textAll(response);
 	vTaskDelete(NULL);
 }
 
-void sensor1HumidityUpdated(void *params) {
-	float humidity = *((float*)params);
+void sensor1HumidityUpdated(void *params)
+{
+	if(!booted) vTaskDelete(NULL);
+	float humidity = *((float *) params);
 	String value = valueToPercentString(humidity);
 	nextion->setCompText("main_page.tf_hum_sens1", value);
 	nextion->setCompText("sensor_page.tf_hum_sens1", value);
@@ -101,8 +104,10 @@ void sensor1HumidityUpdated(void *params) {
 	vTaskDelete(NULL);
 }
 
-void sensor2TemperatureUpdated(void *params){
-	float temperature = *((float*)params);
+void sensor2TemperatureUpdated(void *params)
+{
+	if(!booted) vTaskDelete(NULL);
+	float temperature = *((float *) params);
 	String value = valueToTempString(temperature);
 	nextion
 			->setCompText("main_page.tf_temp_sens2", value)
@@ -120,6 +125,7 @@ void sensor2TemperatureUpdated(void *params){
 
 void sensor2HumidityUpdated(void *params)
 {
+	if(!booted) vTaskDelete(NULL);
 	float humidity = *((float *) params);
 	String value = valueToPercentString(humidity);
 	nextion
@@ -133,6 +139,43 @@ void sensor2HumidityUpdated(void *params)
 	ws.textAll(response);
 	vTaskDelete(NULL);
 }
+
+void fan1RpmUpdated(void *params)
+{
+	if(!booted) vTaskDelete(NULL);
+	int rpm = *((int *) params);
+
+	String value = valueToRpmString(rpm);
+	nextion
+			->setCompText("main_page.tf_speed_fan1", value)
+			->setCompText("fans_page.tf_speed_fan1", value);
+
+	DynamicJsonDocument json(64);
+	fan1->addToJson(&json, true, false, false);
+	String response;
+	serializeJson(json, response);
+	ws.textAll(response);
+	vTaskDelete(NULL);
+}
+
+void fan2RpmUpdated(void *params)
+{
+	if(!booted) vTaskDelete(NULL);
+	int rpm = *((int *) params);
+
+	String value = valueToRpmString(rpm);
+	nextion
+			->setCompText("main_page.tf_speed_fan2", value)
+			->setCompText("fans_page.tf_speed_fan2", value);
+
+	DynamicJsonDocument json(64);
+	fan2->addToJson(&json, true, false, false);
+	String response;
+	serializeJson(json, response);
+	ws.textAll(response);
+	vTaskDelete(NULL);
+}
+
 void setup()
 {
 	Serial.begin(serial1BaudRate);
@@ -161,8 +204,8 @@ void setup()
 	pinMode(buzzer_pin, OUTPUT);
 
 	//Fan
-	fan1 = new Fan("fan1", 0, fan1_tacho_pin, fan1_pwm_pin);
-	fan2 = new Fan("fan2", 1, fan2_tacho_pin, fan2_pwm_pin);
+	fan1 = new Fan("fan1", 0, fan1_tacho_pin, fan1_pwm_pin, &fan1RpmUpdated);
+	fan2 = new Fan("fan2", 1, fan2_tacho_pin, fan2_pwm_pin, &fan2RpmUpdated);
 	fan1->begin();
 	fan2->begin();
 
@@ -190,7 +233,7 @@ void setup()
 	attachInterrupt(digitalPinToInterrupt(fan2_tacho_pin), fan2TachoInterrupt, FALLING);
 
 	Serial.println("3D-Print-Enclosure-Controller booted");
-	booted = true;
+	//booted = true;
 }
 
 void onWsEvent(AsyncWebSocket *webSocket, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data,
@@ -292,16 +335,12 @@ void HandleDisplayPage(void *parameter)
 		switch (nextion->pageId) {
 			case MAIN_PAGE:
 				nextion
-						->setCompText("main_page.tf_speed_fan1", valueToRpmString(fan1->rpm))
 						->setCompText("main_page.tf_pwm_fan1", valueToPercentString(fan1->percent))
-						->setCompText("main_page.tf_speed_fan2", valueToRpmString(fan2->rpm))
 						->setCompText("main_page.tf_pwm_fan2", valueToPercentString(fan2->percent));
 				break;
 			case FANS_PAGE:
 				nextion
-						->setCompText("fans_page.tf_speed_fan1", valueToRpmString(fan1->rpm))
 						->setCompText("fans_page.tf_pwm_fan1", valueToPercentString(fan1->percent))
-						->setCompText("fans_page.tf_speed_fan2", valueToRpmString(fan2->rpm))
 						->setCompText("fans_page.tf_pwm_fan2", valueToPercentString(fan2->percent));
 				break;
 			case SENSOR_PAGE:
@@ -344,5 +383,12 @@ void loop()
 
 #ifdef WEBINTERFACE_ENABLED
 	esp8266React.loop();
+
+	static unsigned long lastT = 0;
+	unsigned long t = millis();
+	if (t - lastT >= 5000) {
+		Serial.printf("Free heap: %d\n", ESP.getFreeHeap());
+		lastT = t;
+	}
 #endif
 }

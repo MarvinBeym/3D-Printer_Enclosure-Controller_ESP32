@@ -27,11 +27,14 @@ const sensorsSlice = createSlice({
 			let humidity = action.payload.sensor1?.humidity;
 			if(temperature) {
 				state.sensor1.temperature = temperature;
-				state.sensor1.temperatureCollection = [...state.sensor1.temperatureCollection, temperature]
+				const temperatureData = {temperature: temperature, time: new Date().getTime()};
+				state.sensor1.temperatureCollection = [...state.sensor1.temperatureCollection, temperatureData];
 			}
 			if(humidity) {
 				state.sensor1.humidity = humidity;
 				state.sensor1.humidityCollection = [...state.sensor1.humidityCollection, humidity]
+				const humidityData = {humidity: humidity, time: new Date().getTime()};
+				state.sensor1.humidityCollection = [...state.sensor1.humidityCollection, humidityData];
 			}
 		},
 		setSensor2(state, action) {
@@ -39,16 +42,33 @@ const sensorsSlice = createSlice({
 			let humidity = action.payload.sensor2?.humidity;
 			if(temperature) {
 				state.sensor2.temperature = temperature;
-				state.sensor2.temperatureCollection = [...state.sensor2.temperatureCollection, temperature]
+				const temperatureData = {temperature: temperature, time: new Date().getTime()};
+				state.sensor2.temperatureCollection = [...state.sensor2.temperatureCollection, temperatureData];
 			}
 			if(humidity) {
 				state.sensor2.humidity = humidity;
-				state.sensor2.humidityCollection = [...state.sensor2.humidityCollection, humidity]
+				const humidityData = {humidity: humidity, time: new Date().getTime()};
+				state.sensor2.humidityCollection = [...state.sensor2.humidityCollection, humidityData];
 			}
+		},
+		clearSensor1Collections(state, action) {
+			state.sensor1.temperatureCollection = [];
+			state.sensor1.humidityCollection = [];
+		},
+		clearSensor2Collections(state, action) {
+			state.sensor2.temperatureCollection = [];
+			state.sensor2.humidityCollection = [];
 		},
 	},
 });
 
-export const {setSensor1, setSensor2} = sensorsSlice.actions;
+export const {
+	setSensor1,
+	setSensor2,
+	clearSensor1Collections,
+	clearSensor2Collections,
+	clearSensor2TemperatureCollection,
+	clearSensor2HumidityCollection
+} = sensorsSlice.actions;
 
 export default sensorsSlice.reducer;

@@ -1,5 +1,4 @@
-import React, {useState} from 'react';
-import {fetchBackend, useInterval} from "../helper";
+import React from 'react';
 import QuickLineChart from "../components/QuickLineChart";
 import {makeStyles} from "@material-ui/core/styles";
 import {useDispatch, useSelector} from "react-redux";
@@ -9,6 +8,12 @@ import ValueField from "../components/ValueField";
 import temperatureIcon from "../images/temp_icon_x32.png";
 import humidityIcon from "../images/humidity_icon_x32.png";
 import Img from "../components/Img";
+import {
+	clearSensor1Collections,
+	clearSensor2Collections,
+	selectSensor1,
+	selectSensor2
+} from "../redux/reducers/sensorsSlice";
 
 const useStyles = makeStyles(() => ({
 	graphSection: {
@@ -38,43 +43,8 @@ const Sensors = () => {
 	const dispatch = useDispatch();
 	const styles = useStyles();
 
-	const [currentSensor1Data, setCurrentSensor1Data] = useState(null);
-	const [currentSensor2Data, setCurrentSensor2Data] = useState(null);
-
-	const [sensor1Temps, setSensor1Temps] = useState([]);
-	const [sensor2Temps, setSensor2Temps] = useState([]);
-
-	//const sensor1Data = useSelector((state) => selectSensor1Data(state));
-	//const sensor2Data = useSelector((state) => selectSensor2Data(state));
-/*
-	const clearSensor1Data = () => {
-		dispatch(setSensor1Data([]));
-	}
-
-	const clearSensor2Data = () => {
-		dispatch(setSensor2Data([]));
-	}
-
-	useInterval(() => {
-		fetchBackend("sensors/data").then((response) => {
-			let currentTicks = new Date().getTime();
-			let newSensor1Data = response.sensor1;
-			let newSensor2Data = response.sensor2;
-			newSensor1Data.time = currentTicks;
-			newSensor2Data.time = currentTicks;
-
-			setCurrentSensor1Data(newSensor1Data);
-			setCurrentSensor2Data(newSensor2Data);
-
-			if (sensor1Data.length === 0 || newSensor1Data.temperature !== sensor1Data[sensor1Data.length - 1].temperature) {
-				setSensor1Temps([...sensor1Temps, {temperature: newSensor1Data.temperature, time: newSensor1Data.time}])
-			}
-
-			if (sensor2Data.length === 0 || newSensor2Data.temperature !== sensor2Data[sensor2Data.length - 1].temperature) {
-				setSensor2Temps([...sensor2Temps, {temperature: newSensor2Data.temperature, time: newSensor2Data.time}])
-			}
-		})
-	}, 2000);
+	const sensor1 = useSelector((state) => selectSensor1(state));
+	const sensor2 = useSelector((state) => selectSensor2(state));
 
 	const data = [
 		{
@@ -83,9 +53,9 @@ const Sensors = () => {
 					label: "Temperature",
 					ending: "°C",
 					adornment: temperatureIcon,
-					value: currentSensor1Data?.temperature
+					value: sensor1.temperature
 				},
-				{label: "Humidity", ending: "%", adornment: humidityIcon, value: currentSensor1Data?.humidity},
+				{label: "Humidity", ending: "%", adornment: humidityIcon, value: sensor1.humidity},
 			]
 		},
 		{
@@ -94,9 +64,9 @@ const Sensors = () => {
 					label: "Temperature",
 					ending: "°C",
 					adornment: temperatureIcon,
-					value: currentSensor2Data?.temperature
+					value: sensor2.temperature
 				},
-				{label: "Humidity", ending: "%", adornment: humidityIcon, value: currentSensor2Data?.humidity},
+				{label: "Humidity", ending: "%", adornment: humidityIcon, value: sensor2.humidity},
 			]
 		}
 	];
@@ -124,25 +94,22 @@ const Sensors = () => {
 				})}
 				<PaperSection className={styles.actionsPaper} title="Actions">
 					<Button className={styles.actionButton} variant="contained" color="primary"
-							onClick={clearSensor1Data}>Clear sensor 1 data</Button>
+							onClick={() => dispatch(clearSensor1Collections())}>Clear sensor 1 data</Button>
 					<Button className={styles.actionButton} variant="contained" color="primary"
-							onClick={clearSensor2Data}>Clear sensor 2 data</Button>
+							onClick={() => dispatch(clearSensor2Collections())}>Clear sensor 2 data</Button>
 				</PaperSection>
 			</div>
 			<PaperSection className={styles.graphSection} title="Graphs">
 				<QuickLineChart title="Sensor 1" yAxisValueSuffix="°C" yAxisLabel="Temperature" xAxisLabel="Time"
-								data={sensor1Temps}
+								data={sensor1.temperatureCollection}
 								dataKey="temperature"/>
 				<QuickLineChart title="Sensor 2" yAxisValueSuffix="°C" yAxisLabel="Temperature" xAxisLabel="Time"
-								data={sensor2Temps}
+								data={sensor2.temperatureCollection}
 								dataKey="temperature"/>
 			</PaperSection>
 		</div>
 
 	)
-
- */
-	return (<div>TTT</div>);
 }
 
 export default Sensors;

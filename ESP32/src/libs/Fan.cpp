@@ -1,6 +1,6 @@
 #include "Fan.h"
 
-Fan::Fan(char *_name, int _channel, int tachoPin, int pwmPin)
+Fan::Fan(char *_name, int _channel, int tachoPin, int pwmPin, void (*rpmUpdateCallback)(void *))
 {
 	pinMode(tachoPin, INPUT);
 	pinMode(pwmPin, OUTPUT);
@@ -12,6 +12,7 @@ Fan::Fan(char *_name, int _channel, int tachoPin, int pwmPin)
 	rpm = 0;
 	dutyCycle = 0;
 	percent = 0;
+	this->rpmUpdateCallback = rpmUpdateCallback;
 	ledcSetup(channel, 25000, 8);
 	ledcAttachPin(pwmPin, channel);
 }
@@ -44,15 +45,29 @@ void Fan::taskRunner()
 		rpm = 30 * 1000 / (millis() - timeOld) * halfRevolution;
 		timeOld = millis();
 		halfRevolution = 0;
+		xTaskCreate(
+				rpmUpdateCallback,
+				"rpmUpdateCallback",
+				2000,
+				(void *) &rpm,
+				1,
+				NULL
+		);
 	}
 }
 
-void Fan::addToJson(DynamicJsonDocument *doc) const
+void Fan::addToJson(DynamicJsonDocument *doc, bool includeRpm, bool includePercent, bool includeDutyCycle) const
 {
 	JsonObject json = doc->createNestedObject(name);
-	json["percent"] = percent;
-	json["rpm"] = rpm;
-	json["dutyCycle"] = dutyCycle;
+	if(includeRpm) {
+		json["rpm"] = rpm;
+	}
+	if(includePercent) {
+		json["percent"] = percent;
+	}
+	if(includeDutyCycle) {
+		json["dutyCycle"] = dutyCycle;
+	}
 }
 
 void Fan::incrementHalfRevolution()

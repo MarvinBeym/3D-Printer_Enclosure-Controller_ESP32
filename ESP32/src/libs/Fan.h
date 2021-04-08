@@ -11,17 +11,18 @@
 class Fan
 {
 	public:
-		Fan(char *_name, int _channel, int tachoPin, int pwmPin);
+		Fan(char *_name, int _channel, int tachoPin, int pwmPin, void (*rpmUpdateCallback)(void *));
 		void begin();
 		void incrementHalfRevolution();
 		void setDutyCycle(int _dutyCycle);
 		void setPercent(int _percent);
-		void addToJson(DynamicJsonDocument *doc) const;
+		void addToJson(DynamicJsonDocument *doc, bool includeRpm = true, bool includePercent = true, bool includeDutyCycle = true) const;
 		char *name;
 		int rpm;
 		int percent;
 		unsigned int dutyCycle;
 	private:
+		void (*rpmUpdateCallback)(void *);
 		static void taskHandler(void *parameter);
 		void taskRunner();
 		int channel;
