@@ -45,3 +45,25 @@ void Sensor::taskRunner()
 		vTaskDelay(pdMS_TO_TICKS(senseInterval));
 	}
 }
+
+bool Sensor::checkTemperatureChanged()
+{
+	return temperature != lastRead_temperature;
+}
+
+bool Sensor::checkHumidityChanged()
+{
+	return temperature != lastRead_temperature;
+}
+
+float Sensor::getTemperature()
+{
+	lastRead_temperature = temperature;
+	return temperature;
+}
+
+float Sensor::getHumidity()
+{
+	lastRead_temperature = temperature;
+	return humidity;
+}

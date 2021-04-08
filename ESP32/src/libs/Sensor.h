@@ -15,14 +15,20 @@ class Sensor
 		Sensor(char *_name, int pin, int _senseInterval);
 		void begin();
 		void addToJson(DynamicJsonDocument *doc) const;
-		float temperature;
-		float humidity;
+		bool checkTemperatureChanged();
+		bool checkHumidityChanged();
+		float getTemperature();
+		float getHumidity();
 		char *name;
 	private:
 		static void taskHandler(void *parameter);
 		void taskRunner();
 		DHT *dht;
 		int senseInterval;
+		float temperature;
+		float humidity;
+		float lastRead_temperature;
+		float lastRead_humidity;
 };
 
 #endif

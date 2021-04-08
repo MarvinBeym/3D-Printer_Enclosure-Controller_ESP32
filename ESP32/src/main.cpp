@@ -112,9 +112,6 @@ void setup()
 	xTaskCreate(HandleDisplayPage, "handleDisplayPage", 5000, nullptr, 2, nullptr);
 #endif
 
-	fan1->setPercent(50);
-	fan2->setPercent(80);
-
 #ifdef WEBINTERFACE_ENABLED
 	esp8266React.begin();
 	ws.onEvent(onWsEvent);
@@ -221,7 +218,7 @@ DynamicJsonDocument handleWebSocketCommunication(String _component, String _comm
 			break;
 		case Fan1:
 		case Fan2:
-			if(command == setPercent) {
+			if (command == setPercent) {
 				auto fan = component == Fan1 ? fan1 : fan2;
 				JsonObject fanJson = data.createNestedObject(_component);
 				int newPercent = value.toInt();
@@ -245,7 +242,7 @@ void onWsEvent(AsyncWebSocket *webSocket, AsyncWebSocketClient *client, AwsEvent
 			   size_t len)
 {
 
-	if(type == WS_EVT_CONNECT) {
+	if (type == WS_EVT_CONNECT) {
 		Serial.printf("ws[%s][%u] connect\n", webSocket->url(), client->id());
 		client->printf("Hello Client %u :)", client->id());
 		DynamicJsonDocument json(1024);
@@ -379,27 +376,41 @@ void HandleDisplayInteraction(int pageId, int compId)
 	}
 }
 
+void updateSensorsOnNextion(String page)
+{
+	nextion->addGraphValue(
+					1, 0,
+					map((int) sensor1->getTemperature(), displayGraphMinTemp, 255, 0, displayGraphHeight))
+			->addGraphValue(
+					1, 1,
+					map((int) sensor2->getTemperature(), displayGraphMinTemp, 255, 0, displayGraphHeight));
+	if (sensor1->checkTemperatureChanged()) {
+		nextion->setCompText(page + String(".tf_temp_sens1"), valueToTempString(sensor1->getTemperature()));
+	}
+	if (sensor1->checkHumidityChanged()) {
+		nextion->setCompText(page + String(".tf_hum_sens1"), valueToPercentString(sensor1->getHumidity()));
+	}
+
+	if (sensor2->checkTemperatureChanged()) {
+		nextion->setCompText(page + String(".tf_temp_sens2"), valueToTempString(sensor2->getTemperature()));
+	}
+
+	if (sensor2->checkHumidityChanged()) {
+		nextion->setCompText(page + String(".tf_hum_sens2"), valueToPercentString(sensor2->getHumidity()));
+	}
+}
+
 void HandleDisplayPage(void *parameter)
 {
 	for (;;) {
-#ifdef ALWAYS_UPDATE_DISPLAY_GRAPH
-		nextion
-				->addGraphValue(1, 0,
-								map((int) sensor1->temperature, displayGraphMinTemp, 255, 0, displayGraphHeight))
-				->addGraphValue(1, 1,
-								map((int) sensor2->temperature, displayGraphMinTemp, 255, 0, displayGraphHeight));
-#endif
 		switch (nextion->pageId) {
 			case MAIN_PAGE:
 				nextion
 						->setCompText("main_page.tf_speed_fan1", valueToRpmString(fan1->rpm))
 						->setCompText("main_page.tf_pwm_fan1", valueToPercentString(fan1->percent))
 						->setCompText("main_page.tf_speed_fan2", valueToRpmString(fan2->rpm))
-						->setCompText("main_page.tf_pwm_fan2", valueToPercentString(fan2->percent))
-						->setCompText("main_page.tf_temp_sens1", valueToTempString(sensor1->temperature))
-						->setCompText("main_page.tf_hum_sens1", valueToPercentString(sensor1->humidity))
-						->setCompText("main_page.tf_temp_sens2", valueToTempString(sensor2->temperature))
-						->setCompText("main_page.tf_hum_sens2", valueToPercentString(sensor2->humidity));
+						->setCompText("main_page.tf_pwm_fan2", valueToPercentString(fan2->percent));
+				updateSensorsOnNextion("main_page");
 				break;
 			case FANS_PAGE:
 				nextion
@@ -409,18 +420,7 @@ void HandleDisplayPage(void *parameter)
 						->setCompText("fans_page.tf_pwm_fan2", valueToPercentString(fan2->percent));
 				break;
 			case SENSOR_PAGE:
-				nextion
-						->setCompText("sensor_page.tf_temp_sens1", valueToTempString(sensor1->temperature))
-						->setCompText("sensor_page.tf_hum_sens1", valueToPercentString(sensor1->humidity))
-						->setCompText("sensor_page.tf_temp_sens2", valueToTempString(sensor2->temperature))
-						->setCompText("sensor_page.tf_hum_sens2", valueToPercentString(sensor2->humidity));
-#ifndef ALWAYS_UPDATE_DISPLAY_GRAPH
-				nextion
-						->addGraphValue(1, 0, map((int) sensor1->temperature, displayGraphMinTemp, 255, 0,
-												  displayGraphHeight))
-						->addGraphValue(1, 1, map((int) sensor2->temperature, displayGraphMinTemp, 255, 0,
-												  displayGraphHeight));
-#endif
+				updateSensorsOnNextion("sensor_page");
 				break;
 			case LED_PAGE:
 			case CONF_PAGE:

@@ -19,5 +19,3 @@ const int displayGraphHeight = 120;
 //At least one of them has to be enabled or the esp will crash as nobody is feeding the watchdog
 #define WEBINTERFACE_ENABLED
 #define NEXTION_DISPLAY_ENABLED
-
-//#define ALWAYS_UPDATE_DISPLAY_GRAPH
