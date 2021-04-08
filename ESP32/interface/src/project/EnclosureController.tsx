@@ -15,6 +15,9 @@ import Leds from './tabs/Leds';
 import Configuration from './tabs/Configuration';
 import {Provider} from "react-redux";
 import store from './redux/store';
+import {connect} from "@giantmachines/redux-websocket";
+
+store.dispatch(connect(process.env.REACT_APP_WEB_SOCKET_ROOT + "/ws", "ENCLOSURE_CONTROLLER"));
 
 class EnclosureController extends Component<RouteComponentProps> {
     handleTabChange = (event: React.ChangeEvent<{}>, path: string) => {

@@ -3,14 +3,6 @@ import {fetchBackend, useInterval} from "../helper";
 import QuickLineChart from "../components/QuickLineChart";
 import {makeStyles} from "@material-ui/core/styles";
 import {useDispatch, useSelector} from "react-redux";
-import {
-	addSensor1Data,
-	addSensor2Data,
-	selectSensor1Data,
-	selectSensor2Data,
-	setSensor1Data,
-	setSensor2Data
-} from "../redux/reducers/sensorsSlice";
 import PaperSection from "../components/PaperSection";
 import {Button} from "@material-ui/core";
 import ValueField from "../components/ValueField";
@@ -52,9 +44,9 @@ const Sensors = () => {
 	const [sensor1Temps, setSensor1Temps] = useState([]);
 	const [sensor2Temps, setSensor2Temps] = useState([]);
 
-	const sensor1Data = useSelector((state) => selectSensor1Data(state));
-	const sensor2Data = useSelector((state) => selectSensor2Data(state));
-
+	//const sensor1Data = useSelector((state) => selectSensor1Data(state));
+	//const sensor2Data = useSelector((state) => selectSensor2Data(state));
+/*
 	const clearSensor1Data = () => {
 		dispatch(setSensor1Data([]));
 	}
@@ -81,9 +73,6 @@ const Sensors = () => {
 			if (sensor2Data.length === 0 || newSensor2Data.temperature !== sensor2Data[sensor2Data.length - 1].temperature) {
 				setSensor2Temps([...sensor2Temps, {temperature: newSensor2Data.temperature, time: newSensor2Data.time}])
 			}
-
-			dispatch(addSensor1Data(newSensor1Data));
-			dispatch(addSensor2Data(newSensor2Data));
 		})
 	}, 2000);
 
@@ -151,6 +140,9 @@ const Sensors = () => {
 		</div>
 
 	)
+
+ */
+	return (<div>TTT</div>);
 }
 
 export default Sensors;

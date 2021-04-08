@@ -1,32 +1,54 @@
 import {createSlice} from "@reduxjs/toolkit";
 
 const initialState = {
-	sensor1Data: [],
-	sensor2Data: [],
+	sensor1: {
+		temperature: 0,
+		humidity: 0,
+		temperatureCollection: [],
+		humidityCollection: [],
+	},
+	sensor2: {
+		temperature: 0,
+		humidity: 0,
+		temperatureCollection: [],
+		humidityCollection: [],
+	},
 	status: 'idle',
 }
 
-export const selectSensor1Data = (state) => state.sensors.sensor1Data;
-export const selectSensor2Data = (state) => state.sensors.sensor2Data;
+export const selectSensor1 = (state) => state.sensors.sensor1;
+export const selectSensor2 = (state) => state.sensors.sensor2;
 const sensorsSlice = createSlice({
 	name: 'sensors',
 	initialState,
 	reducers: {
-		addSensor1Data(state, action) {
-			state.sensor1Data = [...state.sensor1Data, action.payload];
+		setSensor1(state, action) {
+			let temperature = action.payload.sensor1?.temperature;
+			let humidity = action.payload.sensor1?.humidity;
+			if(temperature) {
+				state.sensor1.temperature = temperature;
+				state.sensor1.temperatureCollection = [...state.sensor1.temperatureCollection, temperature]
+			}
+			if(humidity) {
+				state.sensor1.humidity = humidity;
+				state.sensor1.humidityCollection = [...state.sensor1.humidityCollection, humidity]
+			}
 		},
-		addSensor2Data(state, action) {
-			state.sensor2Data = [...state.sensor2Data, action.payload];
-		},
-		setSensor1Data(state, action) {
-			state.sensor1Data = action.payload;
-		},
-		setSensor2Data(state, action) {
-			state.sensor2Data = action.payload;
+		setSensor2(state, action) {
+			let temperature = action.payload.sensor2?.temperature;
+			let humidity = action.payload.sensor2?.humidity;
+			if(temperature) {
+				state.sensor2.temperature = temperature;
+				state.sensor2.temperatureCollection = [...state.sensor2.temperatureCollection, temperature]
+			}
+			if(humidity) {
+				state.sensor2.humidity = humidity;
+				state.sensor2.humidityCollection = [...state.sensor2.humidityCollection, humidity]
+			}
 		},
 	},
 });
 
-export const {addSensor1Data, addSensor2Data, setSensor1Data, setSensor2Data} = sensorsSlice.actions;
+export const {setSensor1, setSensor2} = sensorsSlice.actions;
 
 export default sensorsSlice.reducer;

@@ -11,6 +11,7 @@ import {
 	selectLed2,
 } from "../redux/reducers/ledsSlice";
 import {useInterval} from "../helper";
+import {send} from "@giantmachines/redux-websocket";
 
 const useStyles = makeStyles((theme) => ({
 	leds: {
@@ -49,20 +50,16 @@ const Leds = () => {
 	const led1 = useSelector((state) => selectLed1(state));
 	const led2 = useSelector((state) => selectLed2(state));
 	const onLed1Change = (event) => {
-		dispatch(changeLed1State(event.target.checked));
+		//dispatch(changeLed1State(event.target.checked));
 	}
 
 	const onLed2EffectChange = (event) => {
-		dispatch(changeLed2Effect(event.target.value));
+		//dispatch(changeLed2Effect(event.target.value));
 	}
-
-	useEffect(() => {
-		dispatch(fetchLed2Effects());
-	}, [dispatch]);
 	
 	useInterval(() => {
-		dispatch(fetchLed1State());
-		dispatch(fetchCurrentLed2Effect());
+		//dispatch(fetchLed1State());
+		//dispatch(fetchCurrentLed2Effect());
 	}, 2000);
 
 	return (

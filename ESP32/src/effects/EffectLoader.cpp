@@ -33,7 +33,11 @@ void EffectLoader::taskRunner()
 
 void EffectLoader::changeEffect(int newEffectId)
 {
-	currentEffect = newEffectId;
+	if(newEffectId <= 0 || newEffectId > effects.size() - 1) {
+		currentEffect = 0;
+	} else {
+		currentEffect = newEffectId;
+	}
 	for (std::size_t i = 0; i < effects.size(); ++i) {
 		if(effects[i]->getEffectGetsHandledOnce()) {
 			effects[i]->setEffectHandled(false);
@@ -44,4 +48,17 @@ void EffectLoader::changeEffect(int newEffectId)
 int EffectLoader::getCurrentEffect()
 {
 	return currentEffect;
+}
+
+void EffectLoader::addToJson(DynamicJsonDocument *doc)
+{
+	JsonObject jsonObject = doc->createNestedObject("led2");
+	jsonObject["currentEffect"] = getCurrentEffect();
+	JsonArray jsonArrEffects = jsonObject.createNestedArray("effects");
+	for (std::size_t i = 0; i < effects.size(); ++i) {
+		auto effect = effects[i];
+		JsonObject effectObject = jsonArrEffects.createNestedObject();
+		effectObject["name"] = effect->getName();
+		effectObject["id"] = effect->getEffectId();
+	}
 }

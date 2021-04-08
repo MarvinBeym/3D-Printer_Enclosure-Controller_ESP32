@@ -32,8 +32,11 @@
 #include "./effects/EffectLoader.h"
 
 #ifdef WEBINTERFACE_ENABLED
+
 #include <ESPAsyncWebServer.h>
 #include "../lib/framework/ESP8266React.h"
+
+AsyncWebSocket ws("/ws");
 AsyncWebServer server(80);
 ESP8266React esp8266React(&server);
 #endif
@@ -46,10 +49,14 @@ Fan *fan1;
 Fan *fan2;
 EffectLoader *effectLoader;
 #ifdef NEXTION_DISPLAY_ENABLED
+
 #include "./libs/NextionDisplay.h"
+
 NextionDisplay *nextion;
 #endif
 
+void onWsEvent(AsyncWebSocket *webSocket, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data,
+			   size_t len);
 void HandleDisplayPage(void *parameter);
 
 void IRAM_ATTR fan1TachoInterrupt()
@@ -110,128 +117,9 @@ void setup()
 
 #ifdef WEBINTERFACE_ENABLED
 	esp8266React.begin();
+	ws.onEvent(onWsEvent);
 
-	server.on("/rest/fans/data", HTTP_GET, [](AsyncWebServerRequest *request) {
-		AsyncResponseStream *response = request->beginResponseStream("application/json");
-		DynamicJsonDocument doc(192);
-		fan1->addToJson(&doc);
-		fan2->addToJson(&doc);
-		serializeJson(doc, *response);
-		request->send(response);
-	});
-	server.on("/rest/sensors/data", HTTP_GET, [](AsyncWebServerRequest *request) {
-		AsyncResponseStream *response = request->beginResponseStream("application/json");
-		DynamicJsonDocument doc(128);
-		sensor1->addToJson(&doc);
-		sensor2->addToJson(&doc);
-		serializeJson(doc, *response);
-		request->send(response);
-	});
-	server.on("/rest/main/data", HTTP_GET, [](AsyncWebServerRequest *request) {
-		AsyncResponseStream *response = request->beginResponseStream("application/json");
-		DynamicJsonDocument doc(256);
-		fan1->addToJson(&doc);
-		fan2->addToJson(&doc);
-		sensor1->addToJson(&doc);
-		sensor2->addToJson(&doc);
-		serializeJson(doc, *response);
-		request->send(response);
-	});
-
-	server.on("/rest/leds/led1/currentState", HTTP_GET, [](AsyncWebServerRequest *request) {
-		AsyncResponseStream *response = request->beginResponseStream("application/json");
-		DynamicJsonDocument doc(32);
-		JsonObject led1Json = doc.createNestedObject("led1");
-		led1Json["currentState"] = led1->getState();
-		serializeJson(doc, *response);
-		request->send(response);
-	});
-
-	server.on("^\\/rest\\/leds\\/led1\\/changeState\\/([0-1]+)$", HTTP_GET, [](AsyncWebServerRequest *request) {
-		bool newState = request->pathArg(0).toInt();
-		AsyncResponseStream *response = request->beginResponseStream("application/json");
-		DynamicJsonDocument doc(32);
-		JsonObject led1Json = doc.createNestedObject("led1");
-		newState ? led1->on() : led1->off();
-		led1Json["currentState"] = newState;
-		serializeJson(doc, *response);
-		request->send(response);
-	});
-
-	server.on("/rest/leds/led2/currentEffect", HTTP_GET, [](AsyncWebServerRequest *request) {
-		AsyncResponseStream *response = request->beginResponseStream("application/json");
-		DynamicJsonDocument doc(1024);
-		JsonObject led2Json = doc.createNestedObject("led2");
-		led2Json["currentEffect"] = effectLoader->getCurrentEffect();
-		serializeJson(doc, *response);
-		request->send(response);
-	});
-
-	server.on("/rest/leds/led2/effects", HTTP_GET, [](AsyncWebServerRequest *request) {
-		AsyncResponseStream *response = request->beginResponseStream("application/json");
-		DynamicJsonDocument doc(1024);
-		JsonObject led2Json = doc.createNestedObject("led2");
-
-		JsonArray jsonArray = led2Json.createNestedArray("effects");
-		for (std::size_t i = 0; i < effectLoader->effects.size(); ++i) {
-			auto effect = effectLoader->effects[i];
-			JsonObject effectObject = jsonArray.createNestedObject();
-
-			effectObject["name"] = effect->getName();
-			effectObject["id"] = effect->getEffectId();
-		}
-		serializeJson(doc, *response);
-		request->send(response);
-	});
-
-	server.on("^\\/rest\\/leds\\/led2\\/changeEffect\\/([0-9]+)$", HTTP_GET, [](AsyncWebServerRequest *request) {
-		int effectId = request->pathArg(0).toInt();
-		AsyncResponseStream *response = request->beginResponseStream("application/json");
-		DynamicJsonDocument doc(32);
-		JsonObject led2Json = doc.createNestedObject("led2");
-		effectLoader->changeEffect(effectId);
-		led2Json["currentEffect"] = effectId;
-		serializeJson(doc, *response);
-		request->send(response);
-	});
-
-	server.on(
-			"/rest/fans/setSpeed",
-			HTTP_POST,
-			[](AsyncWebServerRequest * request) {
-
-			},
-			NULL,
-			[](AsyncWebServerRequest * request, uint8_t *data, size_t len, size_t index, size_t total) {
-				char* jsonString = (char*)data;
-				DynamicJsonDocument doc(256);
-				DeserializationError error = deserializeJson(doc, jsonString);
-
-				if (error) {
-					AsyncResponseStream *errorResponse = request->beginResponseStream("application/json");
-					DynamicJsonDocument errorDoc(256);
-					String errorMessage = "deserializeJson() failed: ";
-					errorMessage += error.f_str();
-					errorDoc["message"] =  errorMessage;
-					serializeJson(errorDoc, *errorResponse);
-					request->send(errorResponse);
-					return;
-				}
-
-				AsyncResponseStream *response = request->beginResponseStream("application/json");
-				DynamicJsonDocument messageDoc(256);
-				if(doc.containsKey("fan1")) {
-					int fan1Value = doc["fan1"];
-					fan1->setPercent(fan1Value);
-				}
-				if(doc.containsKey("fan2")) {
-					int fan2Value = doc["fan2"];
-					fan2->setPercent(fan2Value);
-				}
-				messageDoc["message"] = "Fan speed was updated";
-				serializeJson(messageDoc, *response);
-				request->send(response);
-			});
+	server.addHandler(&ws);
 	server.begin();
 
 	//Delay and attaching interrupt after everything is
@@ -244,7 +132,183 @@ void setup()
 
 	Serial.println("3D-Print-Enclosure-Controller booted");
 }
+
+enum WebSocketComponent
+{
+	Led1,
+	Led2,
+	Fan1,
+	Fan2,
+	Invalid,
+};
+
+enum WebSocketCommand
+{
+	setState,
+	getEffects,
+	setEffect,
+	setPercent,
+	invalid,
+};
+
+WebSocketComponent resolveWebSocketComponent(String component)
+{
+	if (component == "led1") return Led1;
+	if (component == "led2") return Led2;
+	if (component == "fan1") return Fan1;
+	if (component == "fan2") return Fan2;
+	return Invalid;
+}
+
+WebSocketCommand resolveWebSocketCommand(String command)
+{
+	if (command == "setState") return setState;
+	if (command == "getEffects") return getEffects;
+	if (command == "setEffect") return setEffect;
+	if (command == "setPercent") return setPercent;
+	return invalid;
+}
+
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wswitch"
+
+DynamicJsonDocument handleWebSocketCommunication(String _component, String _command, String value)
+{
+	DynamicJsonDocument responseDoc(512);
+	JsonObject data = responseDoc.createNestedObject("data");
+	WebSocketComponent component = resolveWebSocketComponent(_component);
+	WebSocketCommand command = resolveWebSocketCommand(_command);
+
+	if (component == WebSocketComponent::Invalid) {
+		responseDoc["message"] = "Invalid component";
+		responseDoc["status"] = "failure";
+		responseDoc["component"] = component;
+		return responseDoc;
+	}
+	if (command == WebSocketCommand::invalid) {
+		responseDoc["message"] = "Invalid command";
+		responseDoc["status"] = "failure";
+		responseDoc["command"] = command;
+		return responseDoc;
+	}
+
+	switch (component) {
+		case Led1:
+			if (command == setState) {
+				JsonObject led1Json = data.createNestedObject(_component);
+				bool newState = value.toInt() != 0;
+				newState ? led1->on() : led1->off();
+				led1Json["state"] = newState;
+			}
+			break;
+		case Led2:
+			if (command == getEffects) {
+				JsonObject led2Json = data.createNestedObject(_component);
+				JsonArray jsonArray = led2Json.createNestedArray("effects");
+				for (std::size_t i = 0; i < effectLoader->effects.size(); ++i) {
+					auto effect = effectLoader->effects[i];
+					JsonObject effectObject = jsonArray.createNestedObject();
+					effectObject["name"] = effect->getName();
+					effectObject["id"] = effect->getEffectId();
+				}
+			} else if (command == setEffect) {
+				int newEffect = value.toInt();
+				JsonObject led2Json = data.createNestedObject(_component);
+				effectLoader->changeEffect(newEffect);
+				led2Json["currentEffect"] = effectLoader->getCurrentEffect();
+			}
+			break;
+		case Fan1:
+		case Fan2:
+			if(command == setPercent) {
+				auto fan = component == Fan1 ? fan1 : fan2;
+				JsonObject fanJson = data.createNestedObject(_component);
+				int newPercent = value.toInt();
+				fan->setPercent(newPercent);
+				fanJson["percent"] = fan->percent;
+				break;
+			}
+	}
+
+	responseDoc["message"] = "Executed command";
+	responseDoc["status"] = "success";
+	responseDoc["command"] = command;
+	responseDoc["component"] = component;
+
+	return responseDoc;
+}
+
+#pragma clang diagnostic pop
+
+void onWsEvent(AsyncWebSocket *webSocket, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data,
+			   size_t len)
+{
+
+	if(type == WS_EVT_CONNECT) {
+		Serial.printf("ws[%s][%u] connect\n", webSocket->url(), client->id());
+		client->printf("Hello Client %u :)", client->id());
+		DynamicJsonDocument json(1024);
+		JsonObject led1Json = json.createNestedObject("led1");
+		led1Json["state"] = led1->getState();
+		effectLoader->addToJson(&json);
+		fan1->addToJson(&json);
+		fan2->addToJson(&json);
+		sensor1->addToJson(&json);
+		sensor2->addToJson(&json);
+		String response;
+		serializeJson(json, response);
+		client->text(response);
+		Serial.println(response);
+	}
+
+	/*
+	AwsFrameInfo *info = (AwsFrameInfo *) arg;
+
+			if (info->final && info->index == 0 && info->len == len && info->opcode == WS_TEXT) {
+				Serial.printf("ws[%s][%u] %s-message[%llu]: ", webSocket->url(), client->id(),
+							  (info->opcode == WS_TEXT) ? "text" : "binary", info->len);
+
+				char *jsonString = (char *) data;
+				DynamicJsonDocument json(1024);
+				DeserializationError error = deserializeJson(json, jsonString);
+
+				if (error || !json.containsKey("component") || !json.containsKey("command") ||
+					!json.containsKey("value")) {
+					DynamicJsonDocument errorDoc(128);
+					errorDoc["reason"] = "No json, invalid json or other error";
+					errorDoc["message"] = "Error in communication";
+					errorDoc["status"] = "failure";
+					String response;
+					serializeJson(errorDoc, response);
+					client->text(response);
+					Serial.println(response);
+					break;
+				}
+
+				Serial.printf("%s\n", jsonString);
+
+				DynamicJsonDocument responseDoc = handleWebSocketCommunication(json["component"], json["command"],
+																			   json["value"]);
+				String response;
+				serializeJson(responseDoc, response);
+				client->text(response);
+				Serial.println(response);
+			} else {
+				DynamicJsonDocument doc(192);
+				doc["reason"] = "Only single frame as a json string allowed for communication";
+				doc["message"] = "Error in communication";
+				doc["status"] = "failure";
+				String response;
+				serializeJson(doc, response);
+				client->text(response);
+			}
+			break;
+	 */
+}
+
 #ifdef NEXTION_DISPLAY_ENABLED
+
 void HandleDisplayInteraction(int pageId, int compId)
 {
 	switch (pageId) {
@@ -370,6 +434,7 @@ void HandleDisplayPage(void *parameter)
 		vTaskDelay(pdMS_TO_TICKS(displayPageRefreshInterval));
 	}
 }
+
 #endif
 
 void loop()

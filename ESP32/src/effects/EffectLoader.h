@@ -12,6 +12,7 @@ class EffectLoader{
 		std::vector<Effect*> effects;
 		void changeEffect(int newEffectId);
 		int getCurrentEffect();
+		void addToJson(DynamicJsonDocument *doc);
 		EffectLoader(FasterLed *_led2) {
 			effects.push_back(new None("none", true));
 			effects.push_back(new Solid("solid", true));
