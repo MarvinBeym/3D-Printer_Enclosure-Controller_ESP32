@@ -48,6 +48,7 @@ FasterLed *led2;
 Fan *fan1;
 Fan *fan2;
 EffectLoader *effectLoader;
+bool booted = false;
 #ifdef NEXTION_DISPLAY_ENABLED
 
 #include "./libs/NextionDisplay.h"
@@ -69,7 +70,69 @@ void IRAM_ATTR fan2TachoInterrupt()
 	fan2->incrementHalfRevolution();
 }
 
+void sensor1TemperatureUpdated(void *params){
+	float temperature = *((float*)params);
+	String value = valueToTempString(temperature);
+	nextion->setCompText("main_page.tf_temp_sens1", value);
+	nextion->setCompText("sensor_page.tf_temp_sens1", value);
+	nextion->addGraphValue(
+			1, 0,
+			map((int) temperature, displayGraphMinTemp, 255, 0, displayGraphHeight));
+	DynamicJsonDocument json(64);
+	sensor1->addToJson(&json, true, false);
+	String response;
+	serializeJson(json, response);
+	Serial.println(response);
+	ws.textAll(response);
+	vTaskDelete(NULL);
+}
 
+void sensor1HumidityUpdated(void *params) {
+	float humidity = *((float*)params);
+	String value = valueToPercentString(humidity);
+	nextion->setCompText("main_page.tf_hum_sens1", value);
+	nextion->setCompText("sensor_page.tf_hum_sens1", value);
+
+	DynamicJsonDocument json(64);
+	sensor1->addToJson(&json, false);
+	String response;
+	serializeJson(json, response);
+	ws.textAll(response);
+	vTaskDelete(NULL);
+}
+
+void sensor2TemperatureUpdated(void *params){
+	float temperature = *((float*)params);
+	String value = valueToTempString(temperature);
+	nextion
+			->setCompText("main_page.tf_temp_sens2", value)
+			->setCompText("sensor_page.tf_temp_sens2", value)
+			->addGraphValue(
+					1, 1,
+					map((int) temperature, displayGraphMinTemp, 255, 0, displayGraphHeight));
+	DynamicJsonDocument json(64);
+	sensor2->addToJson(&json, true, false);
+	String response;
+	serializeJson(json, response);
+	ws.textAll(response);
+	vTaskDelete(NULL);
+}
+
+void sensor2HumidityUpdated(void *params)
+{
+	float humidity = *((float *) params);
+	String value = valueToPercentString(humidity);
+	nextion
+			->setCompText("main_page.tf_hum_sens2", value)
+			->setCompText("sensor_page.tf_hum_sens2", value);
+
+	DynamicJsonDocument json(64);
+	sensor2->addToJson(&json, false);
+	String response;
+	serializeJson(json, response);
+	ws.textAll(response);
+	vTaskDelete(NULL);
+}
 void setup()
 {
 	Serial.begin(serial1BaudRate);
@@ -78,11 +141,10 @@ void setup()
 	delay(100);
 
 	//Temp & Humidity sensor setup
-	sensor1 = new Sensor("sensor1", dht22_1_pin, dhtSenseInterval);
-	sensor2 = new Sensor("sensor2", dht22_2_pin, dhtSenseInterval);
+	sensor1 = new Sensor("sensor1", dht22_1_pin, dhtSenseInterval, &sensor1TemperatureUpdated, &sensor1HumidityUpdated);
+	sensor2 = new Sensor("sensor2", dht22_2_pin, dhtSenseInterval, &sensor2TemperatureUpdated, &sensor2HumidityUpdated);
 	sensor1->begin();
 	sensor2->begin();
-
 
 	//Led1 (relay) setup
 	led1 = new Relay(led1_relay_pin, false);
@@ -128,115 +190,8 @@ void setup()
 	attachInterrupt(digitalPinToInterrupt(fan2_tacho_pin), fan2TachoInterrupt, FALLING);
 
 	Serial.println("3D-Print-Enclosure-Controller booted");
+	booted = true;
 }
-
-enum WebSocketComponent
-{
-	Led1,
-	Led2,
-	Fan1,
-	Fan2,
-	Invalid,
-};
-
-enum WebSocketCommand
-{
-	setState,
-	getEffects,
-	setEffect,
-	setPercent,
-	invalid,
-};
-
-WebSocketComponent resolveWebSocketComponent(String component)
-{
-	if (component == "led1") return Led1;
-	if (component == "led2") return Led2;
-	if (component == "fan1") return Fan1;
-	if (component == "fan2") return Fan2;
-	return Invalid;
-}
-
-WebSocketCommand resolveWebSocketCommand(String command)
-{
-	if (command == "setState") return setState;
-	if (command == "getEffects") return getEffects;
-	if (command == "setEffect") return setEffect;
-	if (command == "setPercent") return setPercent;
-	return invalid;
-}
-
-
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wswitch"
-
-DynamicJsonDocument handleWebSocketCommunication(String _component, String _command, String value)
-{
-	DynamicJsonDocument responseDoc(512);
-	JsonObject data = responseDoc.createNestedObject("data");
-	WebSocketComponent component = resolveWebSocketComponent(_component);
-	WebSocketCommand command = resolveWebSocketCommand(_command);
-
-	if (component == WebSocketComponent::Invalid) {
-		responseDoc["message"] = "Invalid component";
-		responseDoc["status"] = "failure";
-		responseDoc["component"] = component;
-		return responseDoc;
-	}
-	if (command == WebSocketCommand::invalid) {
-		responseDoc["message"] = "Invalid command";
-		responseDoc["status"] = "failure";
-		responseDoc["command"] = command;
-		return responseDoc;
-	}
-
-	switch (component) {
-		case Led1:
-			if (command == setState) {
-				JsonObject led1Json = data.createNestedObject(_component);
-				bool newState = value.toInt() != 0;
-				newState ? led1->on() : led1->off();
-				led1Json["state"] = newState;
-			}
-			break;
-		case Led2:
-			if (command == getEffects) {
-				JsonObject led2Json = data.createNestedObject(_component);
-				JsonArray jsonArray = led2Json.createNestedArray("effects");
-				for (std::size_t i = 0; i < effectLoader->effects.size(); ++i) {
-					auto effect = effectLoader->effects[i];
-					JsonObject effectObject = jsonArray.createNestedObject();
-					effectObject["name"] = effect->getName();
-					effectObject["id"] = effect->getEffectId();
-				}
-			} else if (command == setEffect) {
-				int newEffect = value.toInt();
-				JsonObject led2Json = data.createNestedObject(_component);
-				effectLoader->changeEffect(newEffect);
-				led2Json["currentEffect"] = effectLoader->getCurrentEffect();
-			}
-			break;
-		case Fan1:
-		case Fan2:
-			if (command == setPercent) {
-				auto fan = component == Fan1 ? fan1 : fan2;
-				JsonObject fanJson = data.createNestedObject(_component);
-				int newPercent = value.toInt();
-				fan->setPercent(newPercent);
-				fanJson["percent"] = fan->percent;
-				break;
-			}
-	}
-
-	responseDoc["message"] = "Executed command";
-	responseDoc["status"] = "success";
-	responseDoc["command"] = command;
-	responseDoc["component"] = component;
-
-	return responseDoc;
-}
-
-#pragma clang diagnostic pop
 
 void onWsEvent(AsyncWebSocket *webSocket, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data,
 			   size_t len)
@@ -256,52 +211,7 @@ void onWsEvent(AsyncWebSocket *webSocket, AsyncWebSocketClient *client, AwsEvent
 		String response;
 		serializeJson(json, response);
 		client->text(response);
-		Serial.println(response);
 	}
-
-	/*
-	AwsFrameInfo *info = (AwsFrameInfo *) arg;
-
-			if (info->final && info->index == 0 && info->len == len && info->opcode == WS_TEXT) {
-				Serial.printf("ws[%s][%u] %s-message[%llu]: ", webSocket->url(), client->id(),
-							  (info->opcode == WS_TEXT) ? "text" : "binary", info->len);
-
-				char *jsonString = (char *) data;
-				DynamicJsonDocument json(1024);
-				DeserializationError error = deserializeJson(json, jsonString);
-
-				if (error || !json.containsKey("component") || !json.containsKey("command") ||
-					!json.containsKey("value")) {
-					DynamicJsonDocument errorDoc(128);
-					errorDoc["reason"] = "No json, invalid json or other error";
-					errorDoc["message"] = "Error in communication";
-					errorDoc["status"] = "failure";
-					String response;
-					serializeJson(errorDoc, response);
-					client->text(response);
-					Serial.println(response);
-					break;
-				}
-
-				Serial.printf("%s\n", jsonString);
-
-				DynamicJsonDocument responseDoc = handleWebSocketCommunication(json["component"], json["command"],
-																			   json["value"]);
-				String response;
-				serializeJson(responseDoc, response);
-				client->text(response);
-				Serial.println(response);
-			} else {
-				DynamicJsonDocument doc(192);
-				doc["reason"] = "Only single frame as a json string allowed for communication";
-				doc["message"] = "Error in communication";
-				doc["status"] = "failure";
-				String response;
-				serializeJson(doc, response);
-				client->text(response);
-			}
-			break;
-	 */
 }
 
 #ifdef NEXTION_DISPLAY_ENABLED
@@ -376,30 +286,6 @@ void HandleDisplayInteraction(int pageId, int compId)
 	}
 }
 
-void updateSensorsOnNextion(String page)
-{
-	nextion->addGraphValue(
-					1, 0,
-					map((int) sensor1->getTemperature(), displayGraphMinTemp, 255, 0, displayGraphHeight))
-			->addGraphValue(
-					1, 1,
-					map((int) sensor2->getTemperature(), displayGraphMinTemp, 255, 0, displayGraphHeight));
-	if (sensor1->checkTemperatureChanged()) {
-		nextion->setCompText(page + String(".tf_temp_sens1"), valueToTempString(sensor1->getTemperature()));
-	}
-	if (sensor1->checkHumidityChanged()) {
-		nextion->setCompText(page + String(".tf_hum_sens1"), valueToPercentString(sensor1->getHumidity()));
-	}
-
-	if (sensor2->checkTemperatureChanged()) {
-		nextion->setCompText(page + String(".tf_temp_sens2"), valueToTempString(sensor2->getTemperature()));
-	}
-
-	if (sensor2->checkHumidityChanged()) {
-		nextion->setCompText(page + String(".tf_hum_sens2"), valueToPercentString(sensor2->getHumidity()));
-	}
-}
-
 void HandleDisplayPage(void *parameter)
 {
 	for (;;) {
@@ -410,7 +296,6 @@ void HandleDisplayPage(void *parameter)
 						->setCompText("main_page.tf_pwm_fan1", valueToPercentString(fan1->percent))
 						->setCompText("main_page.tf_speed_fan2", valueToRpmString(fan2->rpm))
 						->setCompText("main_page.tf_pwm_fan2", valueToPercentString(fan2->percent));
-				updateSensorsOnNextion("main_page");
 				break;
 			case FANS_PAGE:
 				nextion
@@ -420,7 +305,6 @@ void HandleDisplayPage(void *parameter)
 						->setCompText("fans_page.tf_pwm_fan2", valueToPercentString(fan2->percent));
 				break;
 			case SENSOR_PAGE:
-				updateSensorsOnNextion("sensor_page");
 				break;
 			case LED_PAGE:
 			case CONF_PAGE:

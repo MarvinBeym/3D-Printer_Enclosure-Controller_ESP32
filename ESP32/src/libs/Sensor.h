@@ -9,26 +9,29 @@
 #include <Adafruit_Sensor.h>
 #include <DHT.h>
 #include <ArduinoJson.h>
+
 class Sensor
 {
 	public:
-		Sensor(char *_name, int pin, int _senseInterval);
+		Sensor(
+				char *_name,
+				int pin,
+				int _senseInterval,
+				void (*temperatureUpdateCallback)(void *),
+				void (*humidityUpdateCallback)(void *)
+		);
 		void begin();
-		void addToJson(DynamicJsonDocument *doc) const;
-		bool checkTemperatureChanged();
-		bool checkHumidityChanged();
-		float getTemperature();
-		float getHumidity();
+		void addToJson(DynamicJsonDocument *doc, bool includeTemperature = true, bool includeHumidity = true) const;
 		char *name;
 	private:
+		void (*temperatureUpdateCallback)(void *);
+		void (*humidityUpdateCallback)(void *);
 		static void taskHandler(void *parameter);
 		void taskRunner();
 		DHT *dht;
 		int senseInterval;
 		float temperature;
 		float humidity;
-		float lastRead_temperature;
-		float lastRead_humidity;
 };
 
 #endif

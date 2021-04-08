@@ -1,12 +1,15 @@
 #include "Sensor.h"
 
-Sensor::Sensor(char *_name, int pin, int _senseInterval)
+Sensor::Sensor(char *_name, int pin, int _senseInterval, void (*temperatureUpdateCallback)(void *),
+			   void (*humidityUpdateCallback)(void *))
 {
 	name = _name;
 	senseInterval = _senseInterval;
 	temperature = 0;
 	humidity = 0;
 	dht = new DHT(pin, DHT22);
+	this->temperatureUpdateCallback = temperatureUpdateCallback;
+	this->humidityUpdateCallback = humidityUpdateCallback;
 }
 
 void Sensor::begin()
@@ -23,10 +26,15 @@ void Sensor::taskHandler(void *parameter)
 	sensor->taskRunner();
 }
 
-void Sensor::addToJson(DynamicJsonDocument *doc) const {
+void Sensor::addToJson(DynamicJsonDocument *doc, bool includeTemperature, bool includeHumidity) const
+{
 	JsonObject json = doc->createNestedObject(name);
-	json["humidity"] = humidity;
-	json["temperature"] = temperature;
+	if (includeTemperature) {
+		json["temperature"] = temperature;
+	}
+	if (includeHumidity) {
+		json["humidity"] = humidity;
+	}
 }
 
 //Runs the actual task code.
@@ -36,34 +44,28 @@ void Sensor::taskRunner()
 		float tmpHumidity = dht->readHumidity();
 		float tmpTemperature = dht->readTemperature();
 
-		if (!isnan(tmpTemperature)) {
+		if ((!isnan(tmpTemperature) && tmpTemperature != temperature) || temperature == 0) {
 			temperature = tmpTemperature;
+			xTaskCreate(
+					temperatureUpdateCallback,
+					"temperatureUpdateCallback",
+					2000,
+					(void *) &temperature,
+					1,
+					NULL
+			);
 		}
-		if (!isnan(tmpHumidity)) {
+		if ((!isnan(tmpHumidity) && tmpHumidity != humidity) || humidity == 0) {
 			humidity = tmpHumidity;
+			xTaskCreate(
+					humidityUpdateCallback,
+					"humidityUpdateCallback",
+					2000,
+					(void *) &humidity,
+					1,
+					NULL
+			);
 		}
 		vTaskDelay(pdMS_TO_TICKS(senseInterval));
 	}
-}
-
-bool Sensor::checkTemperatureChanged()
-{
-	return temperature != lastRead_temperature;
-}
-
-bool Sensor::checkHumidityChanged()
-{
-	return temperature != lastRead_temperature;
-}
-
-float Sensor::getTemperature()
-{
-	lastRead_temperature = temperature;
-	return temperature;
-}
-
-float Sensor::getHumidity()
-{
-	lastRead_temperature = temperature;
-	return humidity;
 }
