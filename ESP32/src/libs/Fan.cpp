@@ -21,7 +21,7 @@ Fan::Fan(char *_name, int _channel, int tachoPin, int pwmPin, void (*rpmUpdateCa
 void Fan::begin()
 {
 	setDutyCycle(0);
-	xTaskCreate(&Fan::taskHandler, name, 1000, this, 1, nullptr);
+	xTaskCreate(&taskHandler, name, 1000, this, 1, nullptr);
 }
 
 //A wrapper static function to allow creation of tasks inside the class

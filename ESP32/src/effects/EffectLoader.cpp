@@ -5,7 +5,7 @@ void EffectLoader::setupEffects()
 	for (std::size_t i = 0; i < effects.size(); ++i) {
 		effects[i]->setEffectId(i + 1);
 	}
-	xTaskCreate(&EffectLoader::taskHandler, "effectLoader", 5000, this, 1, nullptr);
+	xTaskCreate(&taskHandler, "effectLoader", 5000, this, 1, nullptr);
 }
 
 //A wrapper static function to allow creation of tasks inside the class

@@ -343,10 +343,9 @@ void HandleDisplayPage(void *parameter)
 				nextion->setCompText("about_page.tf_esp32_v", version);
 				break;
 		}
-		vTaskDelay(pdMS_TO_TICKS(displayPageRefreshInterval));
+		delay(displayPageRefreshInterval);
 	}
 }
-
 
 void loop()
 {

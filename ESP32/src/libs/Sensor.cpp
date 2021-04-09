@@ -16,7 +16,7 @@ void Sensor::begin()
 {
 	dht->begin();
 	delay(100); //Required to wait a bit. This prevents the first Sensor object from being able to read the dht22
-	xTaskCreate(&Sensor::taskHandler, name, 1000, this, 3, nullptr);
+	xTaskCreate(&taskHandler, name, 1000, this, 3, nullptr);
 }
 
 //A wrapper static function to allow creation of tasks inside the class
@@ -66,6 +66,6 @@ void Sensor::taskRunner()
 					NULL
 			);
 		}
-		vTaskDelay(pdMS_TO_TICKS(senseInterval));
+		delay(senseInterval);
 	}
 }
