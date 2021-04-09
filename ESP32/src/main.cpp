@@ -29,15 +29,12 @@
 #include "./libs/Fan.h"
 #include "./effects/EffectLoader.h"
 
-#ifdef WEBINTERFACE_ENABLED
-
 #include <ESPAsyncWebServer.h>
 #include "../lib/framework/ESP8266React.h"
 
 AsyncWebSocket ws("/ws");
 AsyncWebServer server(80);
 ESP8266React esp8266React(&server);
-#endif
 
 Sensor *sensor1;
 Sensor *sensor2;
@@ -47,12 +44,10 @@ Fan *fan1;
 Fan *fan2;
 EffectLoader *effectLoader;
 bool booted = false;
-#ifdef NEXTION_DISPLAY_ENABLED
 
 #include "./libs/NextionDisplay.h"
 
 NextionDisplay *nextion;
-#endif
 
 void onWsEvent(AsyncWebSocket *webSocket, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data,
 			   size_t len);
@@ -207,15 +202,12 @@ void setup()
 	fan1->begin();
 	fan2->begin();
 
-#ifdef NEXTION_DISPLAY_ENABLED
 	//Display
 	nextion = new NextionDisplay(serial2BaudRate, nextionDisplayRX, nextionDisplayTX);
 	nextion->begin(displayBootDelay);
 
 	xTaskCreate(HandleDisplayPage, "handleDisplayPage", 5000, nullptr, 2, nullptr);
-#endif
 
-#ifdef WEBINTERFACE_ENABLED
 	esp8266React.begin();
 	ws.onEvent(onWsEvent);
 
@@ -225,13 +217,14 @@ void setup()
 	//Delay and attaching interrupt after everything is
 	//required to prevent crashes from happening on boot caused by weird interrupt stuff
 	delay(2000);
-#endif
 
 	attachInterrupt(digitalPinToInterrupt(fan1_tacho_pin), fan1TachoInterrupt, FALLING);
 	attachInterrupt(digitalPinToInterrupt(fan2_tacho_pin), fan2TachoInterrupt, FALLING);
 
 	Serial.println("3D-Print-Enclosure-Controller booted");
 	booted = true;
+	fan1->setPercent(100);
+	fan2->setPercent(100);
 }
 
 void onWsEvent(AsyncWebSocket *webSocket, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data,
@@ -255,7 +248,6 @@ void onWsEvent(AsyncWebSocket *webSocket, AsyncWebSocketClient *client, AwsEvent
 	}
 }
 
-#ifdef NEXTION_DISPLAY_ENABLED
 
 void HandleDisplayInteraction(int pageId, int compId)
 {
@@ -325,6 +317,7 @@ void HandleDisplayInteraction(int pageId, int compId)
 			}
 			break;
 	}
+
 }
 
 void HandleDisplayPage(void *parameter)
@@ -356,11 +349,9 @@ void HandleDisplayPage(void *parameter)
 	}
 }
 
-#endif
 
 void loop()
 {
-#ifdef NEXTION_DISPLAY_ENABLED
 	int pageId = -1;
 	int compId = -1;
 	nextion->getComponentClicked(pageId, compId);
@@ -371,9 +362,6 @@ void loop()
 		HandleDisplayInteraction(pageId, compId);
 	}
 
-#endif
-
-#ifdef WEBINTERFACE_ENABLED
 	esp8266React.loop();
 
 	static unsigned long lastT = 0;
@@ -382,5 +370,4 @@ void loop()
 		Serial.printf("Free heap: %d\n", ESP.getFreeHeap());
 		lastT = t;
 	}
-#endif
 }

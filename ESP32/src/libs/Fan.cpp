@@ -22,7 +22,7 @@ void Fan::begin()
 {
 	setDutyCycle(0);
 	delay(20);
-	xTaskCreate(&Fan::taskHandler, name, 1000, this, 1, nullptr);
+	//xTaskCreate(&Fan::taskHandler, name, 1000, this, 1, nullptr);
 }
 
 //A wrapper static function to allow creation of tasks inside the class
@@ -38,7 +38,7 @@ void Fan::taskRunner()
 	for (;;) {
 		if (dutyCycle == 0) {
 			rpm = 0;
-			vTaskDelay(fanSenseInterval * 2);
+			vTaskDelay(fanSenseInterval * 4);
 		}
 		if (halfRevolution < fanSenseInterval) {
 			vTaskDelay(fanSenseInterval - halfRevolution);
@@ -46,6 +46,7 @@ void Fan::taskRunner()
 		rpm = 30 * 1000 / (millis() - timeOld) * halfRevolution;
 		timeOld = millis();
 		halfRevolution = 0;
+		/*
 		xTaskCreate(
 				rpmUpdateCallback,
 				"rpmUpdateCallback",
@@ -54,6 +55,7 @@ void Fan::taskRunner()
 				1,
 				NULL
 		);
+		 */
 		vTaskDelay(fanSenseInterval);
 	}
 }
