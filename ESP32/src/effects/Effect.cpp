@@ -1,5 +1,5 @@
 #include "Effect.h"
-String Effect::getName()
+const char *Effect::getName()
 {
 	return name;
 }

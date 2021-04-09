@@ -1,7 +1,7 @@
 class Rainbow : public Effect
 {
 	public:
-		Rainbow(String _name, bool _effectGetsHandledOnce = false) : Effect{_name, _effectGetsHandledOnce} {};
+		Rainbow(char *_name, bool _effectGetsHandledOnce = false) : Effect{_name, _effectGetsHandledOnce} {};
 
 		void effectHandler(CRGB *leds, int numberOfLeds)
 		{

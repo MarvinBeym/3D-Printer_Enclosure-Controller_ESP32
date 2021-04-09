@@ -38,38 +38,36 @@ void Fan::taskRunner()
 	for (;;) {
 		if (dutyCycle == 0) {
 			rpm = 0;
-			vTaskDelay(fanSenseInterval * 4);
+			delay(1000);
+		} else if (halfRevolution >= fanSenseInterval) {
+			const int newRpm = 30 * 1000 / (millis() - timeOld) * halfRevolution;
+			timeOld = millis();
+			halfRevolution = 0;
+			if (newRpm != rpm) {
+				xTaskCreate(
+						rpmUpdateCallback,
+						"rpmUpdateCallback",
+						1000,
+						(void *) &rpm,
+						1,
+						nullptr
+				);
+			}
 		}
-		if (halfRevolution < fanSenseInterval) {
-			vTaskDelay(fanSenseInterval - halfRevolution);
-		}
-		rpm = 30 * 1000 / (millis() - timeOld) * halfRevolution;
-		timeOld = millis();
-		halfRevolution = 0;
-		/*
-		xTaskCreate(
-				rpmUpdateCallback,
-				"rpmUpdateCallback",
-				2000,
-				(void *) &rpm,
-				1,
-				NULL
-		);
-		 */
-		vTaskDelay(fanSenseInterval);
+		delay(1000);
 	}
 }
 
 void Fan::addToJson(DynamicJsonDocument *doc, bool includeRpm, bool includePercent, bool includeDutyCycle) const
 {
 	JsonObject json = doc->createNestedObject(name);
-	if(includeRpm) {
+	if (includeRpm) {
 		json["rpm"] = rpm;
 	}
-	if(includePercent) {
+	if (includePercent) {
 		json["percent"] = percent;
 	}
-	if(includeDutyCycle) {
+	if (includeDutyCycle) {
 		json["dutyCycle"] = dutyCycle;
 	}
 }
