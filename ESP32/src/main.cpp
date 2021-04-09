@@ -137,7 +137,6 @@ void fan1RpmUpdated(void *params)
 {
 	if(!booted) vTaskDelete(NULL);
 	int rpm = *((int *) params);
-
 	String value = valueToRpmString(rpm);
 	nextion
 			->setCompText("main_page.tf_speed_fan1", value)
@@ -155,7 +154,6 @@ void fan2RpmUpdated(void *params)
 {
 	if(!booted) vTaskDelete(NULL);
 	int rpm = *((int *) params);
-
 	String value = valueToRpmString(rpm);
 	nextion
 			->setCompText("main_page.tf_speed_fan2", value)
@@ -364,10 +362,6 @@ void loop()
 
 	esp8266React.loop();
 
-	static unsigned long lastT = 0;
-	unsigned long t = millis();
-	if (t - lastT >= 500) {
-		Serial.printf("Free heap: %d\n", ESP.getFreeHeap());
-		lastT = t;
-	}
+	Serial.printf("Free heap: %d\n", ESP.getFreeHeap());
+	delay(500);
 }

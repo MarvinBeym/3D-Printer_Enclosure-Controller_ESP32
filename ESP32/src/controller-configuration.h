@@ -14,4 +14,4 @@ const int displayPageRefreshInterval = 500;
 const int displayGraphMinTemp = -10;
 const int displayGraphHeight = 120;
 
-const int fanSenseInterval = 120;
+const int fanSenseInterval = 1500;

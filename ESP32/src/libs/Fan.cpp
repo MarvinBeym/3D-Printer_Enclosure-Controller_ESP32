@@ -21,8 +21,7 @@ Fan::Fan(char *_name, int _channel, int tachoPin, int pwmPin, void (*rpmUpdateCa
 void Fan::begin()
 {
 	setDutyCycle(0);
-	delay(20);
-	//xTaskCreate(&Fan::taskHandler, name, 1000, this, 1, nullptr);
+	xTaskCreate(&Fan::taskHandler, name, 1000, this, 1, nullptr);
 }
 
 //A wrapper static function to allow creation of tasks inside the class
@@ -39,22 +38,22 @@ void Fan::taskRunner()
 		if (dutyCycle == 0) {
 			rpm = 0;
 			delay(1000);
-		} else if (halfRevolution >= fanSenseInterval) {
-			const int newRpm = 30 * 1000 / (millis() - timeOld) * halfRevolution;
-			timeOld = millis();
-			halfRevolution = 0;
-			if (newRpm != rpm) {
-				xTaskCreate(
-						rpmUpdateCallback,
-						"rpmUpdateCallback",
-						1000,
-						(void *) &rpm,
-						1,
-						nullptr
-				);
-			}
 		}
-		delay(1000);
+
+		const int newRpm = 30 * 1000 / (millis() - timeOld) * halfRevolution;
+		timeOld = millis();
+		halfRevolution = 0;
+		if (newRpm != rpm) {
+			xTaskCreate(
+					rpmUpdateCallback,
+					"rpmUpdateCallback",
+					2000,
+					(void *) &rpm,
+					1,
+					nullptr
+			);
+		}
+		delay(fanSenseInterval);
 	}
 }
 
