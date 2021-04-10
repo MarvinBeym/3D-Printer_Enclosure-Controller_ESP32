@@ -234,8 +234,7 @@ void setup()
 	);
 
 	//Led1 (relay) setup
-	led1 = new Relay(led1_relay_pin, false);
-	led1->begin();
+	led1 = new Relay(led1_relay_pin);
 
 	//Led2 (WS2812B) setup
 	led2 = new FasterLed(led2_data_pin, led2NumberOfLeds, led2Brightness, led2CurrentLimit);

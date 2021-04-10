@@ -1,52 +1,55 @@
 #include "Relay.h"
 
-Relay::Relay(int p, bool _offOnHigh)
+/**
+ * Relay class for controlling a relay
+ * @param _pin The pin where the data is connected to the controller
+ * @param _invert Should the digitalWrite be inverted
+ */
+Relay::Relay(int _pin, bool _invert)
 {
-	pin = p;
+	pin = _pin;
 	pinMode(pin, OUTPUT);
-	relayState = false;
-	offOnHigh = _offOnHigh;
+	setState(false);
+	invert = _invert;
 }
 
-void Relay::begin()
-{
+/**
+ * Returns the current relay state
+ * @return
+ */
+bool Relay::getState() { return state; }
 
-	if (offOnHigh) {
-		digitalWrite(pin, HIGH);
-	}
-	relayState = false;
-}
-
-bool Relay::getState()
-{
-	return relayState;
-}
-
-void Relay::toggle()
-{
-	if (relayState) {
-		off();
+/**
+ * Sets a new state
+ * @param _state
+ */
+void Relay::setState(bool _state) {
+	if(invert) {
+		digitalWrite(pin, !_state ? HIGH : LOW);
 	} else {
-		on();
+		digitalWrite(pin, _state ? HIGH : LOW);
 	}
 }
 
-void Relay::on()
-{
-	if (offOnHigh) {
-		digitalWrite(pin, LOW);
-	} else {
-		digitalWrite(pin, HIGH);
-	}
-	relayState = true;
-}
+/**
+ * Sets a new state using an int as the parameter
+ * <= 0 = false
+ * >= 1 == true
+ * @param _state
+ */
+void Relay::setState(int _state) { setState(_state <= 0); }
 
-void Relay::off()
-{
-	if (offOnHigh) {
-		digitalWrite(pin, HIGH);
-	} else {
-		digitalWrite(pin, LOW);
-	}
-	relayState = false;
-}
+/**
+ * Toggles the relay state
+ */
+void Relay::toggle() { setState(!state); }
+
+/**
+ * Sets the relay state to on
+ */
+void Relay::on() { setState(true); }
+
+/**
+ * Sets the relay state to off
+ */
+void Relay::off() { setState(false); }

@@ -7,14 +7,15 @@
 class Relay
 {
 	public:
-		Relay(int pin, bool _offOnHigh);
-		void begin();
+		Relay(int _pin, bool _invert = false);
 		bool getState();
 		void toggle();
 		void on();
 		void off();
+		void setState(bool state);
+		void setState(int state);
 	private:
 		int pin;
-		bool relayState;
-		bool offOnHigh;
+		bool state = false;
+		bool invert = false;
 };
