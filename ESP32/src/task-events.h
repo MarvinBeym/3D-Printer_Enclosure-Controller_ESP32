@@ -12,3 +12,5 @@
 #define TASK_EVENT_SENSOR1_HumidityUpdated 6
 #define TASK_EVENT_SENSOR2_TemperatureUpdated 7
 #define TASK_EVENT_SENSOR2_HumidityUpdated 8
+
+#define TASK_EVENT_LED1_StateUpdated 9

@@ -91,8 +91,8 @@ void sensor1TemperatureUpdated(void *params)
 {
 	for(;;) {
 		xEventGroupWaitBits(eg, TASK_EVENT_SENSOR1_TemperatureUpdated, pdTRUE, pdTRUE, portMAX_DELAY);
-
 		float temperature = *((float *) params);
+
 		String value = valueToTempString(temperature);
 		nextion->setCompText("main_page.tf_temp_sens1", value);
 		nextion->setCompText("sensor_page.tf_temp_sens1", value);
@@ -111,8 +111,8 @@ void sensor1HumidityUpdated(void *params)
 {
 	for(;;) {
 		xEventGroupWaitBits(eg, TASK_EVENT_SENSOR1_HumidityUpdated, pdTRUE, pdTRUE, portMAX_DELAY);
-
 		float humidity = *((float *) params);
+
 		String value = valueToPercentString(humidity);
 		nextion->setCompText("main_page.tf_hum_sens1", value);
 		nextion->setCompText("sensor_page.tf_hum_sens1", value);
@@ -129,8 +129,8 @@ void sensor2TemperatureUpdated(void *params)
 {
 	for(;;) {
 		xEventGroupWaitBits(eg, TASK_EVENT_SENSOR2_TemperatureUpdated, pdTRUE, pdTRUE, portMAX_DELAY);
-
 		float temperature = *((float *) params);
+
 		String value = valueToTempString(temperature);
 		nextion
 				->setCompText("main_page.tf_temp_sens2", value)
@@ -150,8 +150,8 @@ void sensor2HumidityUpdated(void *params)
 {
 	for(;;) {
 		xEventGroupWaitBits(eg, TASK_EVENT_SENSOR2_HumidityUpdated, pdTRUE, pdTRUE, portMAX_DELAY);
-
 		float humidity = *((float *) params);
+
 		String value = valueToPercentString(humidity);
 		nextion
 				->setCompText("main_page.tf_hum_sens2", value)
@@ -169,8 +169,8 @@ void fan1RpmUpdated(void *params)
 {
 	for (;;) {
 		xEventGroupWaitBits(eg, TASK_EVENT_FAN1_RpmUpdated, pdTRUE, pdTRUE, portMAX_DELAY);
-
 		int rpm = *((int *) params);
+
 		String value = valueToRpmString(rpm);
 
 		nextion
@@ -190,6 +190,7 @@ void fan2RpmUpdated(void *params)
 	for (;;) {
 		xEventGroupWaitBits(eg, TASK_EVENT_FAN2_RpmUpdated, pdTRUE, pdTRUE, portMAX_DELAY);
 		int rpm = *((int *) params);
+
 		String value = valueToRpmString(rpm);
 		nextion
 				->setCompText("main_page.tf_speed_fan2", value)
@@ -200,6 +201,17 @@ void fan2RpmUpdated(void *params)
 		String response;
 		serializeJson(json, response);
 		//ws.textAll(response);
+	}
+}
+
+void led1StateUpdated(void *params) {
+	for (;;) {
+		xEventGroupWaitBits(eg, TASK_EVENT_LED1_StateUpdated, pdTRUE, pdTRUE, portMAX_DELAY);
+		bool state = *((bool *) params);
+		Serial.print("led1 state update");
+		Serial.print(" | ");
+		Serial.println(state);
+		delay(20);
 	}
 }
 
@@ -234,7 +246,7 @@ void setup()
 	);
 
 	//Led1 (relay) setup
-	led1 = new Relay(led1_relay_pin);
+	led1 = new Relay("led1", led1_relay_pin, eg, TASK_EVENT_LED1_StateUpdated, &led1StateUpdated);
 
 	//Led2 (WS2812B) setup
 	led2 = new FasterLed(led2_data_pin, led2NumberOfLeds, led2Brightness, led2CurrentLimit);
@@ -300,8 +312,7 @@ void onWsEvent(AsyncWebSocket *webSocket, AsyncWebSocketClient *client, AwsEvent
 		Serial.printf("ws[%s][%u] connect\n", webSocket->url(), client->id());
 		client->printf("Hello Client %u :)", client->id());
 		DynamicJsonDocument json(1024);
-		JsonObject led1Json = json.createNestedObject("led1");
-		led1Json["state"] = led1->getState();
+		led1->addToJson(&json);
 		effectLoader->addToJson(&json);
 		fan1->addToJson(&json);
 		fan2->addToJson(&json);
