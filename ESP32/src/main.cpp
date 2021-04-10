@@ -19,7 +19,7 @@
 #define FASTLED_INTERNAL
 
 #include <Arduino.h>
-
+#include "task-events.h"
 #include "helper.h"
 #include "controller-pin-definition.h"
 #include "controller-configuration.h"
@@ -32,10 +32,13 @@
 #include <ESPAsyncWebServer.h>
 #include "../lib/framework/ESP8266React.h"
 
+#define TASK_TEST_BIT 1
+EventGroupHandle_t eg;
+/*
 AsyncWebSocket ws("/ws");
 AsyncWebServer server(80);
 ESP8266React esp8266React(&server);
-
+*/
 Sensor *sensor1;
 Sensor *sensor2;
 Relay *led1;
@@ -48,24 +51,45 @@ bool booted = false;
 #include "./libs/NextionDisplay.h"
 
 NextionDisplay *nextion;
-
+/*
 void onWsEvent(AsyncWebSocket *webSocket, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data,
 			   size_t len);
+*/
 void HandleDisplayPage(void *parameter);
 
 void IRAM_ATTR fan1TachoInterrupt()
 {
-	fan1->incrementHalfRevolution();
+	BaseType_t xHigherPriorityTaskWoken, xResult;
+	xHigherPriorityTaskWoken = pdFALSE;
+
+	if (fan1->halfRevolutions >= fanSenseInterval) {
+		xResult = xEventGroupSetBitsFromISR(eg, TASK_EVENT_FAN1_CalcRpm, &xHigherPriorityTaskWoken);
+		if (xResult != pdFAIL) {
+			portYIELD_FROM_ISR();
+		}
+	} else {
+		fan1->halfRevolutions++;
+	}
 }
 
 void IRAM_ATTR fan2TachoInterrupt()
 {
-	fan2->incrementHalfRevolution();
+	BaseType_t xHigherPriorityTaskWoken, xResult;
+	xHigherPriorityTaskWoken = pdFALSE;
+
+	if (fan2->halfRevolutions >= fanSenseInterval) {
+		xResult = xEventGroupSetBitsFromISR(eg, TASK_EVENT_FAN2_CalcRpm, &xHigherPriorityTaskWoken);
+		if (xResult != pdFAIL) {
+			portYIELD_FROM_ISR();
+		}
+	} else {
+		fan2->halfRevolutions++;
+	}
 }
 
 void sensor1TemperatureUpdated(void *params)
 {
-	if(!booted) vTaskDelete(NULL);
+	if (!booted) vTaskDelete(NULL);
 	float temperature = *((float *) params);
 	String value = valueToTempString(temperature);
 	nextion->setCompText("main_page.tf_temp_sens1", value);
@@ -77,13 +101,13 @@ void sensor1TemperatureUpdated(void *params)
 	sensor1->addToJson(&json, true, false);
 	String response;
 	serializeJson(json, response);
-	ws.textAll(response);
+	//ws.textAll(response);
 	vTaskDelete(NULL);
 }
 
 void sensor1HumidityUpdated(void *params)
 {
-	if(!booted) vTaskDelete(NULL);
+	if (!booted) vTaskDelete(NULL);
 	float humidity = *((float *) params);
 	String value = valueToPercentString(humidity);
 	nextion->setCompText("main_page.tf_hum_sens1", value);
@@ -93,13 +117,13 @@ void sensor1HumidityUpdated(void *params)
 	sensor1->addToJson(&json, false);
 	String response;
 	serializeJson(json, response);
-	ws.textAll(response);
+	//ws.textAll(response);
 	vTaskDelete(NULL);
 }
 
 void sensor2TemperatureUpdated(void *params)
 {
-	if(!booted) vTaskDelete(NULL);
+	if (!booted) vTaskDelete(NULL);
 	float temperature = *((float *) params);
 	String value = valueToTempString(temperature);
 	nextion
@@ -112,13 +136,13 @@ void sensor2TemperatureUpdated(void *params)
 	sensor2->addToJson(&json, true, false);
 	String response;
 	serializeJson(json, response);
-	ws.textAll(response);
+	//ws.textAll(response);
 	vTaskDelete(NULL);
 }
 
 void sensor2HumidityUpdated(void *params)
 {
-	if(!booted) vTaskDelete(NULL);
+	if (!booted) vTaskDelete(NULL);
 	float humidity = *((float *) params);
 	String value = valueToPercentString(humidity);
 	nextion
@@ -129,42 +153,46 @@ void sensor2HumidityUpdated(void *params)
 	sensor2->addToJson(&json, false);
 	String response;
 	serializeJson(json, response);
-	ws.textAll(response);
+	//ws.textAll(response);
 	vTaskDelete(NULL);
 }
 
 void fan1RpmUpdated(void *params)
 {
-	if(!booted) vTaskDelete(NULL);
-	int rpm = *((int *) params);
-	String value = valueToRpmString(rpm);
-	nextion
-			->setCompText("main_page.tf_speed_fan1", value)
-			->setCompText("fans_page.tf_speed_fan1", value);
+	for (;;) {
+		xEventGroupWaitBits(eg, TASK_EVENT_FAN1_RpmUpdated, pdTRUE, pdTRUE, portMAX_DELAY);
 
-	DynamicJsonDocument json(64);
-	fan1->addToJson(&json, true, false, false);
-	String response;
-	serializeJson(json, response);
-	ws.textAll(response);
-	vTaskDelete(NULL);
+		int rpm = *((int *) params);
+		String value = valueToRpmString(rpm);
+
+		nextion
+				->setCompText("main_page.tf_speed_fan1", value)
+				->setCompText("fans_page.tf_speed_fan1", value);
+
+		DynamicJsonDocument json(64);
+		fan1->addToJson(&json, true, false, false);
+		String response;
+		serializeJson(json, response);
+		//ws.textAll(response);
+	}
 }
 
 void fan2RpmUpdated(void *params)
 {
-	if(!booted) vTaskDelete(NULL);
-	int rpm = *((int *) params);
-	String value = valueToRpmString(rpm);
-	nextion
-			->setCompText("main_page.tf_speed_fan2", value)
-			->setCompText("fans_page.tf_speed_fan2", value);
+	for (;;) {
+		xEventGroupWaitBits(eg, TASK_EVENT_FAN2_RpmUpdated, pdTRUE, pdTRUE, portMAX_DELAY);
+		int rpm = *((int *) params);
+		String value = valueToRpmString(rpm);
+		nextion
+				->setCompText("main_page.tf_speed_fan2", value)
+				->setCompText("fans_page.tf_speed_fan2", value);
 
-	DynamicJsonDocument json(64);
-	fan2->addToJson(&json, true, false, false);
-	String response;
-	serializeJson(json, response);
-	ws.textAll(response);
-	vTaskDelete(NULL);
+		DynamicJsonDocument json(64);
+		fan2->addToJson(&json, true, false, false);
+		String response;
+		serializeJson(json, response);
+		//ws.textAll(response);
+	}
 }
 
 void setup()
@@ -173,6 +201,7 @@ void setup()
 	while (!Serial) {}
 	Serial.println("3D-Print-Enclosure-Controller booting v" + esp32Version);
 	delay(100);
+	eg = xEventGroupCreate();
 
 	//Temp & Humidity sensor setup
 	sensor1 = new Sensor("sensor1", dht22_1_pin, dhtSenseInterval, &sensor1TemperatureUpdated, &sensor1HumidityUpdated);
@@ -195,26 +224,41 @@ void setup()
 	pinMode(buzzer_pin, OUTPUT);
 
 	//Fan
-	fan1 = new Fan("fan1", 0, fan1_tacho_pin, fan1_pwm_pin, &fan1RpmUpdated);
-	fan2 = new Fan("fan2", 1, fan2_tacho_pin, fan2_pwm_pin, &fan2RpmUpdated);
-	fan1->begin();
-	fan2->begin();
+	fan1 = new Fan(
+			"fan1",
+			0,
+			eg,
+			TASK_EVENT_FAN1_CalcRpm,
+			TASK_EVENT_FAN1_RpmUpdated,
+			fan1_tacho_pin,
+			fan1_pwm_pin,
+			&fan1RpmUpdated
+	);
+	fan2 = new Fan(
+			"fan2",
+			1,
+			eg,
+			TASK_EVENT_FAN2_CalcRpm,
+			TASK_EVENT_FAN2_RpmUpdated,
+			fan2_tacho_pin,
+			fan2_pwm_pin,
+			&fan2RpmUpdated
+	);
 
 	//Display
 	nextion = new NextionDisplay(serial2BaudRate, nextionDisplayRX, nextionDisplayTX);
 	nextion->begin(displayBootDelay);
 
 	xTaskCreate(HandleDisplayPage, "handleDisplayPage", 5000, nullptr, 2, nullptr);
-
+/*
 	esp8266React.begin();
 	ws.onEvent(onWsEvent);
 
 	server.addHandler(&ws);
 	server.begin();
-
+*/
 	//Delay and attaching interrupt after everything is
 	//required to prevent crashes from happening on boot caused by weird interrupt stuff
-	delay(2000);
 
 	attachInterrupt(digitalPinToInterrupt(fan1_tacho_pin), fan1TachoInterrupt, FALLING);
 	attachInterrupt(digitalPinToInterrupt(fan2_tacho_pin), fan2TachoInterrupt, FALLING);
@@ -359,7 +403,7 @@ void loop()
 		HandleDisplayInteraction(pageId, compId);
 	}
 
-	esp8266React.loop();
+	//esp8266React.loop();
 
 	Serial.printf("Free heap: %d\n", ESP.getFreeHeap());
 	delay(500);

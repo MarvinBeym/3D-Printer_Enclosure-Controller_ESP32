@@ -14,4 +14,6 @@ const int displayPageRefreshInterval = 500;
 const int displayGraphMinTemp = -10;
 const int displayGraphHeight = 120;
 
-const int fanSenseInterval = 1500;
+//Every x half revolutions the rpm will be calculated so 120 means every 60 full rotations
+//Needs to be dividable by 4 as it is also used for a small delay fanSenseInterval / 4 after each calculation.
+const int fanSenseInterval = 120;

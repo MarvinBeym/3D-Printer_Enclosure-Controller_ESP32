@@ -1,62 +1,93 @@
 #include "Fan.h"
 #include "../controller-configuration.h"
+#include "../task-events.h"
 
-Fan::Fan(char *_name, int _channel, int tachoPin, int pwmPin, void (*rpmUpdateCallback)(void *))
+/**
+ * Fan class constructor
+ * @param _name 					The name of the fan, used for ledc setup and json
+ * @param _channel 					The ledc channel the fan should run on
+ * @param _eg 						The event group handle to check for event changes
+ * @param _calcRpmEvent 			The event to wait for before calculating the rpm
+ * @param _rpmUpdatedEvent 			The event that gets called when the rpm of the fan changed (gets set by the calcRpmEvent
+ * @param tachoPin 					The tacho pin of the fan used (allows reading the rpm)
+ * @param pwmPin 					The pwm pin of the fan used (allows changing the speed)
+ * @param _rpmUpdatedEventCallback 	The callback that get's called when the rpm of the fan updated
+ */
+Fan::Fan(char *_name, int _channel, EventGroupHandle_t _eg, int _calcRpmEvent, int _rpmUpdatedEvent, int tachoPin,
+		 int pwmPin,
+		 void (*_rpmUpdatedEventCallback)(void *))
 {
 	pinMode(tachoPin, INPUT);
 	pinMode(pwmPin, OUTPUT);
-
+	eg = _eg;
+	calcRpmEvent = _calcRpmEvent;
+	rpmUpdatedEvent = _rpmUpdatedEvent;
+	rpmUpdatedEventCallback = _rpmUpdatedEventCallback;
 	name = _name;
 	channel = _channel;
-	halfRevolution = 0;
+
+	//Init variables
 	timeOld = 0;
+	halfRevolutions = 0;
 	rpm = 0;
 	dutyCycle = 0;
 	percent = 0;
-	this->rpmUpdateCallback = rpmUpdateCallback;
+
+	//Setup ledc (fan pwm control)
 	ledcSetup(channel, 25000, 8);
 	ledcAttachPin(pwmPin, channel);
-}
+	setDutyCycle(0); //Making sure the fan is off first
 
-void Fan::begin()
-{
-	setDutyCycle(0);
+	//Setting up tasks for rpm calculation & update callback
 	xTaskCreate(&taskHandler, name, 1000, this, 1, nullptr);
+	xTaskCreate(
+			rpmUpdatedEventCallback,
+			"rpmUpdateCallback",
+			2000,
+			(void *) &rpm,
+			1,
+			nullptr
+	);
 }
 
-//A wrapper static function to allow creation of tasks inside the class
+/**
+ * A wrapper to allow creation of a task inside the class
+ * @param parameter
+ */
 void Fan::taskHandler(void *parameter)
 {
 	Fan *fan = reinterpret_cast<Fan *>(parameter);
-	fan->taskRunner();
+	fan->calculateRpm();
 }
 
-//Runs the actual task code.
-void Fan::taskRunner()
+/**
+ * Calculates the rpm when the ISR in the main program sets the event bit
+ */
+void Fan::calculateRpmTask()
 {
 	for (;;) {
-		if (dutyCycle == 0) {
-			rpm = 0;
-			delay(1000);
-		}
-
-		const int newRpm = 30 * 1000 / (millis() - timeOld) * halfRevolution;
-		timeOld = millis();
-		halfRevolution = 0;
+		xEventGroupWaitBits(eg, calcRpmEvent, pdTRUE, pdTRUE, portMAX_DELAY);
+		const long currentMillis = millis();
+		const int newRpm = 30 * 1000 / (currentMillis - timeOld) * halfRevolutions;
+		timeOld = currentMillis;
 		if (newRpm != rpm) {
-			xTaskCreate(
-					rpmUpdateCallback,
-					"rpmUpdateCallback",
-					2000,
-					(void *) &rpm,
-					1,
-					nullptr
-			);
+			rpm = newRpm;
+			xEventGroupSetBits(eg, rpmUpdatedEvent);
 		}
-		delay(fanSenseInterval);
+		halfRevolutions = 0;
+
+		//Small delay to prevent the event from being called again
+		delay(fanSenseInterval / 4);
 	}
 }
 
+/**
+ * Allows adding the information about a fan to a json object as a field
+ * @param doc
+ * @param includeRpm		Should the rpm value be included?
+ * @param includePercent	Should the percent value be included?
+ * @param includeDutyCycle	Should the duty cycle be included?
+ */
 void Fan::addToJson(DynamicJsonDocument *doc, bool includeRpm, bool includePercent, bool includeDutyCycle) const
 {
 	JsonObject json = doc->createNestedObject(name);
@@ -71,19 +102,41 @@ void Fan::addToJson(DynamicJsonDocument *doc, bool includeRpm, bool includePerce
 	}
 }
 
-void Fan::incrementHalfRevolution()
-{
-	halfRevolution++;
-}
-
+/**
+ * Sets the duty cycle of the fan
+ * Making it faster/slower
+ * @param _dutyCycle
+ */
 void Fan::setDutyCycle(int _dutyCycle)
 {
 	dutyCycle = _dutyCycle;
 	ledcWrite(channel, _dutyCycle);
 }
 
+/**
+ * Sets the fans duty cycle based on a percent value from 0 to 100
+ * @param _percent
+ */
 void Fan::setPercent(int _percent)
 {
 	percent = _percent;
 	setDutyCycle(map(_percent, 0, 100, 0, 255));
+}
+
+/**
+ * Returns the fans percent value
+ * @return
+ */
+int Fan::getPercent()
+{
+	return percent;
+}
+
+/**
+ * Returns the fans duty cycle value
+ * @return
+ */
+int Fan::getDutyCycle()
+{
+	return dutyCycle;
 }

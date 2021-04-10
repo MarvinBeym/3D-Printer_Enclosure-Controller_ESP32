@@ -11,22 +11,25 @@
 class Fan
 {
 	public:
-		Fan(char *_name, int _channel, int tachoPin, int pwmPin, void (*rpmUpdateCallback)(void *));
-		void begin();
-		void incrementHalfRevolution();
-		void setDutyCycle(int _dutyCycle);
-		void setPercent(int _percent);
+		Fan(char *name, int channel, EventGroupHandle_t eg, int calcRpmEvent, int rpmUpdatedEvent, int tachoPin, int pwmPin, void (*rpmUpdatedEventCallback)(void *));
+		volatile int halfRevolutions;
+		void setDutyCycle(int dutyCycle);
+		void setPercent(int percent);
+		int getPercent();
+		int getDutyCycle();
 		void addToJson(DynamicJsonDocument *doc, bool includeRpm = true, bool includePercent = true, bool includeDutyCycle = true) const;
 		char *name;
+	private:
 		int rpm;
 		int percent;
 		unsigned int dutyCycle;
-	private:
-		void (*rpmUpdateCallback)(void *);
+		int calcRpmEvent;
+		int rpmUpdatedEvent;
+		EventGroupHandle_t eg;
+		void (*rpmUpdatedEventCallback)(void *);
 		static void taskHandler(void *parameter);
-		void taskRunner();
+		void calculateRpmTask();
 		int channel;
-		volatile int halfRevolution;
 		unsigned long timeOld;
 };
 
