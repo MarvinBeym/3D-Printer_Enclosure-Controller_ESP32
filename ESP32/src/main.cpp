@@ -89,72 +89,80 @@ void IRAM_ATTR fan2TachoInterrupt()
 
 void sensor1TemperatureUpdated(void *params)
 {
-	if (!booted) vTaskDelete(NULL);
-	float temperature = *((float *) params);
-	String value = valueToTempString(temperature);
-	nextion->setCompText("main_page.tf_temp_sens1", value);
-	nextion->setCompText("sensor_page.tf_temp_sens1", value);
-	nextion->addGraphValue(
-			1, 0,
-			map((int) temperature, displayGraphMinTemp, 255, 0, displayGraphHeight));
-	DynamicJsonDocument json(64);
-	sensor1->addToJson(&json, true, false);
-	String response;
-	serializeJson(json, response);
-	//ws.textAll(response);
-	vTaskDelete(NULL);
+	for(;;) {
+		xEventGroupWaitBits(eg, TASK_EVENT_SENSOR1_TemperatureUpdated, pdTRUE, pdTRUE, portMAX_DELAY);
+
+		float temperature = *((float *) params);
+		String value = valueToTempString(temperature);
+		nextion->setCompText("main_page.tf_temp_sens1", value);
+		nextion->setCompText("sensor_page.tf_temp_sens1", value);
+		nextion->addGraphValue(
+				1, 0,
+				map((int) temperature, displayGraphMinTemp, 255, 0, displayGraphHeight));
+		DynamicJsonDocument json(64);
+		sensor1->addToJson(&json, true, false);
+		String response;
+		serializeJson(json, response);
+		//ws.textAll(response);
+	}
 }
 
 void sensor1HumidityUpdated(void *params)
 {
-	if (!booted) vTaskDelete(NULL);
-	float humidity = *((float *) params);
-	String value = valueToPercentString(humidity);
-	nextion->setCompText("main_page.tf_hum_sens1", value);
-	nextion->setCompText("sensor_page.tf_hum_sens1", value);
+	for(;;) {
+		xEventGroupWaitBits(eg, TASK_EVENT_SENSOR1_HumidityUpdated, pdTRUE, pdTRUE, portMAX_DELAY);
 
-	DynamicJsonDocument json(64);
-	sensor1->addToJson(&json, false);
-	String response;
-	serializeJson(json, response);
-	//ws.textAll(response);
-	vTaskDelete(NULL);
+		float humidity = *((float *) params);
+		String value = valueToPercentString(humidity);
+		nextion->setCompText("main_page.tf_hum_sens1", value);
+		nextion->setCompText("sensor_page.tf_hum_sens1", value);
+
+		DynamicJsonDocument json(64);
+		sensor1->addToJson(&json, false);
+		String response;
+		serializeJson(json, response);
+		//ws.textAll(response);
+	}
 }
 
 void sensor2TemperatureUpdated(void *params)
 {
-	if (!booted) vTaskDelete(NULL);
-	float temperature = *((float *) params);
-	String value = valueToTempString(temperature);
-	nextion
-			->setCompText("main_page.tf_temp_sens2", value)
-			->setCompText("sensor_page.tf_temp_sens2", value)
-			->addGraphValue(
-					1, 1,
-					map((int) temperature, displayGraphMinTemp, 255, 0, displayGraphHeight));
-	DynamicJsonDocument json(64);
-	sensor2->addToJson(&json, true, false);
-	String response;
-	serializeJson(json, response);
-	//ws.textAll(response);
-	vTaskDelete(NULL);
+	for(;;) {
+		xEventGroupWaitBits(eg, TASK_EVENT_SENSOR2_TemperatureUpdated, pdTRUE, pdTRUE, portMAX_DELAY);
+
+		float temperature = *((float *) params);
+		String value = valueToTempString(temperature);
+		nextion
+				->setCompText("main_page.tf_temp_sens2", value)
+				->setCompText("sensor_page.tf_temp_sens2", value)
+				->addGraphValue(
+						1, 1,
+						map((int) temperature, displayGraphMinTemp, 255, 0, displayGraphHeight));
+		DynamicJsonDocument json(64);
+		sensor2->addToJson(&json, true, false);
+		String response;
+		serializeJson(json, response);
+		//ws.textAll(response);
+	}
 }
 
 void sensor2HumidityUpdated(void *params)
 {
-	if (!booted) vTaskDelete(NULL);
-	float humidity = *((float *) params);
-	String value = valueToPercentString(humidity);
-	nextion
-			->setCompText("main_page.tf_hum_sens2", value)
-			->setCompText("sensor_page.tf_hum_sens2", value);
+	for(;;) {
+		xEventGroupWaitBits(eg, TASK_EVENT_SENSOR2_HumidityUpdated, pdTRUE, pdTRUE, portMAX_DELAY);
 
-	DynamicJsonDocument json(64);
-	sensor2->addToJson(&json, false);
-	String response;
-	serializeJson(json, response);
-	//ws.textAll(response);
-	vTaskDelete(NULL);
+		float humidity = *((float *) params);
+		String value = valueToPercentString(humidity);
+		nextion
+				->setCompText("main_page.tf_hum_sens2", value)
+				->setCompText("sensor_page.tf_hum_sens2", value);
+
+		DynamicJsonDocument json(64);
+		sensor2->addToJson(&json, false);
+		String response;
+		serializeJson(json, response);
+		//ws.textAll(response);
+	}
 }
 
 void fan1RpmUpdated(void *params)
@@ -204,10 +212,26 @@ void setup()
 	eg = xEventGroupCreate();
 
 	//Temp & Humidity sensor setup
-	sensor1 = new Sensor("sensor1", dht22_1_pin, dhtSenseInterval, &sensor1TemperatureUpdated, &sensor1HumidityUpdated);
-	sensor2 = new Sensor("sensor2", dht22_2_pin, dhtSenseInterval, &sensor2TemperatureUpdated, &sensor2HumidityUpdated);
-	sensor1->begin();
-	sensor2->begin();
+	sensor1 = new Sensor(
+			"sensor1",
+			dht22_1_pin,
+			dhtSenseInterval,
+			eg,
+			TASK_EVENT_SENSOR1_TemperatureUpdated,
+			TASK_EVENT_SENSOR1_HumidityUpdated,
+			&sensor1TemperatureUpdated,
+			&sensor1HumidityUpdated
+	);
+	sensor2 = new Sensor(
+			"sensor2",
+			dht22_2_pin,
+			dhtSenseInterval,
+			eg,
+			TASK_EVENT_SENSOR2_TemperatureUpdated,
+			TASK_EVENT_SENSOR2_HumidityUpdated,
+			&sensor2TemperatureUpdated,
+			&sensor2HumidityUpdated
+	);
 
 	//Led1 (relay) setup
 	led1 = new Relay(led1_relay_pin, false);
@@ -367,14 +391,18 @@ void HandleDisplayPage(void *parameter)
 	for (;;) {
 		switch (nextion->pageId) {
 			case MAIN_PAGE:
+				/*
 				nextion
 						->setCompText("main_page.tf_pwm_fan1", valueToPercentString(fan1->percent))
 						->setCompText("main_page.tf_pwm_fan2", valueToPercentString(fan2->percent));
+				*/
 				break;
 			case FANS_PAGE:
+				/*
 				nextion
 						->setCompText("fans_page.tf_pwm_fan1", valueToPercentString(fan1->percent))
 						->setCompText("fans_page.tf_pwm_fan2", valueToPercentString(fan2->percent));
+				*/
 				break;
 			case SENSOR_PAGE:
 				break;

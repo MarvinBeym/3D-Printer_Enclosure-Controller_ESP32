@@ -7,3 +7,8 @@
 
 #define TASK_EVENT_FAN1_RpmUpdated 3
 #define TASK_EVENT_FAN2_RpmUpdated 4
+
+#define TASK_EVENT_SENSOR1_TemperatureUpdated 5
+#define TASK_EVENT_SENSOR1_HumidityUpdated 6
+#define TASK_EVENT_SENSOR2_TemperatureUpdated 7
+#define TASK_EVENT_SENSOR2_HumidityUpdated 8

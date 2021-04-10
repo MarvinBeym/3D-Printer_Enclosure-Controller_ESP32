@@ -57,7 +57,7 @@ Fan::Fan(char *_name, int _channel, EventGroupHandle_t _eg, int _calcRpmEvent, i
 void Fan::taskHandler(void *parameter)
 {
 	Fan *fan = reinterpret_cast<Fan *>(parameter);
-	fan->calculateRpm();
+	fan->calculateRpmTask();
 }
 
 /**

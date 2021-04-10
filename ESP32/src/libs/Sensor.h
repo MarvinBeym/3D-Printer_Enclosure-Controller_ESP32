@@ -17,17 +17,22 @@ class Sensor
 				char *_name,
 				int pin,
 				int _senseInterval,
+				EventGroupHandle_t _eg,
+				int _temperatureUpdateEvent,
+				int _humidityUpdateEvent,
 				void (*temperatureUpdateCallback)(void *),
 				void (*humidityUpdateCallback)(void *)
 		);
-		void begin();
 		void addToJson(DynamicJsonDocument *doc, bool includeTemperature = true, bool includeHumidity = true) const;
 		char *name;
 	private:
 		void (*temperatureUpdateCallback)(void *);
 		void (*humidityUpdateCallback)(void *);
 		static void taskHandler(void *parameter);
-		void taskRunner();
+		void readSensorTask();
+		int temperatureUpdateEvent;
+		int humidityUpdateEvent;
+		EventGroupHandle_t eg;
 		DHT *dht;
 		int senseInterval;
 		float temperature;
