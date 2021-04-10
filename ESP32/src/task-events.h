@@ -14,3 +14,5 @@
 #define TASK_EVENT_SENSOR2_HumidityUpdated 8
 
 #define TASK_EVENT_LED1_StateUpdated 9
+
+#define TASK_EVENT_NEXTION_CompClicked 10

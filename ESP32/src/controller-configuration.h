@@ -9,8 +9,8 @@ const int led2Brightness = 80;
 const int serial1BaudRate = 115200;
 const int serial2BaudRate = 115200;
 
+const int displayCompClickCheckInterval = 20;
 const int displayBootDelay = 500;
-const int displayPageRefreshInterval = 500;
 const int displayGraphMinTemp = -10;
 const int displayGraphHeight = 120;
 

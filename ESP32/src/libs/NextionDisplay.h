@@ -20,10 +20,8 @@
 class NextionDisplay
 {
 	public:
-		NextionDisplay(int baudRate, int rxPin, int txPin);
-		void begin(int bootDelay);
+		NextionDisplay(int bootDelay, int baudRate, int rxPin, int txPin, EventGroupHandle_t _eg, int _compClickedEvent, void (*_compClickedCallback)(void *));
 		String readCommand();
-		void getComponentClicked(int &pageId, int &compId);
 		void setPage(int _pageId);
 		void sendCommand(const char *cmdToSend);
 		NextionDisplay *setCompValue(String compVarString, int value);
@@ -32,9 +30,16 @@ class NextionDisplay
 		char *string2char(const String &compVarString);
 
 		NextionDisplay *setCompText(String compVarString, String text);
-		int pageId;
+		int currentPage;
+		int compClicked_pageId = -1;
+		int compClicked_compId = -1;
 	private:
-
+		bool getComponentClicked(int &pageId, int &compId);
+		void (*compClickedCallback)(void *);
+		EventGroupHandle_t eg;
+		int compClickedEvent;
+		static void taskHandler(void *parameter);
+		void checkComponentClicked();
 };
 
 #endif

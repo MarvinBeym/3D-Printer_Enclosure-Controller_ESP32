@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include "NextionDisplay.h"
+#include "../controller-configuration.h"
 
 //Extracted from https://nextion.tech/instruction-set/
 const int NEXTION_STARTUP = 0x00;
@@ -14,27 +15,58 @@ const int AUTO_ENTERED_SLEEP = 0x86;
 const int AUTO_WAKE_FROM_SLEEP = 0x87;
 const int NEXTION_READY = 0x88;
 
-NextionDisplay::NextionDisplay(int baudRate, int rxPin, int txPin)
+/**
+ * Constructor of the nextion display class
+ * @param bootDelay
+ * @param baudRate
+ * @param rxPin
+ * @param txPin
+ * @param _eg
+ * @param _compClickedEvent
+ * @param _compClickedCallback
+ */
+NextionDisplay::NextionDisplay(int bootDelay, int baudRate, int rxPin, int txPin, EventGroupHandle_t _eg, int _compClickedEvent, void (*_compClickedCallback)(void *))
 {
-	pageId = BOOT_PAGE;
+	currentPage = BOOT_PAGE;
+	eg = _eg;
+	compClickedEvent = _compClickedEvent;
+	compClickedCallback = _compClickedCallback;
+
 	Serial2.begin(baudRate, SERIAL_8N1, rxPin, txPin);
 	while (!Serial2) {}
-}
+	xTaskCreate(&taskHandler, "nextionDisplay",
+				1000, this, 1, nullptr);
 
-void NextionDisplay::begin(int bootDelay)
-{
+	xTaskCreate(
+			compClickedCallback,
+			"compClickedCallback",
+			2000,
+			NULL,
+			1,
+			NULL
+	);
+
 	setPage(BOOT_PAGE);
 	delay(bootDelay);
 	setPage(MAIN_PAGE);
 }
 
-void NextionDisplay::setPage(int _pageId)
+/**
+ * Changes the page by sending the command over Serial2
+ * @param page
+ */
+void NextionDisplay::setPage(int page)
 {
-	this->pageId = _pageId;
-	String cmd = "page " + String(_pageId);
+	currentPage = page;
+	String cmd = "page " + String(page);
 	this->sendCommand(cmd.c_str());
 }
 
+/**
+ * Sends a command to the nextion over Serial2
+ * Will append 3x 0xff
+ * @param cmdToSend
+ */
 void NextionDisplay::sendCommand(const char *cmdToSend)
 {
 	while (Serial2.available()) {
@@ -47,6 +79,35 @@ void NextionDisplay::sendCommand(const char *cmdToSend)
 	Serial2.write(0xff);
 }
 
+/**
+ * Static function to allow creating of a task in the class/object
+ * @param parameter
+ */
+void NextionDisplay::taskHandler(void *parameter)
+{
+	auto *nextion = reinterpret_cast<NextionDisplay *>(parameter);
+	nextion->checkComponentClicked();
+}
+
+/**
+ * Checks if a component was clicked (the component needs to send a touch event setup with the nextion software
+ */
+void NextionDisplay::checkComponentClicked()
+{
+	for (;;) {
+		if(getComponentClicked(compClicked_pageId, compClicked_compId)) {
+			xEventGroupSetBits(eg, compClickedEvent);
+		}
+		delay(displayCompClickCheckInterval);
+	}
+}
+
+/**
+ * Sets a components value (integer)
+ * @param compVarString
+ * @param value
+ * @return
+ */
 NextionDisplay *NextionDisplay::setCompValue(String compVarString, int value)
 {
 	String newValue = compVarString + ".val=" + value;
@@ -54,6 +115,11 @@ NextionDisplay *NextionDisplay::setCompValue(String compVarString, int value)
 	return this;
 }
 
+/**
+ * Gets the value of a component
+ * @param compVarString
+ * @return
+ */
 int NextionDisplay::getCompValue(String compVarString)
 {
 	int value = 0;
@@ -72,6 +138,12 @@ int NextionDisplay::getCompValue(String compVarString)
 	return value;
 }
 
+/**
+ * Sets the text of a component
+ * @param compVarString
+ * @param text
+ * @return
+ */
 NextionDisplay *NextionDisplay::setCompText(String compVarString, String text)
 {
 	String newText = compVarString + ".txt=\"" + text + "\"";
@@ -79,6 +151,13 @@ NextionDisplay *NextionDisplay::setCompText(String compVarString, String text)
 	return this;
 }
 
+/**
+ * Adds a value to the graph (value needs to fit into height of graph)
+ * @param waveFormId
+ * @param channel
+ * @param value
+ * @return
+ */
 NextionDisplay *NextionDisplay::addGraphValue(int waveFormId, int channel, int value)
 {
 	String graphCommand = "add ";
@@ -100,13 +179,24 @@ NextionDisplay *NextionDisplay::addGraphValue(int waveFormId, int channel, int v
 	return this;
 }
 
+/**
+ * Helper function to convert a string object to a char array
+ * @param command
+ * @return
+ */
 char *NextionDisplay::string2char(const String &command)
 {
 	char *p = const_cast<char *>(command.c_str());
 	return p;
 }
 
-void NextionDisplay::getComponentClicked(int &_pageId, int &compId)
+/**
+ * Checks if a component was clicked, will also modify the pageId and compId value
+ * @param _pageId
+ * @param compId
+ * @return
+ */
+bool NextionDisplay::getComponentClicked(int &_pageId, int &compId)
 {
 	String cmd;
 	while (Serial2.available()) {
@@ -122,10 +212,16 @@ void NextionDisplay::getComponentClicked(int &_pageId, int &compId)
 		case TOUCH_EVENT:
 			_pageId = cmd[1];
 			compId = cmd[2];
+			return true;
 			break;
 	}
+	return false;
 }
 
+/**
+ * Reads a full command from the Serial2
+ * @return
+ */
 String NextionDisplay::readCommand()
 {
 	String cmd;

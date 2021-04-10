@@ -89,7 +89,7 @@ void IRAM_ATTR fan2TachoInterrupt()
 
 void sensor1TemperatureUpdated(void *params)
 {
-	for(;;) {
+	for (;;) {
 		xEventGroupWaitBits(eg, TASK_EVENT_SENSOR1_TemperatureUpdated, pdTRUE, pdTRUE, portMAX_DELAY);
 		float temperature = *((float *) params);
 
@@ -109,7 +109,7 @@ void sensor1TemperatureUpdated(void *params)
 
 void sensor1HumidityUpdated(void *params)
 {
-	for(;;) {
+	for (;;) {
 		xEventGroupWaitBits(eg, TASK_EVENT_SENSOR1_HumidityUpdated, pdTRUE, pdTRUE, portMAX_DELAY);
 		float humidity = *((float *) params);
 
@@ -127,7 +127,7 @@ void sensor1HumidityUpdated(void *params)
 
 void sensor2TemperatureUpdated(void *params)
 {
-	for(;;) {
+	for (;;) {
 		xEventGroupWaitBits(eg, TASK_EVENT_SENSOR2_TemperatureUpdated, pdTRUE, pdTRUE, portMAX_DELAY);
 		float temperature = *((float *) params);
 
@@ -148,7 +148,7 @@ void sensor2TemperatureUpdated(void *params)
 
 void sensor2HumidityUpdated(void *params)
 {
-	for(;;) {
+	for (;;) {
 		xEventGroupWaitBits(eg, TASK_EVENT_SENSOR2_HumidityUpdated, pdTRUE, pdTRUE, portMAX_DELAY);
 		float humidity = *((float *) params);
 
@@ -204,7 +204,8 @@ void fan2RpmUpdated(void *params)
 	}
 }
 
-void led1StateUpdated(void *params) {
+void led1StateUpdated(void *params)
+{
 	for (;;) {
 		xEventGroupWaitBits(eg, TASK_EVENT_LED1_StateUpdated, pdTRUE, pdTRUE, portMAX_DELAY);
 		bool state = *((bool *) params);
@@ -212,6 +213,85 @@ void led1StateUpdated(void *params) {
 		Serial.print(" | ");
 		Serial.println(state);
 		delay(20);
+	}
+}
+
+void nextionCompClickedCallback(void *params)
+{
+	for (;;) {
+		xEventGroupWaitBits(eg, TASK_EVENT_NEXTION_CompClicked, pdTRUE, pdTRUE, portMAX_DELAY);
+		const int pageId = nextion->compClicked_pageId;
+		const int compId = nextion->compClicked_compId;
+
+		nextion->compClicked_pageId = -1;
+		nextion->compClicked_compId = -1;
+
+		switch (pageId) {
+			case MAIN_PAGE:
+				switch (compId) {
+					case 1:
+						nextion->setPage(FANS_PAGE);
+						break;
+					case 2:
+						nextion->setPage(SENSOR_PAGE);
+						break;
+					case 3:
+						nextion->setPage(LED_PAGE);
+						break;
+					case 4:
+						nextion->setPage(CONF_PAGE);
+				}
+				break;
+			case FANS_PAGE:
+				switch (compId) {
+					case 3:
+						delay(20);
+						fan2->setPercent(nextion->getCompValue("fans_page.sli_speed_fan2"));
+						delay(20);
+
+						break;
+					case 4:
+						delay(20);
+						fan1->setPercent(nextion->getCompValue("fans_page.sli_speed_fan1"));
+						delay(20);
+						break;
+					case 6:
+						nextion->setPage(MAIN_PAGE);
+						break;
+				}
+				break;
+			case SENSOR_PAGE:
+				switch (compId) {
+					case 2:
+						nextion->setPage(MAIN_PAGE);
+						break;
+				}
+				break;
+			case LED_PAGE:
+				switch (compId) {
+					case 14:
+						nextion->setPage(MAIN_PAGE);
+						break;
+				}
+				break;
+			case CONF_PAGE:
+				switch (compId) {
+					case 1:
+						nextion->setPage(MAIN_PAGE);
+						break;
+					case 2:
+						nextion->setPage(ABOUT_PAGE);
+						break;
+				}
+				break;
+			case ABOUT_PAGE:
+				switch (compId) {
+					case 6:
+						nextion->setPage(CONF_PAGE);
+						break;
+				}
+				break;
+		}
 	}
 }
 
@@ -281,10 +361,14 @@ void setup()
 	);
 
 	//Display
-	nextion = new NextionDisplay(serial2BaudRate, nextionDisplayRX, nextionDisplayTX);
-	nextion->begin(displayBootDelay);
+	nextion = new NextionDisplay(displayBootDelay, serial2BaudRate, nextionDisplayRX, nextionDisplayTX, eg,
+								 TASK_EVENT_NEXTION_CompClicked, &nextionCompClickedCallback);
 
-	xTaskCreate(HandleDisplayPage, "handleDisplayPage", 5000, nullptr, 2, nullptr);
+	String version = "ESP32: v";
+	version.concat(esp32Version);
+	nextion->setCompText("about_page.tf_esp32_v", version);
+
+	//xTaskCreate(HandleDisplayPage, "handleDisplayPage", 5000, nullptr, 2, nullptr);
 /*
 	esp8266React.begin();
 	ws.onEvent(onWsEvent);
@@ -323,124 +407,26 @@ void onWsEvent(AsyncWebSocket *webSocket, AsyncWebSocketClient *client, AwsEvent
 		client->text(response);
 	}
 }
-
-
-void HandleDisplayInteraction(int pageId, int compId)
-{
-	switch (pageId) {
-		case MAIN_PAGE:
-			switch (compId) {
-				case 1:
-					nextion->setPage(FANS_PAGE);
-					break;
-				case 2:
-					nextion->setPage(SENSOR_PAGE);
-					break;
-				case 3:
-					nextion->setPage(LED_PAGE);
-					break;
-				case 4:
-					nextion->setPage(CONF_PAGE);
-			}
-			break;
-		case FANS_PAGE:
-			switch (compId) {
-				case 3:
-					delay(20);
-					fan2->setPercent(nextion->getCompValue("fans_page.sli_speed_fan2"));
-					delay(20);
-
-					break;
-				case 4:
-					delay(20);
-					fan1->setPercent(nextion->getCompValue("fans_page.sli_speed_fan1"));
-					delay(20);
-					break;
-				case 6:
-					nextion->setPage(MAIN_PAGE);
-					break;
-			}
-			break;
-		case SENSOR_PAGE:
-			switch (compId) {
-				case 2:
-					nextion->setPage(MAIN_PAGE);
-					break;
-			}
-			break;
-		case LED_PAGE:
-			switch (compId) {
-				case 14:
-					nextion->setPage(MAIN_PAGE);
-					break;
-			}
-			break;
-		case CONF_PAGE:
-			switch (compId) {
-				case 1:
-					nextion->setPage(MAIN_PAGE);
-					break;
-				case 2:
-					nextion->setPage(ABOUT_PAGE);
-					break;
-			}
-			break;
-		case ABOUT_PAGE:
-			switch (compId) {
-				case 6:
-					nextion->setPage(CONF_PAGE);
-					break;
-			}
-			break;
-	}
-
-}
-
+/*
 void HandleDisplayPage(void *parameter)
 {
 	for (;;) {
 		switch (nextion->pageId) {
 			case MAIN_PAGE:
-				/*
 				nextion
 						->setCompText("main_page.tf_pwm_fan1", valueToPercentString(fan1->percent))
 						->setCompText("main_page.tf_pwm_fan2", valueToPercentString(fan2->percent));
-				*/
 				break;
 			case FANS_PAGE:
-				/*
 				nextion
 						->setCompText("fans_page.tf_pwm_fan1", valueToPercentString(fan1->percent))
 						->setCompText("fans_page.tf_pwm_fan2", valueToPercentString(fan2->percent));
-				*/
 				break;
-			case SENSOR_PAGE:
-				break;
-			case LED_PAGE:
-			case CONF_PAGE:
-				break;
-			case ABOUT_PAGE:
-				String version = "ESP32: v";
-				version.concat(esp32Version);
-				nextion->setCompText("about_page.tf_esp32_v", version);
-				break;
-		}
-		delay(displayPageRefreshInterval);
 	}
 }
-
+*/
 void loop()
 {
-	int pageId = -1;
-	int compId = -1;
-	nextion->getComponentClicked(pageId, compId);
-	if (pageId != -1 && compId != -1) {
-		Serial.print(pageId);
-		Serial.print(" | ");
-		Serial.println(compId);
-		HandleDisplayInteraction(pageId, compId);
-	}
-
 	//esp8266React.loop();
 
 	Serial.printf("Free heap: %d\n", ESP.getFreeHeap());
