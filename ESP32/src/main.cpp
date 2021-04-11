@@ -185,8 +185,9 @@ void fan1RpmUpdated(void *params)
 	}
 }
 
-void fan1PwmUpdated(void *params) {
-	for(;;) {
+void fan1PwmUpdated(void *params)
+{
+	for (;;) {
 		xEventGroupWaitBits(eg, TASK_EVENT_FAN1_PwmUpdated, pdTRUE, pdTRUE, portMAX_DELAY);
 		int dutyCycle = fan1->getDutyCycle();
 		int percent = fan1->getPercent();
@@ -213,8 +214,9 @@ void fan2RpmUpdated(void *params)
 	}
 }
 
-void fan2PwmUpdated(void *params) {
-	for(;;) {
+void fan2PwmUpdated(void *params)
+{
+	for (;;) {
 		xEventGroupWaitBits(eg, TASK_EVENT_FAN2_PwmUpdated, pdTRUE, pdTRUE, portMAX_DELAY);
 		int dutyCycle = fan2->getDutyCycle();
 		int percent = fan2->getPercent();
@@ -310,6 +312,15 @@ void nextionCompClickedCallback(void *params)
 	}
 }
 
+void effectChangeCallback(void *params)
+{
+	for(;;) {
+		xEventGroupWaitBits(eg, TASK_EVENT_LED2_EffectChanged, pdTRUE, pdTRUE, portMAX_DELAY);
+		int newEffectId = *((int *) params);
+		delay(20);
+	}
+}
+
 void setup()
 {
 	Serial.begin(serial1BaudRate);
@@ -347,7 +358,7 @@ void setup()
 	led2 = new FasterLed(led2_data_pin, led2NumberOfLeds, led2Brightness, led2CurrentLimit);
 	FastLED.addLeds<WS2812B, led2_data_pin, GRB>(led2->leds, led2NumberOfLeds);
 	led2->begin();
-	effectLoader = new EffectLoader(led2);
+	effectLoader = new EffectLoader(led2, eg, TASK_EVENT_LED2_EffectChanged, &effectChangeCallback);
 	effectLoader->changeEffect(1);
 
 	//Buzzer
@@ -426,6 +437,7 @@ void onWsEvent(AsyncWebSocket *webSocket, AsyncWebSocketClient *client, AwsEvent
 		client->text(response);
 	}
 }
+
 /*
 void HandleDisplayPage(void *parameter)
 {

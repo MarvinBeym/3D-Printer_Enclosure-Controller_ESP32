@@ -6,6 +6,15 @@ void EffectLoader::setupEffects()
 		effects[i]->setEffectId(i + 1);
 	}
 	xTaskCreate(&taskHandler, "effectLoader", 5000, this, 1, nullptr);
+
+	xTaskCreate(
+			effectChangeCallback,
+			"effectChangeCallback",
+			2000,
+			(void *) &currentEffect,
+			1,
+			nullptr
+	);
 }
 
 //A wrapper static function to allow creation of tasks inside the class
@@ -20,7 +29,7 @@ void EffectLoader::taskHandler(void *parameter)
 //Runs the actual task code.
 void EffectLoader::taskRunner()
 {
-	auto effect = effects[currentEffect - 1];
+	auto effect = effects[currentEffect];
 	if(!effect->getEffectGetsHandledOnce()) {
 		effect->effectHandler(led2->leds, led2->numberOfLeds);
 	} else if(effect->getEffectGetsHandledOnce() && !effect->getEffectHandled()){
@@ -43,6 +52,7 @@ void EffectLoader::changeEffect(int newEffectId)
 			effects[i]->setEffectHandled(false);
 		}
 	}
+	xEventGroupSetBits(eg, effectChangeEvent);
 }
 
 int EffectLoader::getCurrentEffect()
