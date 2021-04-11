@@ -34,11 +34,11 @@
 
 #define TASK_TEST_BIT 1
 EventGroupHandle_t eg;
-/*
+
 AsyncWebSocket ws("/ws");
 AsyncWebServer server(80);
 ESP8266React esp8266React(&server);
-*/
+
 Sensor *sensor1;
 Sensor *sensor2;
 Relay *led1;
@@ -51,11 +51,9 @@ bool booted = false;
 #include "./libs/NextionDisplay.h"
 
 NextionDisplay *nextion;
-/*
+
 void onWsEvent(AsyncWebSocket *webSocket, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data,
 			   size_t len);
-*/
-void HandleDisplayPage(void *parameter);
 
 void IRAM_ATTR fan1TachoInterrupt()
 {
@@ -103,7 +101,9 @@ void sensor1TemperatureUpdated(void *params)
 		sensor1->addToJson(&json, true, false);
 		String response;
 		serializeJson(json, response);
-		//ws.textAll(response);
+
+		ws.textAll(response);
+		delay(10);
 	}
 }
 
@@ -121,7 +121,9 @@ void sensor1HumidityUpdated(void *params)
 		sensor1->addToJson(&json, false);
 		String response;
 		serializeJson(json, response);
-		//ws.textAll(response);
+
+		ws.textAll(response);
+		delay(10);
 	}
 }
 
@@ -142,7 +144,9 @@ void sensor2TemperatureUpdated(void *params)
 		sensor2->addToJson(&json, true, false);
 		String response;
 		serializeJson(json, response);
-		//ws.textAll(response);
+
+		ws.textAll(response);
+		delay(10);
 	}
 }
 
@@ -161,7 +165,9 @@ void sensor2HumidityUpdated(void *params)
 		sensor2->addToJson(&json, false);
 		String response;
 		serializeJson(json, response);
-		//ws.textAll(response);
+
+		ws.textAll(response);
+		delay(10);
 	}
 }
 
@@ -181,7 +187,9 @@ void fan1RpmUpdated(void *params)
 		fan1->addToJson(&json, true, false, false);
 		String response;
 		serializeJson(json, response);
-		//ws.textAll(response);
+
+		ws.textAll(response);
+		delay(10);
 	}
 }
 
@@ -191,7 +199,20 @@ void fan1PwmUpdated(void *params)
 		xEventGroupWaitBits(eg, TASK_EVENT_FAN1_PwmUpdated, pdTRUE, pdTRUE, portMAX_DELAY);
 		int dutyCycle = fan1->getDutyCycle();
 		int percent = fan1->getPercent();
-		vTaskDelay(10);
+
+		String value = valueToPercentString(percent);
+		nextion
+				->setCompText("main_page.tf_pwm_fan1", value)
+				->setCompText("fans_page.tf_pwm_fan1", value)
+				->setCompValue("fans_page.sli_speed_fan1", percent);
+
+		DynamicJsonDocument json(64);
+		fan1->addToJson(&json, false, true, true);
+		String response;
+		serializeJson(json, response);
+
+		ws.textAll(response);
+		delay(10);
 	}
 }
 
@@ -210,7 +231,9 @@ void fan2RpmUpdated(void *params)
 		fan2->addToJson(&json, true, false, false);
 		String response;
 		serializeJson(json, response);
-		//ws.textAll(response);
+
+		ws.textAll(response);
+		delay(10);
 	}
 }
 
@@ -220,7 +243,20 @@ void fan2PwmUpdated(void *params)
 		xEventGroupWaitBits(eg, TASK_EVENT_FAN2_PwmUpdated, pdTRUE, pdTRUE, portMAX_DELAY);
 		int dutyCycle = fan2->getDutyCycle();
 		int percent = fan2->getPercent();
-		vTaskDelay(10);
+
+		String value = valueToPercentString(percent);
+		nextion
+				->setCompText("main_page.tf_pwm_fan2", value)
+				->setCompText("fans_page.tf_pwm_fan2", value)
+				->setCompValue("fans_page.sli_speed_fan2", percent);
+
+		DynamicJsonDocument json(64);
+		fan2->addToJson(&json, false, true, true);
+		String response;
+		serializeJson(json, response);
+
+		ws.textAll(response);
+		delay(10);
 	}
 }
 
@@ -229,7 +265,16 @@ void led1StateUpdated(void *params)
 	for (;;) {
 		xEventGroupWaitBits(eg, TASK_EVENT_LED1_StateUpdated, pdTRUE, pdTRUE, portMAX_DELAY);
 		bool state = *((bool *) params);
-		delay(20);
+
+		nextion->setCompValue("led_page.btn_led1", state);
+
+		DynamicJsonDocument json(64);
+		led1->addToJson(&json);
+		String response;
+		serializeJson(json, response);
+
+		ws.textAll(response);
+		delay(10);
 	}
 }
 
@@ -317,7 +362,14 @@ void effectChangeCallback(void *params)
 	for(;;) {
 		xEventGroupWaitBits(eg, TASK_EVENT_LED2_EffectChanged, pdTRUE, pdTRUE, portMAX_DELAY);
 		int newEffectId = *((int *) params);
-		delay(20);
+
+		DynamicJsonDocument json(64);
+		effectLoader->addToJson(&json, true, false);
+		String response;
+		serializeJson(json, response);
+
+		ws.textAll(response);
+		delay(10);
 	}
 }
 
@@ -398,14 +450,12 @@ void setup()
 	version.concat(esp32Version);
 	nextion->setCompText("about_page.tf_esp32_v", version);
 
-	//xTaskCreate(HandleDisplayPage, "handleDisplayPage", 5000, nullptr, 2, nullptr);
-/*
 	esp8266React.begin();
 	ws.onEvent(onWsEvent);
 
 	server.addHandler(&ws);
 	server.begin();
-*/
+
 	//Delay and attaching interrupt after everything is
 	//required to prevent crashes from happening on boot caused by weird interrupt stuff
 
@@ -438,27 +488,9 @@ void onWsEvent(AsyncWebSocket *webSocket, AsyncWebSocketClient *client, AwsEvent
 	}
 }
 
-/*
-void HandleDisplayPage(void *parameter)
-{
-	for (;;) {
-		switch (nextion->pageId) {
-			case MAIN_PAGE:
-				nextion
-						->setCompText("main_page.tf_pwm_fan1", valueToPercentString(fan1->percent))
-						->setCompText("main_page.tf_pwm_fan2", valueToPercentString(fan2->percent));
-				break;
-			case FANS_PAGE:
-				nextion
-						->setCompText("fans_page.tf_pwm_fan1", valueToPercentString(fan1->percent))
-						->setCompText("fans_page.tf_pwm_fan2", valueToPercentString(fan2->percent));
-				break;
-	}
-}
-*/
 void loop()
 {
-	//esp8266React.loop();
+	esp8266React.loop();
 
 	Serial.printf("Free heap: %d\n", ESP.getFreeHeap());
 	delay(500);

@@ -60,7 +60,7 @@ int EffectLoader::getCurrentEffect()
 	return currentEffect;
 }
 
-void EffectLoader::addToJson(DynamicJsonDocument *doc)
+void EffectLoader::addToJson(DynamicJsonDocument *doc, bool includeCurrentEffect, bool includeEffects)
 {
 	JsonObject jsonObject = doc->createNestedObject("led2");
 	jsonObject["currentEffect"] = getCurrentEffect();
