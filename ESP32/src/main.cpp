@@ -185,6 +185,15 @@ void fan1RpmUpdated(void *params)
 	}
 }
 
+void fan1PwmUpdated(void *params) {
+	for(;;) {
+		xEventGroupWaitBits(eg, TASK_EVENT_FAN1_PwmUpdated, pdTRUE, pdTRUE, portMAX_DELAY);
+		int dutyCycle = fan1->getDutyCycle();
+		int percent = fan1->getPercent();
+		vTaskDelay(10);
+	}
+}
+
 void fan2RpmUpdated(void *params)
 {
 	for (;;) {
@@ -204,14 +213,20 @@ void fan2RpmUpdated(void *params)
 	}
 }
 
+void fan2PwmUpdated(void *params) {
+	for(;;) {
+		xEventGroupWaitBits(eg, TASK_EVENT_FAN2_PwmUpdated, pdTRUE, pdTRUE, portMAX_DELAY);
+		int dutyCycle = fan2->getDutyCycle();
+		int percent = fan2->getPercent();
+		vTaskDelay(10);
+	}
+}
+
 void led1StateUpdated(void *params)
 {
 	for (;;) {
 		xEventGroupWaitBits(eg, TASK_EVENT_LED1_StateUpdated, pdTRUE, pdTRUE, portMAX_DELAY);
 		bool state = *((bool *) params);
-		Serial.print("led1 state update");
-		Serial.print(" | ");
-		Serial.println(state);
 		delay(20);
 	}
 }
@@ -345,9 +360,11 @@ void setup()
 			eg,
 			TASK_EVENT_FAN1_CalcRpm,
 			TASK_EVENT_FAN1_RpmUpdated,
+			TASK_EVENT_FAN1_PwmUpdated,
 			fan1_tacho_pin,
 			fan1_pwm_pin,
-			&fan1RpmUpdated
+			&fan1RpmUpdated,
+			&fan1PwmUpdated
 	);
 	fan2 = new Fan(
 			"fan2",
@@ -355,9 +372,11 @@ void setup()
 			eg,
 			TASK_EVENT_FAN2_CalcRpm,
 			TASK_EVENT_FAN2_RpmUpdated,
+			TASK_EVENT_FAN2_PwmUpdated,
 			fan2_tacho_pin,
 			fan2_pwm_pin,
-			&fan2RpmUpdated
+			&fan2RpmUpdated,
+			&fan2PwmUpdated
 	);
 
 	//Display

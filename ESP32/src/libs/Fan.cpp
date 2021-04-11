@@ -13,16 +13,20 @@
  * @param pwmPin 					The pwm pin of the fan used (allows changing the speed)
  * @param _rpmUpdatedEventCallback 	The callback that get's called when the rpm of the fan updated
  */
-Fan::Fan(char *_name, int _channel, EventGroupHandle_t _eg, int _calcRpmEvent, int _rpmUpdatedEvent, int tachoPin,
+Fan::Fan(char *_name, int _channel, EventGroupHandle_t _eg, int _calcRpmEvent, int _rpmUpdatedEvent, int _pwmUpdatedEvent, int tachoPin,
 		 int pwmPin,
-		 void (*_rpmUpdatedEventCallback)(void *))
+		 void (*_rpmUpdatedEventCallback)(void *),
+		 void (*_pwmUpdatedEventCallback)(void *))
 {
 	pinMode(tachoPin, INPUT);
 	pinMode(pwmPin, OUTPUT);
 	eg = _eg;
 	calcRpmEvent = _calcRpmEvent;
 	rpmUpdatedEvent = _rpmUpdatedEvent;
+	pwmUpdatedEvent = _pwmUpdatedEvent;
+
 	rpmUpdatedEventCallback = _rpmUpdatedEventCallback;
+	pwmUpdatedEventCallback = _pwmUpdatedEventCallback;
 	name = _name;
 	channel = _channel;
 
@@ -45,6 +49,15 @@ Fan::Fan(char *_name, int _channel, EventGroupHandle_t _eg, int _calcRpmEvent, i
 			"rpmUpdateCallback",
 			2000,
 			(void *) &rpm,
+			1,
+			nullptr
+	);
+
+	xTaskCreate(
+			pwmUpdatedEventCallback,
+			"pwmUpdatedEventCallback",
+			2000,
+			nullptr,
 			1,
 			nullptr
 	);
@@ -110,6 +123,8 @@ void Fan::addToJson(DynamicJsonDocument *doc, bool includeRpm, bool includePerce
 void Fan::setDutyCycle(int _dutyCycle)
 {
 	dutyCycle = _dutyCycle;
+	percent = map(dutyCycle, 0, 255, 0, 100);
+	xEventGroupSetBits(eg, pwmUpdatedEvent);
 	ledcWrite(channel, _dutyCycle);
 }
 
