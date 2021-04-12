@@ -1,10 +1,10 @@
 /* eslint-disable default-case */
-import {setLed1State, setLed2CurrentEffect, setLed2Effects} from "../reducers/ledsSlice";
+import {setLed1, setLed2} from "../reducers/ledsSlice";
 import {setSensor1, setSensor2} from "../reducers/sensorsSlice";
 import {setFan1, setFan2} from "../reducers/fansSlice";
 
 const webSocketMiddleware = (store) => (next) => (action) => {
-	if(action.type !== "ENCLOSURE_CONTROLLER::MESSAGE") {
+	if (action.type !== "ENCLOSURE_CONTROLLER::MESSAGE") {
 		next(action);
 		return;
 	}
@@ -22,11 +22,10 @@ const webSocketMiddleware = (store) => (next) => (action) => {
 	Object.keys(json).forEach((jsonKey) => {
 		switch (jsonKey) {
 			case "led1":
-				dispatch(setLed1State(json));
+				dispatch(setLed1(json));
 				break;
 			case "led2":
-				dispatch(setLed2CurrentEffect(json));
-				dispatch(setLed2Effects(json));
+				dispatch(setLed2(json));
 				break;
 			case "sensor1":
 				dispatch(setSensor1(json));

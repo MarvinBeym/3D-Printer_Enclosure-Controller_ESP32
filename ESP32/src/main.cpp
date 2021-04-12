@@ -298,9 +298,9 @@ void led1StateUpdated(void *params)
 		xEventGroupWaitBits(eg, TASK_EVENT_LED1_StateUpdated, pdTRUE, pdTRUE, portMAX_DELAY);
 		bool state = *((bool *) params);
 
-		nextion->setCompValue("led_page.btn_led1", state);
+		nextion->setCompValue("led_page.btn_led1", state ? 1 : 0);
 
-		DynamicJsonDocument json(64);
+		DynamicJsonDocument json(128);
 		led1->addToJson(&json);
 		String response;
 		serializeJson(json, response);
@@ -363,6 +363,9 @@ void nextionCompClickedCallback(void *params)
 				break;
 			case LED_PAGE:
 				switch (compId) {
+					case 1:
+						led1->setState(nextion->getCompValue("led_page.btn_led1"));
+						break;
 					case 14:
 						nextion->setPage(MAIN_PAGE);
 						break;
@@ -443,7 +446,6 @@ void setup()
 	FastLED.addLeds<WS2812B, led2_data_pin, GRB>(led2->leds, led2NumberOfLeds);
 	led2->begin();
 	effectLoader = new EffectLoader(led2, eg, TASK_EVENT_LED2_EffectChanged, &effectChangeCallback);
-	effectLoader->changeEffect(1);
 
 	//Buzzer
 	pinMode(buzzer_pin, OUTPUT);
@@ -503,7 +505,6 @@ void setup()
 DynamicJsonDocument handleWebSocketCommunication(String _component, String _command, String value)
 {
 	DynamicJsonDocument responseDoc(512);
-	JsonObject data = responseDoc.createNestedObject("data");
 	WebSocketComponent component = resolveWebSocketComponent(_component);
 	WebSocketCommand command = resolveWebSocketCommand(_command);
 
@@ -523,36 +524,31 @@ DynamicJsonDocument handleWebSocketCommunication(String _component, String _comm
 	switch (component) {
 		case Led1:
 			if (command == setState) {
-				JsonObject led1Json = data.createNestedObject(_component);
-				bool newState = value.toInt() != 0;
-				newState ? led1->on() : led1->off();
-				led1Json["state"] = newState;
+				int newState = value.toInt();
+				bool newState2 = newState >= 1;
+				led1->setState(newState);
 			}
 			break;
 		case Led2:
 			if (command == setEffect) {
 				int newEffect = value.toInt();
-				JsonObject led2Json = data.createNestedObject(_component);
 				effectLoader->changeEffect(newEffect);
-				led2Json["currentEffect"] = effectLoader->getCurrentEffect();
 			}
 			break;
 		case Fan1:
 		case Fan2:
 			if(command == setPercent) {
 				auto fan = component == Fan1 ? fan1 : fan2;
-				JsonObject fanJson = data.createNestedObject(_component);
 				int newPercent = value.toInt();
 				fan->setPercent(newPercent);
-				fanJson["percent"] = fan->getPercent();
 				break;
 			}
 	}
 
 	responseDoc["message"] = "Executed command";
 	responseDoc["status"] = "success";
-	responseDoc["command"] = command;
-	responseDoc["component"] = component;
+	responseDoc["command"] = _command;
+	responseDoc["component"] = _component;
 
 	return responseDoc;
 }
@@ -562,7 +558,6 @@ void onWsEvent(AsyncWebSocket *webSocket, AsyncWebSocketClient *client, AwsEvent
 {
 
 	if (type == WS_EVT_CONNECT) {
-		Serial.printf("ws[%s][%u] connect\n", webSocket->url(), client->id());
 		client->printf("Hello Client %u :)", client->id());
 		DynamicJsonDocument json(1024);
 		led1->addToJson(&json);
@@ -578,9 +573,10 @@ void onWsEvent(AsyncWebSocket *webSocket, AsyncWebSocketClient *client, AwsEvent
 		AwsFrameInfo *info = (AwsFrameInfo *) arg;
 
 		if (info->final && info->index == 0 && info->len == len && info->opcode == WS_TEXT) {
+			/*
 			Serial.printf("ws[%s][%u] %s-message[%llu]: ", webSocket->url(), client->id(),
 						  (info->opcode == WS_TEXT) ? "text" : "binary", info->len);
-
+*/
 			char *jsonString = (char *) data;
 			DynamicJsonDocument json(1024);
 			DeserializationError error = deserializeJson(json, jsonString);
@@ -594,17 +590,13 @@ void onWsEvent(AsyncWebSocket *webSocket, AsyncWebSocketClient *client, AwsEvent
 				String response;
 				serializeJson(errorDoc, response);
 				client->text(response);
-				Serial.println(response);
 			}
-
-			Serial.printf("%s\n", jsonString);
 
 			DynamicJsonDocument responseDoc = handleWebSocketCommunication(json["component"], json["command"],
 																		   json["value"]);
 			String response;
 			serializeJson(responseDoc, response);
 			client->text(response);
-			Serial.println(response);
 		} else {
 			DynamicJsonDocument doc(192);
 			doc["reason"] = "Only single frame as a json string allowed for communication";

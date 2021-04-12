@@ -1,5 +1,4 @@
-import {createAsyncThunk, createSlice} from "@reduxjs/toolkit";
-import {fetchBackend, setFailureState, setLoadingState} from "../../helper";
+import {createSlice} from "@reduxjs/toolkit";
 
 const initialState = {
 	led1: {
@@ -21,24 +20,23 @@ const ledsSlice = createSlice({
 	name: 'leds',
 	initialState,
 	reducers: {
-		setLed2CurrentEffect(state, action) {
-			if(action.payload.led2.currentEffect) {
-				state.led2.currentEffect = action.payload.led2.currentEffect;
+		setLed1(state, action) {
+			if ("state" in action.payload.led1) {
+				state.led1.state = action.payload.led1.state;
 			}
 		},
-		setLed2Effects(state, action) {
-			if (action.payload.led2.effects) {
+		setLed2(state, action) {
+			if ("currentEffect" in action.payload.led2) {
+				state.led2.currentEffect = action.payload.led2.currentEffect;
+			}
+			if ("effects" in action.payload.led2) {
+
 				state.led2.effects = action.payload.led2.effects;
 			}
 		},
-		setLed1State(state, action) {
-			if(action.payload.led1.state) {
-				state.led1.state = action.payload.led1.state;
-			}
-		}
 	},
 });
 
-export const {setLed2CurrentEffect, setLed2Effects, setLed1State} = ledsSlice.actions;
+export const {setLed1, setLed2} = ledsSlice.actions;
 
 export default ledsSlice.reducer;

@@ -3,7 +3,7 @@
 void EffectLoader::setupEffects()
 {
 	for (std::size_t i = 0; i < effects.size(); ++i) {
-		effects[i]->setEffectId(i + 1);
+		effects[i]->setEffectId(i);
 	}
 	xTaskCreate(&taskHandler, "effectLoader", 5000, this, 1, nullptr);
 
@@ -63,12 +63,17 @@ int EffectLoader::getCurrentEffect()
 void EffectLoader::addToJson(DynamicJsonDocument *doc, bool includeCurrentEffect, bool includeEffects)
 {
 	JsonObject jsonObject = doc->createNestedObject("led2");
-	jsonObject["currentEffect"] = getCurrentEffect();
-	JsonArray jsonArrEffects = jsonObject.createNestedArray("effects");
-	for (std::size_t i = 0; i < effects.size(); ++i) {
-		auto effect = effects[i];
-		JsonObject effectObject = jsonArrEffects.createNestedObject();
-		effectObject["name"] = effect->getName();
-		effectObject["id"] = effect->getEffectId();
+	if(includeCurrentEffect) {
+		jsonObject["currentEffect"] = getCurrentEffect();
 	}
+	if(includeEffects) {
+		JsonArray jsonArrEffects = jsonObject.createNestedArray("effects");
+		for (std::size_t i = 0; i < effects.size(); ++i) {
+			auto effect = effects[i];
+			JsonObject effectObject = jsonArrEffects.createNestedObject();
+			effectObject["name"] = effect->getName();
+			effectObject["id"] = effect->getEffectId();
+		}
+	}
+
 }

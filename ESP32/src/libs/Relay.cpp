@@ -21,7 +21,7 @@ Relay::Relay(const char *_name, int _pin, EventGroupHandle_t _eg, int _stateUpda
 	xTaskCreate(
 			stateUpdateCallback,
 			"relayStateUpdateCallback",
-			1000,
+			2000,
 			(void *) &state,
 			1,
 			NULL
@@ -55,7 +55,7 @@ void Relay::setState(bool _state)
  * >= 1 == true
  * @param _state
  */
-void Relay::setState(int _state) { setState(_state <= 0); }
+void Relay::setState(int _state) { setState(_state >= 1); }
 
 /**
  * Toggles the relay state

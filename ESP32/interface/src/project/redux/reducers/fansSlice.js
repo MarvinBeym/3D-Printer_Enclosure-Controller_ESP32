@@ -25,13 +25,13 @@ const fansSlice = createSlice({
 			let percent = action.payload.fan1?.percent;
 			let rpm = action.payload.fan1?.rpm;
 			let dutyCycle = action.payload.fan1?.dutyCycle;
-			if(percent) {
+			if("percent" in action.payload.fan1) {
 				state.fan1.percent = percent;
 			}
-			if(rpm) {
+			if("rpm" in action.payload.fan1) {
 				state.fan1.rpm = rpm;
 			}
-			if(dutyCycle) {
+			if("dutyCycle" in action.payload.fan1) {
 				state.fan1.dutyCycle = dutyCycle;
 			}
 		},
@@ -39,13 +39,13 @@ const fansSlice = createSlice({
 			let percent = action.payload.fan2?.percent;
 			let rpm = action.payload.fan2?.rpm;
 			let dutyCycle = action.payload.fan2?.dutyCycle;
-			if(percent) {
+			if("percent" in action.payload.fan2) {
 				state.fan2.percent = percent;
 			}
-			if(rpm) {
+			if("rpm" in action.payload.fan2) {
 				state.fan2.rpm = rpm;
 			}
-			if(dutyCycle) {
+			if("dutyCycle" in action.payload.fan2) {
 				state.fan2.dutyCycle = dutyCycle;
 			}
 		},
