@@ -19,20 +19,20 @@
 #define FASTLED_INTERNAL
 
 #include <Arduino.h>
+#include <ESPAsyncWebServer.h>
 #include "task-events.h"
 #include "helper.h"
 #include "controller-pin-definition.h"
 #include "controller-configuration.h"
+
+#include "../lib/framework/ESP8266React.h"
+#include "./libs/NextionDisplay.h"
 #include "./libs/Sensor.h"
 #include "./libs/Relay.h"
 #include "./libs/FasterLed.h"
 #include "./libs/Fan.h"
 #include "./effects/EffectLoader.h"
 
-#include <ESPAsyncWebServer.h>
-#include "../lib/framework/ESP8266React.h"
-
-#define TASK_TEST_BIT 1
 EventGroupHandle_t eg;
 
 AsyncWebSocket ws("/ws");
@@ -48,12 +48,44 @@ Fan *fan2;
 EffectLoader *effectLoader;
 bool booted = false;
 
-#include "./libs/NextionDisplay.h"
-
 NextionDisplay *nextion;
 
 void onWsEvent(AsyncWebSocket *webSocket, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data,
 			   size_t len);
+
+enum WebSocketComponent
+{
+	Led1,
+	Led2,
+	Fan1,
+	Fan2,
+	Invalid,
+};
+
+enum WebSocketCommand
+{
+	setState,
+	setEffect,
+	setPercent,
+	invalid,
+};
+
+WebSocketComponent resolveWebSocketComponent(String component)
+{
+	if (component == "led1") return Led1;
+	if (component == "led2") return Led2;
+	if (component == "fan1") return Fan1;
+	if (component == "fan2") return Fan2;
+	return Invalid;
+}
+
+WebSocketCommand resolveWebSocketCommand(String command)
+{
+	if (command == "setState") return setState;
+	if (command == "setEffect") return setEffect;
+	if (command == "setPercent") return setPercent;
+	return invalid;
+}
 
 void IRAM_ATTR fan1TachoInterrupt()
 {
@@ -359,7 +391,7 @@ void nextionCompClickedCallback(void *params)
 
 void effectChangeCallback(void *params)
 {
-	for(;;) {
+	for (;;) {
 		xEventGroupWaitBits(eg, TASK_EVENT_LED2_EffectChanged, pdTRUE, pdTRUE, portMAX_DELAY);
 		int newEffectId = *((int *) params);
 
@@ -468,6 +500,63 @@ void setup()
 	fan2->setPercent(100);
 }
 
+DynamicJsonDocument handleWebSocketCommunication(String _component, String _command, String value)
+{
+	DynamicJsonDocument responseDoc(512);
+	JsonObject data = responseDoc.createNestedObject("data");
+	WebSocketComponent component = resolveWebSocketComponent(_component);
+	WebSocketCommand command = resolveWebSocketCommand(_command);
+
+	if (component == WebSocketComponent::Invalid) {
+		responseDoc["message"] = "Invalid component";
+		responseDoc["status"] = "failure";
+		responseDoc["component"] = component;
+		return responseDoc;
+	}
+	if (command == WebSocketCommand::invalid) {
+		responseDoc["message"] = "Invalid command";
+		responseDoc["status"] = "failure";
+		responseDoc["command"] = command;
+		return responseDoc;
+	}
+
+	switch (component) {
+		case Led1:
+			if (command == setState) {
+				JsonObject led1Json = data.createNestedObject(_component);
+				bool newState = value.toInt() != 0;
+				newState ? led1->on() : led1->off();
+				led1Json["state"] = newState;
+			}
+			break;
+		case Led2:
+			if (command == setEffect) {
+				int newEffect = value.toInt();
+				JsonObject led2Json = data.createNestedObject(_component);
+				effectLoader->changeEffect(newEffect);
+				led2Json["currentEffect"] = effectLoader->getCurrentEffect();
+			}
+			break;
+		case Fan1:
+		case Fan2:
+			if(command == setPercent) {
+				auto fan = component == Fan1 ? fan1 : fan2;
+				JsonObject fanJson = data.createNestedObject(_component);
+				int newPercent = value.toInt();
+				fan->setPercent(newPercent);
+				fanJson["percent"] = fan->getPercent();
+				break;
+			}
+	}
+
+	responseDoc["message"] = "Executed command";
+	responseDoc["status"] = "success";
+	responseDoc["command"] = command;
+	responseDoc["component"] = component;
+
+	return responseDoc;
+}
+
 void onWsEvent(AsyncWebSocket *webSocket, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data,
 			   size_t len)
 {
@@ -485,6 +574,46 @@ void onWsEvent(AsyncWebSocket *webSocket, AsyncWebSocketClient *client, AwsEvent
 		String response;
 		serializeJson(json, response);
 		client->text(response);
+	} else if (type == WS_EVT_DATA) {
+		AwsFrameInfo *info = (AwsFrameInfo *) arg;
+
+		if (info->final && info->index == 0 && info->len == len && info->opcode == WS_TEXT) {
+			Serial.printf("ws[%s][%u] %s-message[%llu]: ", webSocket->url(), client->id(),
+						  (info->opcode == WS_TEXT) ? "text" : "binary", info->len);
+
+			char *jsonString = (char *) data;
+			DynamicJsonDocument json(1024);
+			DeserializationError error = deserializeJson(json, jsonString);
+
+			if (error || !json.containsKey("component") || !json.containsKey("command") ||
+				!json.containsKey("value")) {
+				DynamicJsonDocument errorDoc(128);
+				errorDoc["reason"] = "No json, invalid json or other error";
+				errorDoc["message"] = "Error in communication";
+				errorDoc["status"] = "failure";
+				String response;
+				serializeJson(errorDoc, response);
+				client->text(response);
+				Serial.println(response);
+			}
+
+			Serial.printf("%s\n", jsonString);
+
+			DynamicJsonDocument responseDoc = handleWebSocketCommunication(json["component"], json["command"],
+																		   json["value"]);
+			String response;
+			serializeJson(responseDoc, response);
+			client->text(response);
+			Serial.println(response);
+		} else {
+			DynamicJsonDocument doc(192);
+			doc["reason"] = "Only single frame as a json string allowed for communication";
+			doc["message"] = "Error in communication";
+			doc["status"] = "failure";
+			String response;
+			serializeJson(doc, response);
+			client->text(response);
+		}
 	}
 }
 

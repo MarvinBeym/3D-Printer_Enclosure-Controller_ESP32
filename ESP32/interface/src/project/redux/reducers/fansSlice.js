@@ -14,8 +14,9 @@ const initialState = {
 	status: 'idle',
 }
 
-export const selectFan1 = (state) => state.sensors.fan1;
-export const selectFan2 = (state) => state.sensors.fan2;
+export const selectFan1 = (state) => state.fans.fan1;
+export const selectFan2 = (state) => state.fans.fan2;
+export const selectFans = (state) => [state.fans.fan1, state.fans.fan2];
 const fansSlice = createSlice({
 	name: 'fans',
 	initialState,
