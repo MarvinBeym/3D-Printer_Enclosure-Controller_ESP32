@@ -1,6 +1,6 @@
 #include "Sensor.h"
 
-Sensor::Sensor(char *_name, int pin, int _senseInterval, EventGroupHandle_t _eg,
+Sensor::Sensor(const char *_name, int pin, int _senseInterval, EventGroupHandle_t _eg,
 			   int _temperatureUpdateEvent,
 			   int _humidityUpdateEvent,
 			   void (*temperatureUpdateCallback)(void *),

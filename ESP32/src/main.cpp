@@ -229,7 +229,7 @@ void fan1PwmUpdated(void *params)
 {
 	for (;;) {
 		xEventGroupWaitBits(eg, TASK_EVENT_FAN1_PwmUpdated, pdTRUE, pdTRUE, portMAX_DELAY);
-		int dutyCycle = fan1->getDutyCycle();
+		//int dutyCycle = fan1->getDutyCycle();
 		int percent = fan1->getPercent();
 
 		String value = valueToPercentString(percent);
@@ -273,7 +273,7 @@ void fan2PwmUpdated(void *params)
 {
 	for (;;) {
 		xEventGroupWaitBits(eg, TASK_EVENT_FAN2_PwmUpdated, pdTRUE, pdTRUE, portMAX_DELAY);
-		int dutyCycle = fan2->getDutyCycle();
+		//int dutyCycle = fan2->getDutyCycle();
 		int percent = fan2->getPercent();
 
 		String value = valueToPercentString(percent);
@@ -396,7 +396,7 @@ void effectChangeCallback(void *params)
 {
 	for (;;) {
 		xEventGroupWaitBits(eg, TASK_EVENT_LED2_EffectChanged, pdTRUE, pdTRUE, portMAX_DELAY);
-		int newEffectId = *((int *) params);
+		//int newEffectId = *((int *) params);
 
 		DynamicJsonDocument json(64);
 		effectLoader->addToJson(&json, true, false);
@@ -508,12 +508,6 @@ DynamicJsonDocument handleWebSocketCommunication(String _component, String _comm
 	WebSocketComponent component = resolveWebSocketComponent(_component);
 	WebSocketCommand command = resolveWebSocketCommand(_command);
 
-	if (component == WebSocketComponent::Invalid) {
-		responseDoc["message"] = "Invalid component";
-		responseDoc["status"] = "failure";
-		responseDoc["component"] = component;
-		return responseDoc;
-	}
 	if (command == WebSocketCommand::invalid) {
 		responseDoc["message"] = "Invalid command";
 		responseDoc["status"] = "failure";
@@ -525,7 +519,6 @@ DynamicJsonDocument handleWebSocketCommunication(String _component, String _comm
 		case Led1:
 			if (command == setState) {
 				int newState = value.toInt();
-				bool newState2 = newState >= 1;
 				led1->setState(newState);
 			}
 			break;
@@ -543,6 +536,12 @@ DynamicJsonDocument handleWebSocketCommunication(String _component, String _comm
 				fan->setPercent(newPercent);
 				break;
 			}
+		case Invalid:
+		default:
+			responseDoc["message"] = "Invalid component";
+			responseDoc["status"] = "failure";
+			responseDoc["component"] = component;
+			return responseDoc;
 	}
 
 	responseDoc["message"] = "Executed command";

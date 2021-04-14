@@ -14,7 +14,7 @@ class Sensor
 {
 	public:
 		Sensor(
-				char *_name,
+				const char *_name,
 				int pin,
 				int _senseInterval,
 				EventGroupHandle_t _eg,
@@ -24,7 +24,7 @@ class Sensor
 				void (*humidityUpdateCallback)(void *)
 		);
 		void addToJson(DynamicJsonDocument *doc, bool includeTemperature = true, bool includeHumidity = true) const;
-		char *name;
+		const char *name;
 	private:
 		void (*temperatureUpdateCallback)(void *);
 		void (*humidityUpdateCallback)(void *);

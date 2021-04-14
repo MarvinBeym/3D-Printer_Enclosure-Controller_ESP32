@@ -13,7 +13,7 @@
  * @param pwmPin 					The pwm pin of the fan used (allows changing the speed)
  * @param _rpmUpdatedEventCallback 	The callback that get's called when the rpm of the fan updated
  */
-Fan::Fan(char *_name, int _channel, EventGroupHandle_t _eg, int _calcRpmEvent, int _rpmUpdatedEvent, int _pwmUpdatedEvent, int tachoPin,
+Fan::Fan(const char *_name, int _channel, EventGroupHandle_t _eg, int _calcRpmEvent, int _rpmUpdatedEvent, int _pwmUpdatedEvent, int tachoPin,
 		 int pwmPin,
 		 void (*_rpmUpdatedEventCallback)(void *),
 		 void (*_pwmUpdatedEventCallback)(void *))

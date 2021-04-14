@@ -11,7 +11,7 @@
 class Fan
 {
 	public:
-		Fan(char *_name, int _channel, EventGroupHandle_t _eg, int _calcRpmEvent, int _rpmUpdatedEvent,
+		Fan(const char *_name, int _channel, EventGroupHandle_t _eg, int _calcRpmEvent, int _rpmUpdatedEvent,
 			int _pwmUpdatedEvent, int _tachoPin, int _pwmPin, void (*_rpmUpdatedEventCallback)(void *),
 			void (*_pwmUpdatedEventCallback)(void *));
 		volatile int halfRevolutions;
@@ -21,7 +21,7 @@ class Fan
 		int getDutyCycle();
 		void addToJson(DynamicJsonDocument *doc, bool includeRpm = true, bool includePercent = true,
 					   bool includeDutyCycle = true) const;
-		char *name;
+		const char *name;
 	private:
 		int rpm;
 		int percent;
