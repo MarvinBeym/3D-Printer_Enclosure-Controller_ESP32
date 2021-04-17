@@ -2,6 +2,8 @@
   A Class for handling relays
   Created by Marvin Beym, 02.04.2021.
 */
+#pragma once
+
 #include <Arduino.h>
 #include <ArduinoJson.h>
 

@@ -2,8 +2,7 @@
   Class for dealing with the nextion display
   Created by Marvin Beym, 03.04.2021.
 */
-#ifndef NextionDisplay_h
-#define NextionDisplay_h
+#pragma once
 
 //Page definition
 #define BOOT_PAGE 0
@@ -41,5 +40,3 @@ class NextionDisplay
 		static void taskHandler(void *parameter);
 		void checkComponentClicked();
 };
-
-#endif

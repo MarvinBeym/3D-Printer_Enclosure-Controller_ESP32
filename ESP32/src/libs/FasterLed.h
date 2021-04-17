@@ -2,8 +2,8 @@
   A wrapper for FastLED
   Created by Marvin Beym, 02.04.2021.
 */
-#ifndef FasterLed_h
-#define FasterLed_h
+#pragma once
+
 
 #include <Arduino.h>
 #include <FastLED.h>
@@ -21,5 +21,3 @@ class FasterLed
 	private:
 		int pin;
 };
-
-#endif

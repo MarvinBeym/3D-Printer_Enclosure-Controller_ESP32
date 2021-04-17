@@ -1,3 +1,7 @@
+/*
+  Class with static helper functions
+  Created by Marvin Beym, 17.04.2021.
+*/
 #pragma once
 
 class Helper {

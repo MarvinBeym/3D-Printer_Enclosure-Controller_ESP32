@@ -2,8 +2,7 @@
   A Class for handling dht22 sensors
   Created by Marvin Beym, 02.04.2021.
 */
-#ifndef Sensor_h
-#define Sensor_h
+#pragma once
 
 #include <Arduino.h>
 #include <Adafruit_Sensor.h>
@@ -38,5 +37,3 @@ class Sensor
 		float temperature;
 		float humidity;
 };
-
-#endif

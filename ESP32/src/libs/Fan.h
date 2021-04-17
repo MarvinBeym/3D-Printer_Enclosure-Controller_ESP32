@@ -2,8 +2,7 @@
   Class for dealing with 4pin PWM Fans
   Created by Marvin Beym, 02.04.2021.
 */
-#ifndef Fan_h
-#define Fan_h
+#pragma once
 
 #include <Arduino.h>
 #include <ArduinoJson.h>
@@ -38,5 +37,3 @@ class Fan
 		int channel;
 
 };
-
-#endif

@@ -2,6 +2,7 @@
  * Task events get defined here for later use.
  * The task bit has to be unique.
  * So that ex 0b101 wont execute events on 0b100 and 0b001.
+ * If multiple events should be called they can however be combined.
  */
 
 #define TASK_EVENT_FAN1_CalcRpm 				0b0000000000001
