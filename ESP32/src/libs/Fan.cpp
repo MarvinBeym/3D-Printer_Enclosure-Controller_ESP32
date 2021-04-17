@@ -1,7 +1,7 @@
 #include "Fan.h"
 #include "../controller-configuration.h"
 #include "../task-events.h"
-
+#include "../helper.h"
 /**
  * Fan class constructor
  * @param _name 					The name of the fan, used for ledc setup and json
@@ -116,16 +116,8 @@ void Fan::addToJson(DynamicJsonDocument *doc, bool includeRpm, bool includePerce
 void Fan::setDutyCycle(int _dutyCycle)
 {
 	dutyCycle = _dutyCycle;
-	int _percent = (int) map(dutyCycle, 0, 255, 0, 100);
+	percent = newMap(dutyCycle, 0, 255, 0, 100);
 
-	if(_percent <= 0) {
-		_percent = 0;
-	}
-	if(_percent >= 100) {
-		_percent = 100;
-	}
-
-	percent = _percent;
 	xEventGroupSetBits(eg, pwmUpdatedEvent);
 	ledcWrite(channel, _dutyCycle);
 }
@@ -137,14 +129,7 @@ void Fan::setDutyCycle(int _dutyCycle)
 void Fan::setPercent(int _percent)
 {
 	percent = _percent;
-	int _dutyCycle = (int) map(_percent, 0, 100, 0, 255);
-	if(_dutyCycle <= 0) {
-		_dutyCycle = 0;
-	}
-	if(_dutyCycle >= 255) {
-		_dutyCycle = 255;
-	}
-	setDutyCycle(_dutyCycle);
+	setDutyCycle(newMap(_percent, 0, 100, 0, 255));
 }
 
 /**

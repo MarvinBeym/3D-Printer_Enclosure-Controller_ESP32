@@ -128,7 +128,7 @@ void sensor1TemperatureUpdated(void *params)
 		nextion->setCompText("sensor_page.tf_temp_sens1", value);
 		nextion->addGraphValue(
 				1, 0,
-				map((int) temperature, displayGraphMinTemp, 255, 0, displayGraphHeight));
+				newMap((int) temperature, displayGraphMinTemp, 255, 0, displayGraphHeight));
 		DynamicJsonDocument json(64);
 		sensor1->addToJson(&json, true, false);
 		String response;
@@ -171,7 +171,7 @@ void sensor2TemperatureUpdated(void *params)
 				->setCompText("sensor_page.tf_temp_sens2", value)
 				->addGraphValue(
 						1, 1,
-						map((int) temperature, displayGraphMinTemp, 255, 0, displayGraphHeight));
+						newMap((int) temperature, displayGraphMinTemp, 255, 0, displayGraphHeight));
 		DynamicJsonDocument json(64);
 		sensor2->addToJson(&json, true, false);
 		String response;
