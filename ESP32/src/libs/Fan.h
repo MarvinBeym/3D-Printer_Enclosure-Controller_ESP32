@@ -14,7 +14,7 @@ class Fan
 		Fan(const char *_name, int _channel, EventGroupHandle_t _eg, int _calcRpmEvent, int _rpmUpdatedEvent,
 			int _pwmUpdatedEvent, int _tachoPin, int _pwmPin, void (*_rpmUpdatedEventCallback)(void *),
 			void (*_pwmUpdatedEventCallback)(void *));
-		volatile int halfRevolutions;
+		volatile int halfRevolutions = 0;
 		void setDutyCycle(int dutyCycle);
 		void setPercent(int percent);
 		int getPercent();
@@ -23,9 +23,10 @@ class Fan
 					   bool includeDutyCycle = true) const;
 		const char *name;
 	private:
-		int rpm;
-		int percent;
-		unsigned int dutyCycle;
+		int rpm = 0;
+		int percent = 0;
+		int dutyCycle = 0;
+		unsigned long timeOld = 0;
 		int calcRpmEvent;
 		int rpmUpdatedEvent;
 		int pwmUpdatedEvent;
@@ -35,7 +36,7 @@ class Fan
 		static void taskHandler(void *parameter);
 		void calculateRpmTask();
 		int channel;
-		unsigned long timeOld;
+
 };
 
 #endif

@@ -30,13 +30,6 @@ Fan::Fan(const char *_name, int _channel, EventGroupHandle_t _eg, int _calcRpmEv
 	name = _name;
 	channel = _channel;
 
-	//Init variables
-	timeOld = 0;
-	halfRevolutions = 0;
-	rpm = 0;
-	dutyCycle = 0;
-	percent = 0;
-
 	//Setup ledc (fan pwm control)
 	ledcSetup(channel, 25000, 8);
 	ledcAttachPin(pwmPin, channel);
@@ -123,7 +116,16 @@ void Fan::addToJson(DynamicJsonDocument *doc, bool includeRpm, bool includePerce
 void Fan::setDutyCycle(int _dutyCycle)
 {
 	dutyCycle = _dutyCycle;
-	percent = map(dutyCycle, 0, 255, 0, 100);
+	int _percent = (int) map(dutyCycle, 0, 255, 0, 100);
+
+	if(_percent <= 0) {
+		_percent = 0;
+	}
+	if(_percent >= 100) {
+		_percent = 100;
+	}
+
+	percent = _percent;
 	xEventGroupSetBits(eg, pwmUpdatedEvent);
 	ledcWrite(channel, _dutyCycle);
 }
@@ -135,7 +137,14 @@ void Fan::setDutyCycle(int _dutyCycle)
 void Fan::setPercent(int _percent)
 {
 	percent = _percent;
-	setDutyCycle(map(_percent, 0, 100, 0, 255));
+	int _dutyCycle = (int) map(_percent, 0, 100, 0, 255);
+	if(_dutyCycle <= 0) {
+		_dutyCycle = 0;
+	}
+	if(_dutyCycle >= 255) {
+		_dutyCycle = 255;
+	}
+	setDutyCycle(_dutyCycle);
 }
 
 /**

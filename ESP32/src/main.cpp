@@ -232,6 +232,7 @@ void fan1PwmUpdated(void *params)
 		//int dutyCycle = fan1->getDutyCycle();
 		int percent = fan1->getPercent();
 
+
 		String value = valueToPercentString(percent);
 		nextion
 				->setCompText("main_page.tf_pwm_fan1", value)
@@ -366,6 +367,13 @@ void nextionCompClickedCallback(void *params)
 					case 1:
 						led1->setState(nextion->getCompValue("led_page.btn_led1"));
 						break;
+
+					case 11:
+						effectLoader->changeEffect(effectLoader->getCurrentEffect() + 1);
+						break;
+					case 12:
+						effectLoader->changeEffect(effectLoader->getCurrentEffect() - 1);
+						break;
 					case 14:
 						nextion->setPage(MAIN_PAGE);
 						break;
@@ -396,7 +404,9 @@ void effectChangeCallback(void *params)
 {
 	for (;;) {
 		xEventGroupWaitBits(eg, TASK_EVENT_LED2_EffectChanged, pdTRUE, pdTRUE, portMAX_DELAY);
-		//int newEffectId = *((int *) params);
+		int newEffectId = *((int *) params);
+
+		nextion->setCompText("led_page.tf_mode", effectLoader->getEffectName(newEffectId, true));
 
 		DynamicJsonDocument json(64);
 		effectLoader->addToJson(&json, true, false);
@@ -404,6 +414,7 @@ void effectChangeCallback(void *params)
 		serializeJson(json, response);
 
 		ws.textAll(response);
+
 		delay(10);
 	}
 }

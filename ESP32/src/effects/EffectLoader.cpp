@@ -30,9 +30,9 @@ void EffectLoader::taskHandler(void *parameter)
 void EffectLoader::taskRunner()
 {
 	auto effect = effects[currentEffect];
-	if(!effect->getEffectGetsHandledOnce()) {
+	if (!effect->getEffectGetsHandledOnce()) {
 		effect->effectHandler(led2->leds, led2->numberOfLeds);
-	} else if(effect->getEffectGetsHandledOnce() && !effect->getEffectHandled()){
+	} else if (effect->getEffectGetsHandledOnce() && !effect->getEffectHandled()) {
 		effect->setEffectHandled(true);
 		effect->effectHandler(led2->leds, led2->numberOfLeds);
 		vTaskDelay(pdMS_TO_TICKS(200));
@@ -40,15 +40,27 @@ void EffectLoader::taskRunner()
 	return;
 }
 
+const char *EffectLoader::getEffectName(int effectId, bool upperCase)
+{
+	String *name = new String(effects[effectId]->getName());
+	if (upperCase) {
+		name->toUpperCase();
+		return name->c_str();
+	}
+	return name->c_str();
+}
+
 void EffectLoader::changeEffect(int newEffectId)
 {
-	if(newEffectId <= 0 || newEffectId > effects.size() - 1) {
+	if (newEffectId <= 0) {
 		currentEffect = 0;
+	} else if (newEffectId >= effects.size() - 1) {
+		currentEffect = effects.size() - 1;
 	} else {
 		currentEffect = newEffectId;
 	}
 	for (std::size_t i = 0; i < effects.size(); ++i) {
-		if(effects[i]->getEffectGetsHandledOnce()) {
+		if (effects[i]->getEffectGetsHandledOnce()) {
 			effects[i]->setEffectHandled(false);
 		}
 	}
@@ -63,10 +75,10 @@ int EffectLoader::getCurrentEffect()
 void EffectLoader::addToJson(DynamicJsonDocument *doc, bool includeCurrentEffect, bool includeEffects)
 {
 	JsonObject jsonObject = doc->createNestedObject("led2");
-	if(includeCurrentEffect) {
+	if (includeCurrentEffect) {
 		jsonObject["currentEffect"] = getCurrentEffect();
 	}
-	if(includeEffects) {
+	if (includeEffects) {
 		JsonArray jsonArrEffects = jsonObject.createNestedArray("effects");
 		for (std::size_t i = 0; i < effects.size(); ++i) {
 			auto effect = effects[i];
