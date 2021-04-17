@@ -22,7 +22,7 @@ Sensor::Sensor(const char *_name, int pin, int _senseInterval, EventGroupHandle_
 	delay(100);
 
 	xTaskCreate(&taskHandler, name,
-				1000, this, 1, nullptr);
+				2000, this, 1, nullptr);
 
 	xTaskCreate(
 			temperatureUpdateCallback,

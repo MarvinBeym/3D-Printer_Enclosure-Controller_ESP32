@@ -43,11 +43,11 @@ Fan::Fan(const char *_name, int _channel, EventGroupHandle_t _eg, int _calcRpmEv
 	setDutyCycle(0); //Making sure the fan is off first
 
 	//Setting up tasks for rpm calculation & update callback
-	xTaskCreate(&taskHandler, name, 1000, this, 1, nullptr);
+	xTaskCreate(&taskHandler, name, 1500, this, 1, nullptr);
 	xTaskCreate(
 			rpmUpdatedEventCallback,
 			"rpmUpdateCallback",
-			2000,
+			2500,
 			(void *) &rpm,
 			1,
 			nullptr
@@ -56,7 +56,7 @@ Fan::Fan(const char *_name, int _channel, EventGroupHandle_t _eg, int _calcRpmEv
 	xTaskCreate(
 			pwmUpdatedEventCallback,
 			"pwmUpdatedEventCallback",
-			2000,
+			2500,
 			nullptr,
 			1,
 			nullptr
