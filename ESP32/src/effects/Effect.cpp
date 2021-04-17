@@ -1,4 +1,6 @@
 #include "Effect.h"
+#include "ArduinoJson.h"
+
 const char *Effect::getName()
 {
 	return name;
@@ -10,6 +12,10 @@ void Effect::setEffectId(int id)
 }
 
 void Effect::effectHandler(CRGB *leds, int numberOfLeds)
+{
+}
+
+void Effect::defineEffectConfigSetup(JsonObject *_effectConfigSetupJson)
 {
 }
 
@@ -31,4 +37,9 @@ void Effect::setEffectHandled(bool handled)
 int Effect::getEffectId()
 {
 	return effectId;
+}
+
+bool Effect::getEffectConfigSetupDefined()
+{
+	return false;
 }

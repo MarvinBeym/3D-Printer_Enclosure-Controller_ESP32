@@ -7,16 +7,21 @@
 #include <ArduinoJson.h>
 #include "None.h"
 #include "Rainbow.h"
+
 #define NO_EFFECT 0
 
-class EffectLoader{
+class EffectLoader
+{
 	public:
-		std::vector<Effect*> effects;
+		std::vector<Effect *> effects;
 		void changeEffect(int newEffectId);
 		int getCurrentEffect();
-		const char* getEffectName(int effectId, bool upperCase = false);
+		const char *getEffectName(int effectId, bool upperCase = false);
 		void addToJson(DynamicJsonDocument *doc, bool includeCurrentEffect = true, bool includeEffects = true);
-		EffectLoader(FasterLed *_led2, EventGroupHandle_t _eg, int _effectChangeEvent, void (*_effectChangeCallback)(void *)) {
+
+		EffectLoader(FasterLed *_led2, EventGroupHandle_t _eg, int _effectChangeEvent,
+					 void (*_effectChangeCallback)(void *))
+		{
 			effects.push_back(new None("none", true));
 			effects.push_back(new Solid("solid", true));
 			effects.push_back(new Rainbow("rainbow", false));
@@ -28,7 +33,9 @@ class EffectLoader{
 			effectChangeCallback = _effectChangeCallback;
 			setupEffects();
 		}
+
 	private:
+		DynamicJsonDocument *effectsConfigSetupDoc;
 		FasterLed *led2;
 		EventGroupHandle_t eg;
 		int effectChangeEvent;

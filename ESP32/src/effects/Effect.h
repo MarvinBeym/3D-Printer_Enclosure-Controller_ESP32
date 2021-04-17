@@ -2,7 +2,7 @@
 
 #include <libs/FasterLed.h>
 #include "Arduino.h"
-
+#include "ArduinoJson.h"
 class Effect
 {
 	public:
@@ -14,6 +14,9 @@ class Effect
 		int getEffectId();
 		bool getEffectGetsHandledOnce();
 		virtual void effectHandler(CRGB *leds, int numberOfLeds);
+		virtual void defineEffectConfigSetup(JsonObject *_effectConfigSetupJson);
+		virtual bool getEffectConfigSetupDefined();
+		JsonObject *effectConfigSetupJson;
 	private:
 		const char *name;
 		bool effectHandled = false;

@@ -408,7 +408,7 @@ void effectChangeCallback(void *params)
 
 		nextion->setCompText("led_page.tf_mode", effectLoader->getEffectName(newEffectId, true));
 
-		DynamicJsonDocument json(64);
+		DynamicJsonDocument json(96);
 		effectLoader->addToJson(&json, true, false);
 		String response;
 		serializeJson(json, response);
@@ -569,7 +569,7 @@ void onWsEvent(AsyncWebSocket *webSocket, AsyncWebSocketClient *client, AwsEvent
 
 	if (type == WS_EVT_CONNECT) {
 		client->printf("Hello Client %u :)", client->id());
-		DynamicJsonDocument json(1024);
+		DynamicJsonDocument json(initial_ws_connect_dynamicJsonDocument_size);
 		led1->addToJson(&json);
 		effectLoader->addToJson(&json);
 		fan1->addToJson(&json);

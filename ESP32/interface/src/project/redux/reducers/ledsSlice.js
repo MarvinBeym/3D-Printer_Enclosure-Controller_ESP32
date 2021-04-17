@@ -7,7 +7,7 @@ const initialState = {
 	led2: {
 		currentEffect: 0,
 		effects: [
-			{name: "none", id: 0}
+			{name: "none", id: 0, configSetup: {}}
 		]
 	},
 	status: 'idle',
@@ -30,7 +30,6 @@ const ledsSlice = createSlice({
 				state.led2.currentEffect = action.payload.led2.currentEffect;
 			}
 			if ("effects" in action.payload.led2) {
-
 				state.led2.effects = action.payload.led2.effects;
 			}
 		},

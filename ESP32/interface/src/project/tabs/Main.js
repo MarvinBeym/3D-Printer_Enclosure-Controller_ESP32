@@ -41,6 +41,7 @@ const Main = () => {
 		<PaperSection className={styles.main}>
 			{fans.map((fan, index) => (
 				<PaperSection
+					key={index}
 					paperClassName={styles.infoPaper}
 					className={styles.infoContainer}
 					title={"Fan " + (index + 1)}
@@ -51,6 +52,7 @@ const Main = () => {
 			))}
 			{sensors.map((sensor, index) => (
 				<PaperSection
+					key={index}
 					paperClassName={styles.infoPaper}
 					className={styles.infoContainer}
 					title={"Sensor " + (index + 1)}

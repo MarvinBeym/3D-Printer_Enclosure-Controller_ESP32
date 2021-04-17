@@ -1,10 +1,19 @@
 #include "EffectLoader.h"
+#include "ArduinoJson.h"
+#include "controller-configuration.h"
 
 void EffectLoader::setupEffects()
 {
+	effectsConfigSetupDoc = new DynamicJsonDocument(effects_configSetup_dynamicJsonDocument_size);
+	//effectsConfigSetupDoc
 	for (std::size_t i = 0; i < effects.size(); ++i) {
 		effects[i]->setEffectId(i);
+		if (effects[i]->getEffectConfigSetupDefined()) {
+			JsonObject effectConfigJson = effectsConfigSetupDoc->createNestedObject(effects[i]->getName());
+			effects[i]->defineEffectConfigSetup(&effectConfigJson);
+		}
 	}
+
 	xTaskCreate(&taskHandler, "effectLoader", 5000, this, 1, nullptr);
 
 	xTaskCreate(
@@ -78,13 +87,23 @@ void EffectLoader::addToJson(DynamicJsonDocument *doc, bool includeCurrentEffect
 	if (includeCurrentEffect) {
 		jsonObject["currentEffect"] = getCurrentEffect();
 	}
+
+
 	if (includeEffects) {
 		JsonArray jsonArrEffects = jsonObject.createNestedArray("effects");
+		DynamicJsonDocument tmpEffectsConfigSetupDoc = *effectsConfigSetupDoc;
+
 		for (std::size_t i = 0; i < effects.size(); ++i) {
 			auto effect = effects[i];
 			JsonObject effectObject = jsonArrEffects.createNestedObject();
 			effectObject["name"] = effect->getName();
 			effectObject["id"] = effect->getEffectId();
+
+			JsonObject configSetupObject = effectObject.createNestedObject("configSetup");
+
+			if(effect->getEffectConfigSetupDefined()) {
+				configSetupObject.set(tmpEffectsConfigSetupDoc[effect->getName()]);
+			}
 		}
 	}
 

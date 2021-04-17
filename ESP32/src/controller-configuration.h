@@ -1,6 +1,11 @@
 //Don't change this unless you are modifying the firmware
 const String esp32Version = "2.0.0";
 
+const int effects_configSetup_dynamicJsonDocument_size = 1024;
+const int led2_dynamicJsonDocument_size = 256 + effects_configSetup_dynamicJsonDocument_size;
+const int initial_ws_connect_dynamicJsonDocument_size = 1024 + led2_dynamicJsonDocument_size;
+
+
 const int dhtSenseInterval = 2000;
 const int led2NumberOfLeds = 60;
 const int led2CurrentLimit = 1500;
