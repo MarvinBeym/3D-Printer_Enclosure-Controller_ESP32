@@ -6,6 +6,7 @@ import clsx from "clsx";
 const useStyles = makeStyles((theme) => ({
 	valueField: {
 		margin: "0 0.5rem",
+		width: "100%",
 		"& .MuiInputBase-root": {
 			padding: "0.5rem",
 		},

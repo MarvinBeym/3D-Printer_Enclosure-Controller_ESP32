@@ -18,6 +18,7 @@ const initialState = {
 
 export const selectSensor1 = (state) => state.sensors.sensor1;
 export const selectSensor2 = (state) => state.sensors.sensor2;
+export const selectSensors = (state) => [state.sensors.sensor1, state.sensors.sensor2];
 const sensorsSlice = createSlice({
 	name: 'sensors',
 	initialState,
