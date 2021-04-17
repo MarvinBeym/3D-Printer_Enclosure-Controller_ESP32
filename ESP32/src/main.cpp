@@ -25,13 +25,13 @@
 #include "controller-pin-definition.h"
 #include "controller-configuration.h"
 
-#include "../lib/framework/ESP8266React.h"
-#include "./libs/NextionDisplay.h"
-#include "./libs/Sensor.h"
-#include "./libs/Relay.h"
-#include "./libs/FasterLed.h"
-#include "./libs/Fan.h"
-#include "./effects/EffectLoader.h"
+#include "ESP8266React.h"
+#include "libs/NextionDisplay.h"
+#include "libs/Sensor.h"
+#include "libs/Relay.h"
+#include "libs/FasterLed.h"
+#include "libs/Fan.h"
+#include "effects/EffectLoader.h"
 
 EventGroupHandle_t eg;
 
@@ -123,12 +123,12 @@ void sensor1TemperatureUpdated(void *params)
 		xEventGroupWaitBits(eg, TASK_EVENT_SENSOR1_TemperatureUpdated, pdTRUE, pdTRUE, portMAX_DELAY);
 		float temperature = *((float *) params);
 
-		String value = valueToTempString(temperature);
+		String value = Helper::Helper::valueToTempString(temperature);
 		nextion->setCompText("main_page.tf_temp_sens1", value);
 		nextion->setCompText("sensor_page.tf_temp_sens1", value);
 		nextion->addGraphValue(
 				1, 0,
-				newMap((int) temperature, displayGraphMinTemp, 255, 0, displayGraphHeight));
+				Helper::newMap((int) temperature, displayGraphMinTemp, 255, 0, displayGraphHeight));
 		DynamicJsonDocument json(64);
 		sensor1->addToJson(&json, true, false);
 		String response;
@@ -145,7 +145,7 @@ void sensor1HumidityUpdated(void *params)
 		xEventGroupWaitBits(eg, TASK_EVENT_SENSOR1_HumidityUpdated, pdTRUE, pdTRUE, portMAX_DELAY);
 		float humidity = *((float *) params);
 
-		String value = valueToPercentString(humidity);
+		String value = Helper::valueToPercentString(humidity);
 		nextion->setCompText("main_page.tf_hum_sens1", value);
 		nextion->setCompText("sensor_page.tf_hum_sens1", value);
 
@@ -165,13 +165,13 @@ void sensor2TemperatureUpdated(void *params)
 		xEventGroupWaitBits(eg, TASK_EVENT_SENSOR2_TemperatureUpdated, pdTRUE, pdTRUE, portMAX_DELAY);
 		float temperature = *((float *) params);
 
-		String value = valueToTempString(temperature);
+		String value = Helper::valueToTempString(temperature);
 		nextion
 				->setCompText("main_page.tf_temp_sens2", value)
 				->setCompText("sensor_page.tf_temp_sens2", value)
 				->addGraphValue(
 						1, 1,
-						newMap((int) temperature, displayGraphMinTemp, 255, 0, displayGraphHeight));
+						Helper::newMap((int) temperature, displayGraphMinTemp, 255, 0, displayGraphHeight));
 		DynamicJsonDocument json(64);
 		sensor2->addToJson(&json, true, false);
 		String response;
@@ -188,7 +188,7 @@ void sensor2HumidityUpdated(void *params)
 		xEventGroupWaitBits(eg, TASK_EVENT_SENSOR2_HumidityUpdated, pdTRUE, pdTRUE, portMAX_DELAY);
 		float humidity = *((float *) params);
 
-		String value = valueToPercentString(humidity);
+		String value = Helper::valueToPercentString(humidity);
 		nextion
 				->setCompText("main_page.tf_hum_sens2", value)
 				->setCompText("sensor_page.tf_hum_sens2", value);
@@ -209,7 +209,7 @@ void fan1RpmUpdated(void *params)
 		xEventGroupWaitBits(eg, TASK_EVENT_FAN1_RpmUpdated, pdTRUE, pdTRUE, portMAX_DELAY);
 		int rpm = *((int *) params);
 
-		String value = valueToRpmString(rpm);
+		String value = Helper::valueToRpmString(rpm);
 
 		nextion
 				->setCompText("main_page.tf_speed_fan1", value)
@@ -233,7 +233,7 @@ void fan1PwmUpdated(void *params)
 		int percent = fan1->getPercent();
 
 
-		String value = valueToPercentString(percent);
+		String value = Helper::valueToPercentString(percent);
 		nextion
 				->setCompText("main_page.tf_pwm_fan1", value)
 				->setCompText("fans_page.tf_pwm_fan1", value)
@@ -255,7 +255,7 @@ void fan2RpmUpdated(void *params)
 		xEventGroupWaitBits(eg, TASK_EVENT_FAN2_RpmUpdated, pdTRUE, pdTRUE, portMAX_DELAY);
 		int rpm = *((int *) params);
 
-		String value = valueToRpmString(rpm);
+		String value = Helper::valueToRpmString(rpm);
 		nextion
 				->setCompText("main_page.tf_speed_fan2", value)
 				->setCompText("fans_page.tf_speed_fan2", value);
@@ -277,7 +277,7 @@ void fan2PwmUpdated(void *params)
 		//int dutyCycle = fan2->getDutyCycle();
 		int percent = fan2->getPercent();
 
-		String value = valueToPercentString(percent);
+		String value = Helper::valueToPercentString(percent);
 		nextion
 				->setCompText("main_page.tf_pwm_fan2", value)
 				->setCompText("fans_page.tf_pwm_fan2", value)
