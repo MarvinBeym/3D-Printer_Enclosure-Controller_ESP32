@@ -1,3 +1,5 @@
+#pragma once
+
 class Rainbow : public Effect
 {
 	public:

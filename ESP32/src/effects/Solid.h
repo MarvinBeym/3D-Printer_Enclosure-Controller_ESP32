@@ -1,3 +1,5 @@
+#pragma once
+
 class Solid : public Effect
 {
 	public:

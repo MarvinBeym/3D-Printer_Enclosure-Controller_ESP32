@@ -1,3 +1,5 @@
+#pragma once
+
 class None : public Effect
 {
 	public:

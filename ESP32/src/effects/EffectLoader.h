@@ -1,3 +1,5 @@
+#pragma once
+
 #include "Effect.h"
 #include <Arduino.h>
 #include <libs/FasterLed.h>

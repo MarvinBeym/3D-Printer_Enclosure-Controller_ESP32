@@ -1,3 +1,5 @@
+#pragma once
+
 #include <libs/FasterLed.h>
 #include "Arduino.h"
 
