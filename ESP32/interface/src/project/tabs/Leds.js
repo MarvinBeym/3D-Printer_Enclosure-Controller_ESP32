@@ -5,6 +5,7 @@ import {FormControl, InputLabel, MenuItem, Select, Switch} from "@material-ui/co
 import {useDispatch, useSelector} from "react-redux";
 import {selectLed1, selectLed2,} from "../redux/reducers/ledsSlice";
 import {wsSend} from "../redux/reducers/webSocketSlice";
+import Led2EffectConfigFormWrapper from "../components/led2Effects/Led2EffectConfigFormWrapper";
 
 const useStyles = makeStyles((theme) => ({
 	leds: {
@@ -16,9 +17,6 @@ const useStyles = makeStyles((theme) => ({
 	},
 	effectChooser: {
 		width: "100%",
-	},
-	led2ConfigSection: {
-		flex: "1",
 	},
 	led1Section: {
 		display: "flex",
@@ -62,19 +60,14 @@ const Leds = () => {
 						<Select value={led2.currentEffect} onChange={onLed2EffectChange}
 								className={styles.effectChooser}>
 							{led2.effects.map((effect) => (
-								<MenuItem key={effect.id} value={effect.id}>{effect.name}</MenuItem>
+								<MenuItem key={effect.id} value={effect.id}>{effect.name.toUpperCase()}</MenuItem>
 							))}
 						</Select>
 					</FormControl>
 				</PaperSection>
 			</PaperSection>
-			{led2.effects[led2.currentEffect]?.configuration
-				? (
-					<PaperSection paperClassName={styles.led2ConfigSection} title="Led 2 Configuration">
-						ZZZ
-					</PaperSection>
-				) : null
-			}
+			<Led2EffectConfigFormWrapper effect={led2.effects[led2.currentEffect]}/>
+
 		</PaperSection>
 	)
 }

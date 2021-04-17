@@ -15,12 +15,12 @@ const useStyles = makeStyles((theme) => ({
 	}
 }));
 
-const PaperSection = ({paperClassName, className, title, elevation = 5, children}) => {
+const PaperSection = ({paperClassName, headerClassName, className, title, elevation = 5, children}) => {
 	const styles = useStyles();
 
 	return (
 		<Paper elevation={elevation} className={clsx(styles.paper, paperClassName)}>
-			<Typography className={styles.header}
+			<Typography className={clsx(styles.header, headerClassName)}
 						variant="h6">{title}</Typography>
 			<div className={className}>
 				{children}
