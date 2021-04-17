@@ -2,23 +2,41 @@
 import {setLed1, setLed2} from "../reducers/ledsSlice";
 import {setSensor1, setSensor2} from "../reducers/sensorsSlice";
 import {setFan1, setFan2} from "../reducers/fansSlice";
+import {removeExecutedCall} from "../reducers/webSocketSlice";
 
 const webSocketMiddleware = (store) => (next) => (action) => {
-	if (action.type !== "ENCLOSURE_CONTROLLER::MESSAGE") {
-		next(action);
-		return;
-	}
-
-	let json;
-	try {
-		json = JSON.parse(action.payload.message)
-	} catch {
-		next(action);
-		return;
-	}
-
 	const dispatch = store.dispatch;
+	switch (action.type) {
+		case "ENCLOSURE_CONTROLLER::MESSAGE":
+			try {
+				let json = JSON.parse(action.payload.message);
+				checkCommandExecutedSuccessfully(dispatch, json);
+				handleWebSocketMessages(dispatch, json);
+			} catch {
+				next(action);
+				return;
+			}
+			break;
+		default:
+			break;
+	}
+	next(action);
+}
+export default webSocketMiddleware;
 
+/**
+ * Checks if the command was executed successfully
+ * and removes the command from the executedCalls array allowing the command to be executed again
+ * @param dispatch
+ * @param json
+ */
+const checkCommandExecutedSuccessfully = (dispatch, json) => {
+	if (json?.message === "Executed command" && json?.status === "success") {
+		dispatch(removeExecutedCall({command: json.command, component: json.component}));
+	}
+}
+
+const handleWebSocketMessages = (dispatch, json) => {
 	Object.keys(json).forEach((jsonKey) => {
 		switch (jsonKey) {
 			case "led1":
@@ -42,6 +60,4 @@ const webSocketMiddleware = (store) => (next) => (action) => {
 		}
 	})
 
-	next(action);
 }
-export default webSocketMiddleware;

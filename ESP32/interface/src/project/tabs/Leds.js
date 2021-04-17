@@ -1,10 +1,10 @@
-import React, {useEffect} from 'react';
+import React from 'react';
 import PaperSection from "../components/PaperSection";
 import {makeStyles} from "@material-ui/core/styles";
 import {FormControl, InputLabel, MenuItem, Select, Switch} from "@material-ui/core";
 import {useDispatch, useSelector} from "react-redux";
 import {selectLed1, selectLed2,} from "../redux/reducers/ledsSlice";
-import {useInterval, wsSend} from "../helper";
+import {wsSend} from "../redux/reducers/webSocketSlice";
 
 const useStyles = makeStyles((theme) => ({
 	leds: {

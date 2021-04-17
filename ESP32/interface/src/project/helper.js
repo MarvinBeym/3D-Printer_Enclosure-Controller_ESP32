@@ -1,7 +1,6 @@
 import {useEffect, useRef} from 'react'
 import {authorizedFetch} from "../authentication";
 import {ENDPOINT_ROOT} from "../api";
-import {send} from "@giantmachines/redux-websocket";
 
 export const fetchBackend = (fetchEndpoint) => {
 	return authorizedFetch(ENDPOINT_ROOT + fetchEndpoint).then((response) => {
@@ -32,10 +31,6 @@ export const useInterval = (callback, delay) => {
 
 		return () => clearInterval(id)
 	}, [delay])
-}
-
-export const wsSend = (msg) => {
-	return send(msg, process.env.REACT_APP_WEB_SOCKET_PREFIX);
 }
 
 export const setLoadingState = (state, action) => {

@@ -9,7 +9,7 @@ import fanImage from "../images/fan.png";
 import Img from "../components/Img";
 import {useDispatch, useSelector} from "react-redux";
 import {selectFan1, selectFan2} from "../redux/reducers/fansSlice";
-import {wsSend} from "../helper";
+import {wsSend} from "../redux/reducers/webSocketSlice";
 
 const useStyles = makeStyles((theme) => ({
 	fanPaper: {
