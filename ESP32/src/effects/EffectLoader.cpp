@@ -49,6 +49,17 @@ void EffectLoader::taskRunner()
 	return;
 }
 
+int EffectLoader::getEffectIdByName(const char *effectName)
+{
+	for (std::size_t i = 0; i < effects.size(); ++i) {
+		auto effect = effects[i];
+		if (strcmp(effect->getName(), effectName) == 0) {
+			return effect->getEffectId();
+		}
+	}
+	return -1;
+}
+
 const char *EffectLoader::getEffectName(int effectId, bool upperCase)
 {
 	String *name = new String(effects[effectId]->getName());

@@ -79,3 +79,39 @@ void Effect::addSwitch(const char *_name, const char *label, bool state)
 	switchObject["label"] = label;
 	switchObject["state"] = state;
 }
+
+void Effect::changeEffectConfigValue(DynamicJsonDocument doc)
+{
+	JsonArray _selectsJsonArr = doc["selects"];
+	JsonArray _switchesJsonArr = doc["switches"];
+
+	Serial.print("before: ");
+	serializeJson(selectsJsonArr[0]["value"], Serial);
+	serializeJson(selectsJsonArr[1]["value"], Serial);
+	Serial.println();
+
+	//Selects
+	updateEffectConfigValue(_selectsJsonArr, selectsJsonArr, "name", "value");
+
+	//Switches
+	updateEffectConfigValue(_switchesJsonArr, switchesJsonArr, "name", "state");
+}
+
+void Effect::updateEffectConfigValue(JsonArray arrayWithNewValues, JsonArray currentArray, const char *keyFieldName,
+									 const char *valueFieldName)
+{
+	for (JsonObject newSelectObj : arrayWithNewValues) {
+		//!!!!!Should only run once - a select can only send/have a single value so the first key is the value!!!!!
+		for (JsonPair kv : newSelectObj) {
+			const char *key = kv.key().c_str();
+			JsonVariant value = kv.value();
+
+			for (JsonObject currentObj : currentArray) {
+				const char *currentKey = currentObj[keyFieldName];
+				if (strcmp(key, currentKey) == 0) {
+					currentObj[valueFieldName] = value;
+				}
+			}
+		}
+	}
+}

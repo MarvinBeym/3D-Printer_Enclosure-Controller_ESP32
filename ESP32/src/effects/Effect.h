@@ -4,10 +4,12 @@
 #include <libs/FasterLed.h>
 #include "Arduino.h"
 #include "ArduinoJson.h"
+
 class Effect
 {
 	public:
-		Effect(const char *_name, bool _effectGetsHandledOnce = false) : name{_name}, effectGetsHandledOnce{_effectGetsHandledOnce} {};
+		Effect(const char *_name, bool _effectGetsHandledOnce = false) : name{_name}, effectGetsHandledOnce{
+				_effectGetsHandledOnce} {};
 		const char *getName();
 		void setEffectId(int id);
 		bool getEffectHandled();
@@ -18,9 +20,10 @@ class Effect
 		virtual void effectHandler(CRGB *leds, int numberOfLeds);
 		virtual void defineEffectConfig();
 		virtual bool hasEffectConfig();
-		JsonArray addSelect(const char* _name, const char *label, int value);
-		JsonArray addSelect(const char* _name, const char *label, char *value);
-		void addSwitch(const char* _name, const char *label, bool state);
+		JsonArray addSelect(const char *_name, const char *label, int value);
+		JsonArray addSelect(const char *_name, const char *label, char *value);
+		void addSwitch(const char *_name, const char *label, bool state);
+		void changeEffectConfigValue(DynamicJsonDocument document);
 	private:
 		JsonArray selectsJsonArr;
 		JsonArray switchesJsonArr;
@@ -29,4 +32,6 @@ class Effect
 		bool effectHandled = false;
 		bool effectGetsHandledOnce;
 		int effectId;
+		void updateEffectConfigValue(JsonArray arrayWithNewValues, JsonArray currentArray, const char *keyFieldName,
+									 const char *valueFieldName);
 };

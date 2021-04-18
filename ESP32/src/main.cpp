@@ -67,6 +67,7 @@ enum WebSocketCommand
 	setState,
 	setEffect,
 	setPercent,
+	setEffectConfig,
 	invalid,
 };
 
@@ -84,6 +85,7 @@ WebSocketCommand resolveWebSocketCommand(String command)
 	if (command == "setState") return setState;
 	if (command == "setEffect") return setEffect;
 	if (command == "setPercent") return setPercent;
+	if (command == "setEffectConfig") return setEffectConfig;
 	return invalid;
 }
 
@@ -513,9 +515,13 @@ void setup()
 	fan2->setPercent(100);
 }
 
-DynamicJsonDocument handleWebSocketCommunication(String _component, String _command, String value)
+DynamicJsonDocument handleWebSocketCommunication(DynamicJsonDocument json)
 {
-	DynamicJsonDocument responseDoc(512);
+	String _component = json["component"];
+	String _command = json["command"];
+	String value = json["value"];
+
+	DynamicJsonDocument responseDoc(1024);
 	WebSocketComponent component = resolveWebSocketComponent(_component);
 	WebSocketCommand command = resolveWebSocketCommand(_command);
 
@@ -538,10 +544,35 @@ DynamicJsonDocument handleWebSocketCommunication(String _component, String _comm
 				int newEffect = value.toInt();
 				effectLoader->changeEffect(newEffect);
 			}
+			if (command == setEffectConfig) {
+				String effectName = json["effect"];
+				int effectId = effectLoader->getEffectIdByName(effectName.c_str());
+
+				if(effectId == -1) {
+					responseDoc["message"] = "Executed command";
+					responseDoc["reason"] = "Effect not found";
+					responseDoc["status"] = "failure";
+					responseDoc["command"] = _command;
+					responseDoc["component"] = _component;
+					return responseDoc;
+				}
+				auto effect = effectLoader->effects[effectLoader->getEffectIdByName(effectName.c_str())];
+
+				DynamicJsonDocument effectConfigChangeDoc(effects_configSetup_dynamicJsonDocument_size);
+
+				deserializeJson(effectConfigChangeDoc, value.c_str());
+				effect->changeEffectConfigValue(effectConfigChangeDoc);
+
+				DynamicJsonDocument updatedLed2EffectJson(effects_configSetup_dynamicJsonDocument_size);
+				effectLoader->addToJson(&updatedLed2EffectJson, false, true);
+				String response;
+				serializeJson(updatedLed2EffectJson, response);
+				ws.textAll(response);
+			}
 			break;
 		case Fan1:
 		case Fan2:
-			if(command == setPercent) {
+			if (command == setPercent) {
 				auto fan = component == Fan1 ? fan1 : fan2;
 				int newPercent = value.toInt();
 				fan->setPercent(newPercent);
@@ -602,8 +633,7 @@ void onWsEvent(AsyncWebSocket *webSocket, AsyncWebSocketClient *client, AwsEvent
 				client->text(response);
 			}
 
-			DynamicJsonDocument responseDoc = handleWebSocketCommunication(json["component"], json["command"],
-																		   json["value"]);
+			DynamicJsonDocument responseDoc = handleWebSocketCommunication(json);
 			String response;
 			serializeJson(responseDoc, response);
 			client->text(response);

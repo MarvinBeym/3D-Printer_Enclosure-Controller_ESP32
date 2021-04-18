@@ -16,6 +16,7 @@ class EffectLoader
 		std::vector<Effect *> effects;
 		void changeEffect(int newEffectId);
 		int getCurrentEffect();
+		int getEffectIdByName(const char *effectName);
 		const char *getEffectName(int effectId, bool upperCase = false);
 		void addToJson(DynamicJsonDocument *doc, bool includeCurrentEffect = true, bool includeEffects = true);
 
@@ -33,7 +34,6 @@ class EffectLoader
 			effectChangeCallback = _effectChangeCallback;
 			setupEffects();
 		}
-
 	private:
 		DynamicJsonDocument *effectsConfigSetupDoc;
 		FasterLed *led2;

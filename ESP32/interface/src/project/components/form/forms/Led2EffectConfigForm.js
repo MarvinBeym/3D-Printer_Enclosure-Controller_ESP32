@@ -26,8 +26,10 @@ const validationSchema = yup.object().shape({
 const Led2EffectConfigForm = ({effectName, switches, selects}) => {
 	const styles = useStyles();
 	const dispatch = useDispatch();
+
 	async function onSubmit(values) {
 		let msg = {component: "led2", command: "setEffectConfig", effect: effectName, value: values};
+
 		dispatch(wsSend(msg));
 	}
 
@@ -40,22 +42,27 @@ const Led2EffectConfigForm = ({effectName, switches, selects}) => {
 			render={({handleSubmit}) => (
 				<form onSubmit={handleSubmit}>
 					<div className={styles.fields}>
-						{selects.map((selectData) => {
+						{selects.map((selectData, index) => {
 							return (
 								<SelectField
 									fieldClassName={styles.field}
 									key={selectData.name}
-									name={selectData.name}
+									name={`selects[${index}]` + selectData.name}
 									label={selectData.label}
 									defaultValue={selectData.value}
 									options={selectData.options}
 								/>
 							)
 						})}
-						{switches.map((switchData) => {
+						{switches.map((switchData, index) => {
 							return (
-								<SwitchField fieldClassName={styles.field} key={switchData.name} name={switchData.name}
-											 label={switchData.label}/>
+								<SwitchField
+									defaultValue={switchData.state}
+									fieldClassName={styles.field}
+									key={switchData.name}
+									name={`switches[${index}]` + switchData.name}
+									label={switchData.label}
+								/>
 							)
 						})}
 					</div>
