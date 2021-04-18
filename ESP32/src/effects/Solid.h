@@ -13,7 +13,8 @@ class Solid : public Effect
 		void effectHandler(CRGB *leds, int numberOfLeds)
 		{
 			for (int i = 0; i < numberOfLeds; i++) {
-				leds[i] = CRGB::Red;
+				int colorHtmlNumber = getSelectValue("color");
+				leds[i] = colorHtmlNumber;
 			}
 			FastLED.show();
 		}

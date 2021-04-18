@@ -563,6 +563,8 @@ DynamicJsonDocument handleWebSocketCommunication(DynamicJsonDocument json)
 				deserializeJson(effectConfigChangeDoc, value.c_str());
 				effect->changeEffectConfigValue(effectConfigChangeDoc);
 
+				effectLoader->refreshCurrentEffect();
+
 				DynamicJsonDocument updatedLed2EffectJson(effects_configSetup_dynamicJsonDocument_size);
 				effectLoader->addToJson(&updatedLed2EffectJson, false, true);
 				String response;

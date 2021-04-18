@@ -85,11 +85,6 @@ void Effect::changeEffectConfigValue(DynamicJsonDocument doc)
 	JsonArray _selectsJsonArr = doc["selects"];
 	JsonArray _switchesJsonArr = doc["switches"];
 
-	Serial.print("before: ");
-	serializeJson(selectsJsonArr[0]["value"], Serial);
-	serializeJson(selectsJsonArr[1]["value"], Serial);
-	Serial.println();
-
 	//Selects
 	updateEffectConfigValue(_selectsJsonArr, selectsJsonArr, "name", "value");
 
@@ -114,4 +109,26 @@ void Effect::updateEffectConfigValue(JsonArray arrayWithNewValues, JsonArray cur
 			}
 		}
 	}
+}
+
+bool Effect::getSwitchState(const char *_name)
+{
+	for(JsonObject switchObj : switchesJsonArr) {
+		const char *switchName = switchObj["name"];
+		if(strcmp(switchName, _name) == 0) {
+			return switchObj["state"];
+		}
+	}
+	return false;
+}
+
+JsonVariant Effect::getSelectValue(const char *_name)
+{
+	for(JsonObject selectObj : selectsJsonArr) {
+		const char *selectName = selectObj["name"];
+		if(strcmp(selectName, _name) == 0) {
+			return selectObj["value"];
+		}
+	}
+	return ArduinoJson::JsonVariant();
 }

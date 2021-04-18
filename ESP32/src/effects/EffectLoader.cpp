@@ -49,6 +49,15 @@ void EffectLoader::taskRunner()
 	return;
 }
 
+void EffectLoader::refreshCurrentEffect()
+{
+	auto effect = effects[currentEffect];
+	if (effect->getEffectGetsHandledOnce()) {
+		effect->setEffectHandled(false);
+	}
+	xEventGroupSetBits(eg, effectChangeEvent);
+}
+
 int EffectLoader::getEffectIdByName(const char *effectName)
 {
 	for (std::size_t i = 0; i < effects.size(); ++i) {
@@ -112,7 +121,7 @@ void EffectLoader::addToJson(DynamicJsonDocument *doc, bool includeCurrentEffect
 
 			JsonObject configSetupObject = effectObject.createNestedObject("config");
 
-			if(effect->hasEffectConfig()) {
+			if (effect->hasEffectConfig()) {
 				configSetupObject.set(tmpEffectsConfigSetupDoc[effect->getName()]);
 			}
 		}

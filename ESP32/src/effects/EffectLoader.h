@@ -17,6 +17,7 @@ class EffectLoader
 		void changeEffect(int newEffectId);
 		int getCurrentEffect();
 		int getEffectIdByName(const char *effectName);
+		void refreshCurrentEffect();
 		const char *getEffectName(int effectId, bool upperCase = false);
 		void addToJson(DynamicJsonDocument *doc, bool includeCurrentEffect = true, bool includeEffects = true);
 

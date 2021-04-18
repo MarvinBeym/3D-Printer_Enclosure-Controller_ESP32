@@ -34,4 +34,7 @@ class Effect
 		int effectId;
 		void updateEffectConfigValue(JsonArray arrayWithNewValues, JsonArray currentArray, const char *keyFieldName,
 									 const char *valueFieldName);
+	protected:
+		bool getSwitchState(const char* _name);
+		JsonVariant getSelectValue(const char* _name);
 };

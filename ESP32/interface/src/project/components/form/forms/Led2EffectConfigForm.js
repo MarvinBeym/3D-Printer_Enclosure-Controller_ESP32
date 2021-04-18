@@ -48,9 +48,8 @@ const Led2EffectConfigForm = ({effectName, switches, selects}) => {
 		})
 
 		setInitialValues({selects: selectInitialValues, switches: switchInitialValues})
-		
 	}, [selects, switches]);
-	
+
 	const validate = useValidationSchema(validationSchema);
 
 	return (
