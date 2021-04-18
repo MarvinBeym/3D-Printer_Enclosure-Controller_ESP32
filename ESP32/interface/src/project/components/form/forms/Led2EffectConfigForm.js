@@ -5,6 +5,8 @@ import SelectField from "../fields/SelectField";
 import {Button} from "@material-ui/core";
 import {makeStyles} from "@material-ui/core/styles";
 import SwitchField from "../fields/SwitchField";
+import {useDispatch} from "react-redux";
+import {wsSend} from "../../../redux/reducers/webSocketSlice";
 
 
 const useStyles = makeStyles((theme) => ({
@@ -23,9 +25,10 @@ const validationSchema = yup.object().shape({
 
 const Led2EffectConfigForm = ({effectName, switches, selects}) => {
 	const styles = useStyles();
-
+	const dispatch = useDispatch();
 	async function onSubmit(values) {
-		console.log(effectName, values);
+		let msg = {component: "led2", command: "setEffectConfig", effect: effectName, value: values};
+		dispatch(wsSend(msg));
 	}
 
 	const validate = useValidationSchema(validationSchema);

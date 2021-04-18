@@ -522,7 +522,7 @@ DynamicJsonDocument handleWebSocketCommunication(String _component, String _comm
 	if (command == WebSocketCommand::invalid) {
 		responseDoc["message"] = "Invalid command";
 		responseDoc["status"] = "failure";
-		responseDoc["command"] = command;
+		responseDoc["command"] = _command;
 		return responseDoc;
 	}
 
@@ -551,7 +551,7 @@ DynamicJsonDocument handleWebSocketCommunication(String _component, String _comm
 		default:
 			responseDoc["message"] = "Invalid component";
 			responseDoc["status"] = "failure";
-			responseDoc["component"] = component;
+			responseDoc["component"] = _component;
 			return responseDoc;
 	}
 
