@@ -7,6 +7,7 @@ import {makeStyles} from "@material-ui/core/styles";
 import SwitchField from "../fields/SwitchField";
 import {useDispatch} from "react-redux";
 import {wsSend} from "../../../redux/reducers/webSocketSlice";
+import {useEffect, useState} from "react";
 
 
 const useStyles = makeStyles((theme) => ({
@@ -26,17 +27,35 @@ const validationSchema = yup.object().shape({
 const Led2EffectConfigForm = ({effectName, switches, selects}) => {
 	const styles = useStyles();
 	const dispatch = useDispatch();
+	const [initialValues, setInitialValues] = useState([]);
 
 	async function onSubmit(values) {
 		let msg = {component: "led2", command: "setEffectConfig", effect: effectName, value: values};
-
 		dispatch(wsSend(msg));
 	}
 
+	useEffect(() => {
+		let selectInitialValues = selects.map((selectData) => {
+			let obj = {};
+			obj[selectData.name] = selectData.value
+			return obj;
+		})
+
+		let switchInitialValues = switches.map((switchData) => {
+			let obj = {};
+			obj[switchData.name] = switchData.state;
+			return obj;
+		})
+
+		setInitialValues({selects: selectInitialValues, switches: switchInitialValues})
+		
+	}, [selects, switches]);
+	
 	const validate = useValidationSchema(validationSchema);
 
 	return (
 		<Form
+			initialValues={initialValues}
 			onSubmit={onSubmit}
 			validate={validate}
 			render={({handleSubmit}) => (
@@ -45,11 +64,11 @@ const Led2EffectConfigForm = ({effectName, switches, selects}) => {
 						{selects.map((selectData, index) => {
 							return (
 								<SelectField
+									defaultValue={selectData.value}
 									fieldClassName={styles.field}
 									key={selectData.name}
 									name={`selects[${index}]` + selectData.name}
 									label={selectData.label}
-									defaultValue={selectData.value}
 									options={selectData.options}
 								/>
 							)
