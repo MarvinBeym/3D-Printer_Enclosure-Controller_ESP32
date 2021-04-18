@@ -7,10 +7,10 @@ void EffectLoader::setupEffects()
 	effectsConfigSetupDoc = new DynamicJsonDocument(effects_configSetup_dynamicJsonDocument_size);
 	//effectsConfigSetupDoc
 	for (std::size_t i = 0; i < effects.size(); ++i) {
-		effects[i]->setEffectId(i);
-		if (effects[i]->getEffectConfigSetupDefined()) {
-			JsonObject effectConfigJson = effectsConfigSetupDoc->createNestedObject(effects[i]->getName());
-			effects[i]->defineEffectConfigSetup(&effectConfigJson);
+		auto effect = effects[i];
+		effect->setEffectId(i);
+		if (effect->hasEffectConfig()) {
+			effect->setupEffectConfig(effectsConfigSetupDoc);
 		}
 	}
 
@@ -99,9 +99,9 @@ void EffectLoader::addToJson(DynamicJsonDocument *doc, bool includeCurrentEffect
 			effectObject["name"] = effect->getName();
 			effectObject["id"] = effect->getEffectId();
 
-			JsonObject configSetupObject = effectObject.createNestedObject("configSetup");
+			JsonObject configSetupObject = effectObject.createNestedObject("config");
 
-			if(effect->getEffectConfigSetupDefined()) {
+			if(effect->hasEffectConfig()) {
 				configSetupObject.set(tmpEffectsConfigSetupDoc[effect->getName()]);
 			}
 		}

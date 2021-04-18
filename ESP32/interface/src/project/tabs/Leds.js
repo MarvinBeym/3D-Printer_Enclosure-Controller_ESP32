@@ -11,8 +11,11 @@ const useStyles = makeStyles((theme) => ({
 	leds: {
 		display: "flex",
 		width: "100%",
+		padding: "1rem",
 	},
 	effectChooserSection: {
+		margin: "0",
+		padding: "1rem",
 		width: "30%",
 	},
 	effectChooser: {
@@ -66,7 +69,7 @@ const Leds = () => {
 					</FormControl>
 				</PaperSection>
 			</PaperSection>
-			<Led2EffectConfigFormWrapper effect={led2.effects[led2.currentEffect]}/>
+			<Led2EffectConfigFormWrapper effectName={led2.effects[led2.currentEffect].name} effectConfig={led2.effects[led2.currentEffect].config}/>
 
 		</PaperSection>
 	)

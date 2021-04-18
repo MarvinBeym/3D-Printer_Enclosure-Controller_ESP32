@@ -5,7 +5,7 @@ class Solid : public Effect
 	public:
 		Solid(const char *_name, bool _effectGetsHandledOnce = false) : Effect{_name, _effectGetsHandledOnce} {};
 
-		bool getEffectConfigSetupDefined()
+		bool hasEffectConfig()
 		{
 			return true;
 		}
@@ -17,14 +17,14 @@ class Solid : public Effect
 			}
 			FastLED.show();
 		}
-		void defineEffectConfigSetup(JsonObject *_effectConfigSetupJson) {
-			JsonArray jsonColorArray = _effectConfigSetupJson->createNestedArray("colors");
-			jsonColorArray[0]["red"] = CRGB::Red;
-			jsonColorArray[1]["blue"] = CRGB::Blue;
-			jsonColorArray[2]["yellow"] = CRGB::Yellow;
-			jsonColorArray[3]["orange"] = 0xFF8D33;
-			jsonColorArray[4]["green"] = CRGB::Green;
-			jsonColorArray[5]["pink"] = CRGB::Pink;
-			jsonColorArray[6]["purple"] = CRGB::Purple;
+		void defineEffectConfig() {
+			JsonArray colorOptions = addSelect("color", "Color", CRGB::Red);
+			colorOptions[0]["red"] = CRGB::Red;
+			colorOptions[1]["blue"] = CRGB::Blue;
+			colorOptions[2]["yellow"] = CRGB::Yellow;
+			colorOptions[3]["orange"] = 0xFF8D33;
+			colorOptions[4]["green"] = CRGB::Green;
+			colorOptions[5]["pink"] = CRGB::Pink;
+			colorOptions[6]["purple"] = CRGB::Purple;
 		}
 };

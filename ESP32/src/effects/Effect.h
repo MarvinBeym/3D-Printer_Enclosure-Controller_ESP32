@@ -1,4 +1,5 @@
 #pragma once
+#define FASTLED_INTERNAL
 
 #include <libs/FasterLed.h>
 #include "Arduino.h"
@@ -13,11 +14,17 @@ class Effect
 		void setEffectHandled(bool handled);
 		int getEffectId();
 		bool getEffectGetsHandledOnce();
+		void setupEffectConfig(DynamicJsonDocument *doc);
 		virtual void effectHandler(CRGB *leds, int numberOfLeds);
-		virtual void defineEffectConfigSetup(JsonObject *_effectConfigSetupJson);
-		virtual bool getEffectConfigSetupDefined();
-		JsonObject *effectConfigSetupJson;
+		virtual void defineEffectConfig();
+		virtual bool hasEffectConfig();
+		JsonArray addSelect(const char* _name, const char *label, int value);
+		JsonArray addSelect(const char* _name, const char *label, char *value);
+		void addSwitch(const char* _name, const char *label, bool state);
 	private:
+		JsonArray selectsJsonArr;
+		JsonArray switchesJsonArr;
+		JsonObject effectConfig;
 		const char *name;
 		bool effectHandled = false;
 		bool effectGetsHandledOnce;

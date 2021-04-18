@@ -1,8 +1,8 @@
 #pragma once
+#define FASTLED_INTERNAL
 
 #include "Effect.h"
 #include <Arduino.h>
-#include <libs/FasterLed.h>
 #include "Solid.h"
 #include <ArduinoJson.h>
 #include "None.h"

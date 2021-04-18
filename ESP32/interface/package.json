@@ -14,8 +14,11 @@
     "@types/react-material-ui-form-validator": "^2.1.0",
     "@types/react-router": "^5.1.8",
     "@types/react-router-dom": "^5.1.6",
+    "@types/yup": "^0.29.11",
+    "add": "^2.0.6",
     "clsx": "^1.1.1",
     "compression-webpack-plugin": "^4.0.0",
+    "final-form": "^4.20.2",
     "framer-motion": "^4.1.2",
     "jwt-decode": "^3.1.2",
     "lodash": "^4.17.20",
@@ -26,6 +29,7 @@
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
     "react-dropzone": "^11.2.4",
+    "react-final-form": "^6.5.3",
     "react-form-validator-core": "^1.0.0",
     "react-material-ui-form-validator": "^2.1.1",
     "react-redux": "^7.2.3",
@@ -36,6 +40,8 @@
     "redux": "^4.0.5",
     "sockette": "^2.0.6",
     "typescript": "4.0.5",
+    "yarn": "^1.22.10",
+    "yup": "^0.32.9",
     "zlib": "^1.0.5"
   },
   "scripts": {
