@@ -38,6 +38,6 @@ class Effect
 		JsonVariant getNumberFieldValue(const char *_name);
 		JsonArray addSelectField(const char *_name, const char *label, int value);
 		JsonArray addSelectField(const char *_name, const char *label, char *value);
-		void addNumberField(const char *_name, const char *label, int value, int min, int max);
+		void addNumberField(const char *_name, const char *label, int value, int min = INT_MIN, int max = INT_MAX);
 		void addSwitchField(const char *_name, const char *label, bool state);
 };
