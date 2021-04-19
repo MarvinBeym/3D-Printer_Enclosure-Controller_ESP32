@@ -47,49 +47,49 @@ bool Effect::hasEffectConfig()
 void Effect::setupEffectConfig(DynamicJsonDocument *doc)
 {
 	effectConfig = doc->createNestedObject(name);
-	selectsJsonArr = effectConfig.createNestedArray("selects");
-	switchesJsonArr = effectConfig.createNestedArray("switches");
+	selectFields = effectConfig.createNestedArray("selects");
+	switchFields = effectConfig.createNestedArray("switches");
 	defineEffectConfig();
 }
 
 JsonArray Effect::addSelectField(const char *_name, const char *label, int value)
 {
-	JsonObject selectObject = selectsJsonArr.createNestedObject();
-	selectObject["value"] = value;
-	selectObject["label"] = label;
-	selectObject["name"] = _name;
-	JsonArray options = selectObject.createNestedArray("options");
+	JsonObject selectField = selectFields.createNestedObject();
+	selectField["value"] = value;
+	selectField["label"] = label;
+	selectField["name"] = _name;
+	JsonArray options = selectField.createNestedArray("options");
 	return options;
 }
 
 JsonArray Effect::addSelectField(const char *_name, const char *label, char *value)
 {
-	JsonObject selectObject = selectsJsonArr.createNestedObject();
-	selectObject["name"] = _name;
-	selectObject["label"] = label;
-	selectObject["value"] = value;
-	JsonArray options = selectObject.createNestedArray("options");
+	JsonObject selectField = selectFields.createNestedObject();
+	selectField["name"] = _name;
+	selectField["label"] = label;
+	selectField["value"] = value;
+	JsonArray options = selectField.createNestedArray("options");
 	return options;
 }
 
 void Effect::addSwitchField(const char *_name, const char *label, bool state)
 {
-	JsonObject switchObject = switchesJsonArr.createNestedObject();
-	switchObject["name"] = _name;
-	switchObject["label"] = label;
-	switchObject["value"] = state;
+	JsonObject switchField = switchFields.createNestedObject();
+	switchField["name"] = _name;
+	switchField["label"] = label;
+	switchField["value"] = state;
 }
 
 void Effect::changeEffectFieldValue(DynamicJsonDocument doc)
 {
-	JsonArray _selectsJsonArr = doc["selects"];
-	JsonArray _switchesJsonArr = doc["switches"];
+	JsonArray _selectFields = doc["selects"];
+	JsonArray _switchFields = doc["switches"];
 
 	//Selects
-	updateEffectFieldValue(_selectsJsonArr, selectsJsonArr);
+	updateEffectFieldValue(_selectFields, selectFields);
 
 	//Switches
-	updateEffectFieldValue(_switchesJsonArr, switchesJsonArr);
+	updateEffectFieldValue(_switchFields, switchFields);
 }
 
 void Effect::updateEffectFieldValue(JsonArray arrayWithNewValues, JsonArray currentArray)
@@ -112,17 +112,17 @@ void Effect::updateEffectFieldValue(JsonArray arrayWithNewValues, JsonArray curr
 
 bool Effect::getSwitchFieldState(const char *_name)
 {
-	return (bool) getConfigFieldValue(_name, switchesJsonArr);
+	return (bool) getConfigFieldValue(_name, switchFields);
 }
 
 JsonVariant Effect::getSelectFieldValue(const char *_name)
 {
-	return getConfigFieldValue(_name, selectsJsonArr);
+	return getConfigFieldValue(_name, selectFields);
 }
 
-JsonVariant Effect::getConfigFieldValue(const char *_name, JsonArray jsonArr)
+JsonVariant Effect::getConfigFieldValue(const char *_name, JsonArray fields)
 {
-	for(JsonObject obj : jsonArr) {
+	for(JsonObject obj : fields) {
 		const char *fieldName = obj["name"];
 		if(strcmp(fieldName, _name) == 0) {
 			return obj["value"];

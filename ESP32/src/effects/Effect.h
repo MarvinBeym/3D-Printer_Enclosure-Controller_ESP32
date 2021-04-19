@@ -18,17 +18,18 @@ class Effect
 		bool getEffectGetsHandledOnce();
 		void setupEffectConfig(DynamicJsonDocument *doc);
 		virtual void effectHandler(CRGB *leds, int numberOfLeds);
-		virtual void defineEffectConfig();
 		virtual bool hasEffectConfig();
 		void changeEffectFieldValue(DynamicJsonDocument document);
 	private:
-		JsonArray selectsJsonArr;
-		JsonArray switchesJsonArr;
+		JsonArray selectFields;
+		JsonArray switchFields;
+		JsonArray numberFields;
 		JsonObject effectConfig;
 		const char *name;
 		bool effectHandled = false;
 		bool effectGetsHandledOnce;
 		int effectId;
+		virtual void defineEffectConfig();
 		void updateEffectFieldValue(JsonArray arrayWithNewValues, JsonArray currentArray);
 		JsonVariant getConfigFieldValue(const char *_name, JsonArray jsonArr);
 	protected:
