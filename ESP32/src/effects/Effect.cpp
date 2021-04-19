@@ -77,7 +77,7 @@ void Effect::addSwitch(const char *_name, const char *label, bool state)
 	JsonObject switchObject = switchesJsonArr.createNestedObject();
 	switchObject["name"] = _name;
 	switchObject["label"] = label;
-	switchObject["state"] = state;
+	switchObject["value"] = state;
 }
 
 void Effect::changeEffectConfigValue(DynamicJsonDocument doc)
@@ -86,25 +86,24 @@ void Effect::changeEffectConfigValue(DynamicJsonDocument doc)
 	JsonArray _switchesJsonArr = doc["switches"];
 
 	//Selects
-	updateEffectConfigValue(_selectsJsonArr, selectsJsonArr, "name", "value");
+	updateEffectConfigValue(_selectsJsonArr, selectsJsonArr);
 
 	//Switches
-	updateEffectConfigValue(_switchesJsonArr, switchesJsonArr, "name", "state");
+	updateEffectConfigValue(_switchesJsonArr, switchesJsonArr);
 }
 
-void Effect::updateEffectConfigValue(JsonArray arrayWithNewValues, JsonArray currentArray, const char *keyFieldName,
-									 const char *valueFieldName)
+void Effect::updateEffectConfigValue(JsonArray arrayWithNewValues, JsonArray currentArray)
 {
-	for (JsonObject newSelectObj : arrayWithNewValues) {
+	for (JsonObject newObj : arrayWithNewValues) {
 		//!!!!!Should only run once - a select can only send/have a single value so the first key is the value!!!!!
-		for (JsonPair kv : newSelectObj) {
+		for (JsonPair kv : newObj) {
 			const char *key = kv.key().c_str();
 			JsonVariant value = kv.value();
 
 			for (JsonObject currentObj : currentArray) {
-				const char *currentKey = currentObj[keyFieldName];
+				const char *currentKey = currentObj["name"];
 				if (strcmp(key, currentKey) == 0) {
-					currentObj[valueFieldName] = value;
+					currentObj["value"] = value;
 				}
 			}
 		}
@@ -113,21 +112,20 @@ void Effect::updateEffectConfigValue(JsonArray arrayWithNewValues, JsonArray cur
 
 bool Effect::getSwitchState(const char *_name)
 {
-	for(JsonObject switchObj : switchesJsonArr) {
-		const char *switchName = switchObj["name"];
-		if(strcmp(switchName, _name) == 0) {
-			return switchObj["state"];
-		}
-	}
-	return false;
+	return (bool) getConfigFieldValue(_name, switchesJsonArr);
 }
 
 JsonVariant Effect::getSelectValue(const char *_name)
 {
-	for(JsonObject selectObj : selectsJsonArr) {
-		const char *selectName = selectObj["name"];
-		if(strcmp(selectName, _name) == 0) {
-			return selectObj["value"];
+	return getConfigFieldValue(_name, selectsJsonArr);
+}
+
+JsonVariant Effect::getConfigFieldValue(const char *_name, JsonArray jsonArr)
+{
+	for(JsonObject obj : jsonArr) {
+		const char *fieldName = obj["name"];
+		if(strcmp(fieldName, _name) == 0) {
+			return obj["value"];
 		}
 	}
 	return ArduinoJson::JsonVariant();

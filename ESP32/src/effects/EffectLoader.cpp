@@ -5,7 +5,7 @@
 void EffectLoader::setupEffects()
 {
 	effectsConfigSetupDoc = new DynamicJsonDocument(effects_configSetup_dynamicJsonDocument_size);
-	//effectsConfigSetupDoc
+
 	for (std::size_t i = 0; i < effects.size(); ++i) {
 		auto effect = effects[i];
 		effect->setEffectId(i);

@@ -32,8 +32,8 @@ class Effect
 		bool effectHandled = false;
 		bool effectGetsHandledOnce;
 		int effectId;
-		void updateEffectConfigValue(JsonArray arrayWithNewValues, JsonArray currentArray, const char *keyFieldName,
-									 const char *valueFieldName);
+		void updateEffectConfigValue(JsonArray arrayWithNewValues, JsonArray currentArray);
+		JsonVariant getConfigFieldValue(const char *_name, JsonArray jsonArr);
 	protected:
 		bool getSwitchState(const char* _name);
 		JsonVariant getSelectValue(const char* _name);

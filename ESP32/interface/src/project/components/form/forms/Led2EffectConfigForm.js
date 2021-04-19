@@ -75,7 +75,7 @@ const Led2EffectConfigForm = ({effectName, switches, selects}) => {
 						{switches.map((switchData, index) => {
 							return (
 								<SwitchField
-									defaultValue={switchData.state}
+									defaultValue={switchData.value}
 									fieldClassName={styles.field}
 									key={switchData.name}
 									name={`switches[${index}]` + switchData.name}
