@@ -8,8 +8,13 @@
 class Effect
 {
 	public:
-		Effect(const char *_name, bool _effectGetsHandledOnce = false) : name{_name}, effectGetsHandledOnce{
-				_effectGetsHandledOnce} {};
+		Effect(const char *_name, bool _effectGetsHandledOnce, bool _hasEffectConfig)
+		{
+			name = _name;
+			effectGetsHandledOnce = _effectGetsHandledOnce;
+			hasEffectConfig = _hasEffectConfig;
+		}
+
 		const char *getName();
 		void setEffectId(int id);
 		bool getEffectHandled();
@@ -18,7 +23,7 @@ class Effect
 		bool getEffectGetsHandledOnce();
 		void setupEffectConfig(DynamicJsonDocument *doc);
 		virtual void effectHandler(CRGB *leds, int numberOfLeds);
-		virtual bool hasEffectConfig();
+		bool getHasEffectConfig();
 		void changeEffectFieldValue(DynamicJsonDocument document);
 	private:
 		JsonArray selectFields;
@@ -32,6 +37,7 @@ class Effect
 		virtual void defineEffectConfig();
 		void updateEffectFieldValue(JsonArray arrayWithNewValues, JsonArray currentArray);
 		JsonVariant getConfigFieldValue(const char *_name, JsonArray jsonArr);
+		bool hasEffectConfig;
 	protected:
 		bool getSwitchFieldState(const char *_name);
 		JsonVariant getSelectFieldValue(const char *_name);

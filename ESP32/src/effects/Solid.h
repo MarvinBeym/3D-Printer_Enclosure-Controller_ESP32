@@ -3,12 +3,15 @@
 class Solid : public Effect
 {
 	public:
-		Solid(const char *_name, bool _effectGetsHandledOnce = false) : Effect{_name, _effectGetsHandledOnce} {};
-
-		bool hasEffectConfig()
-		{
-			return true;
-		}
+		Solid(
+				const char *_name,
+				bool _effectGetsHandledOnce = true,
+				bool _hasEffectConfig = false) :
+				Effect{
+						_name,
+						_effectGetsHandledOnce,
+						_hasEffectConfig
+				} {};
 
 		void effectHandler(CRGB *leds, int numberOfLeds)
 		{

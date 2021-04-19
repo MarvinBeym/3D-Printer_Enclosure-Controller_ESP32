@@ -39,11 +39,6 @@ int Effect::getEffectId()
 	return effectId;
 }
 
-bool Effect::hasEffectConfig()
-{
-	return false;
-}
-
 void Effect::setupEffectConfig(DynamicJsonDocument *doc)
 {
 	effectConfig = doc->createNestedObject(name);
@@ -83,10 +78,10 @@ void Effect::addSwitchField(const char *_name, const char *label, bool state)
 
 void Effect::addNumberField(const char *_name, const char *label, int value, int min, int max)
 {
-	if(value <= min) {
+	if (value <= min) {
 		value = (float) min;
 	}
-	if(value >= max) {
+	if (value >= max) {
 		value = (float) max;
 	}
 
@@ -143,17 +138,23 @@ JsonVariant Effect::getSelectFieldValue(const char *_name)
 	return getConfigFieldValue(_name, selectFields);
 }
 
-JsonVariant Effect::getNumberFieldValue(const char *_name){
+JsonVariant Effect::getNumberFieldValue(const char *_name)
+{
 	return getConfigFieldValue(_name, numberFields);
 }
 
 JsonVariant Effect::getConfigFieldValue(const char *_name, JsonArray fields)
 {
-	for(JsonObject obj : fields) {
+	for (JsonObject obj : fields) {
 		const char *fieldName = obj["name"];
-		if(strcmp(fieldName, _name) == 0) {
+		if (strcmp(fieldName, _name) == 0) {
 			return obj["value"];
 		}
 	}
 	return ArduinoJson::JsonVariant();
+}
+
+bool Effect::getHasEffectConfig()
+{
+	return hasEffectConfig;
 }

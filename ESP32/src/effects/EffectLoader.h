@@ -26,9 +26,9 @@ class EffectLoader
 					 void (*_effectChangeCallback)(void *))
 		{
 			effects.push_back(new None("none", true));
-			effects.push_back(new Solid("solid", true));
-			effects.push_back(new Rainbow("rainbow", false));
-			effects.push_back(new Fade("fade", false));
+			effects.push_back(new Solid("solid", true, true));
+			effects.push_back(new Rainbow("rainbow", false, true));
+			effects.push_back(new Fade("fade", false, true));
 
 			led2 = _led2;
 			eg = _eg;
@@ -36,6 +36,7 @@ class EffectLoader
 			effectChangeCallback = _effectChangeCallback;
 			setupEffects();
 		}
+
 	private:
 		DynamicJsonDocument *effectsConfigSetupDoc;
 		FasterLed *led2;
