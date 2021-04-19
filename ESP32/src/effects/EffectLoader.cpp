@@ -10,6 +10,7 @@ void EffectLoader::setupEffects()
 		auto effect = effects[i];
 		effect->setEffectId(i);
 		if (effect->getHasEffectConfig()) {
+			effect->setNumberOfLeds(led2NumberOfLeds);
 			effect->setupEffectConfig(effectsConfigSetupDoc);
 		}
 	}

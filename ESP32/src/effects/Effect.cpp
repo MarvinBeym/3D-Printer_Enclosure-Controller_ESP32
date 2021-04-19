@@ -158,3 +158,8 @@ bool Effect::getHasEffectConfig()
 {
 	return hasEffectConfig;
 }
+
+void Effect::setNumberOfLeds(int _numberOfLeds)
+{
+	nLeds = _numberOfLeds;
+}

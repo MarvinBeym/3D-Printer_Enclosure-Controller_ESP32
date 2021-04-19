@@ -8,6 +8,7 @@
 #include "None.h"
 #include "Rainbow.h"
 #include "Fade.h"
+#include "Running.h"
 
 #define NO_EFFECT 0
 
@@ -29,6 +30,7 @@ class EffectLoader
 			effects.push_back(new Solid("solid", true, true));
 			effects.push_back(new Rainbow("rainbow", false, true));
 			effects.push_back(new Fade("fade", false, true));
+			effects.push_back(new Running("running", false, true));
 
 			led2 = _led2;
 			eg = _eg;

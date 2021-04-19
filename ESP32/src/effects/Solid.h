@@ -6,12 +6,9 @@ class Solid : public Effect
 		Solid(
 				const char *_name,
 				bool _effectGetsHandledOnce = true,
-				bool _hasEffectConfig = false) :
-				Effect{
-						_name,
-						_effectGetsHandledOnce,
-						_hasEffectConfig
-				} {};
+				bool _hasEffectConfig = false) : Effect{_name,
+												_effectGetsHandledOnce,
+												_hasEffectConfig} {};
 
 		void effectHandler(CRGB *leds, int numberOfLeds)
 		{
