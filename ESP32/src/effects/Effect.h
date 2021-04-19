@@ -20,9 +20,6 @@ class Effect
 		virtual void effectHandler(CRGB *leds, int numberOfLeds);
 		virtual void defineEffectConfig();
 		virtual bool hasEffectConfig();
-		JsonArray addSelectField(const char *_name, const char *label, int value);
-		JsonArray addSelectField(const char *_name, const char *label, char *value);
-		void addSwitchField(const char *_name, const char *label, bool state);
 		void changeEffectFieldValue(DynamicJsonDocument document);
 	private:
 		JsonArray selectsJsonArr;
@@ -37,4 +34,7 @@ class Effect
 	protected:
 		bool getSwitchFieldState(const char* _name);
 		JsonVariant getSelectFieldValue(const char* _name);
+		JsonArray addSelectField(const char *_name, const char *label, int value);
+		JsonArray addSelectField(const char *_name, const char *label, char *value);
+		void addSwitchField(const char *_name, const char *label, bool state);
 };
