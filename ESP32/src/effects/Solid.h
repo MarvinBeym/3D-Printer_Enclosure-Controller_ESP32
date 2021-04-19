@@ -21,11 +21,12 @@ class Solid : public Effect
 		void defineEffectConfig() {
 			JsonArray colorOptions = addSelect("color", "Color", CRGB::Red);
 			colorOptions[0]["red"] = CRGB::Red;
-			colorOptions[1]["blue"] = CRGB::Blue;
-			colorOptions[2]["yellow"] = CRGB::Yellow;
-			colorOptions[3]["orange"] = 0xFF8D33;
-			colorOptions[4]["green"] = CRGB::Green;
-			colorOptions[5]["pink"] = CRGB::Pink;
-			colorOptions[6]["purple"] = CRGB::Purple;
+			colorOptions[1]["white"] = CRGB::White;
+			colorOptions[2]["blue"] = CRGB::Blue;
+			colorOptions[3]["yellow"] = CRGB::Yellow;
+			colorOptions[4]["orange"] = CRGB::OrangeRed;
+			colorOptions[5]["green"] = CRGB::Green;
+			colorOptions[6]["pink"] = CRGB::DeepPink;
+			colorOptions[7]["purple"] = CRGB::Purple;
 		}
 };
