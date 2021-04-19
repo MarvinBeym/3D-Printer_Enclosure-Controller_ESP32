@@ -19,14 +19,8 @@ const useStyles = makeStyles((theme) => ({
 
 const Led2EffectConfigFormWrapper = ({effectName, effectConfig}) => {
 	const styles = useStyles();
-	const [show, setShow] = useState(false);
 
-	useEffect(() => {
-		let shouldShow = effectConfig && Object.keys(effectConfig).length > 0;
-		setShow(shouldShow);
-	}, [effectConfig]);
-
-	if (!show) {
+	if (!(effectConfig && Object.keys(effectConfig).length > 0)) {
 		return null;
 	}
 
