@@ -13,13 +13,13 @@ class Solid : public Effect
 		void effectHandler(CRGB *leds, int numberOfLeds)
 		{
 			for (int i = 0; i < numberOfLeds; i++) {
-				int colorHtmlNumber = getSelectValue("color");
+				int colorHtmlNumber = getSelectFieldValue("color");
 				leds[i] = colorHtmlNumber;
 			}
 			FastLED.show();
 		}
 		void defineEffectConfig() {
-			JsonArray colorOptions = addSelect("color", "Color", CRGB::Red);
+			JsonArray colorOptions = addSelectField("color", "Color", CRGB::Red);
 			colorOptions[0]["red"] = CRGB::Red;
 			colorOptions[1]["white"] = CRGB::White;
 			colorOptions[2]["blue"] = CRGB::Blue;

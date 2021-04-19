@@ -561,7 +561,7 @@ DynamicJsonDocument handleWebSocketCommunication(DynamicJsonDocument json)
 				DynamicJsonDocument effectConfigChangeDoc(effects_configSetup_dynamicJsonDocument_size);
 
 				deserializeJson(effectConfigChangeDoc, value.c_str());
-				effect->changeEffectConfigValue(effectConfigChangeDoc);
+				effect->changeEffectFieldValue(effectConfigChangeDoc);
 
 				effectLoader->refreshCurrentEffect();
 

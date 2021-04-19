@@ -52,7 +52,7 @@ void Effect::setupEffectConfig(DynamicJsonDocument *doc)
 	defineEffectConfig();
 }
 
-JsonArray Effect::addSelect(const char *_name, const char *label, int value)
+JsonArray Effect::addSelectField(const char *_name, const char *label, int value)
 {
 	JsonObject selectObject = selectsJsonArr.createNestedObject();
 	selectObject["value"] = value;
@@ -62,7 +62,7 @@ JsonArray Effect::addSelect(const char *_name, const char *label, int value)
 	return options;
 }
 
-JsonArray Effect::addSelect(const char *_name, const char *label, char *value)
+JsonArray Effect::addSelectField(const char *_name, const char *label, char *value)
 {
 	JsonObject selectObject = selectsJsonArr.createNestedObject();
 	selectObject["name"] = _name;
@@ -72,7 +72,7 @@ JsonArray Effect::addSelect(const char *_name, const char *label, char *value)
 	return options;
 }
 
-void Effect::addSwitch(const char *_name, const char *label, bool state)
+void Effect::addSwitchField(const char *_name, const char *label, bool state)
 {
 	JsonObject switchObject = switchesJsonArr.createNestedObject();
 	switchObject["name"] = _name;
@@ -80,19 +80,19 @@ void Effect::addSwitch(const char *_name, const char *label, bool state)
 	switchObject["value"] = state;
 }
 
-void Effect::changeEffectConfigValue(DynamicJsonDocument doc)
+void Effect::changeEffectFieldValue(DynamicJsonDocument doc)
 {
 	JsonArray _selectsJsonArr = doc["selects"];
 	JsonArray _switchesJsonArr = doc["switches"];
 
 	//Selects
-	updateEffectConfigValue(_selectsJsonArr, selectsJsonArr);
+	updateEffectFieldValue(_selectsJsonArr, selectsJsonArr);
 
 	//Switches
-	updateEffectConfigValue(_switchesJsonArr, switchesJsonArr);
+	updateEffectFieldValue(_switchesJsonArr, switchesJsonArr);
 }
 
-void Effect::updateEffectConfigValue(JsonArray arrayWithNewValues, JsonArray currentArray)
+void Effect::updateEffectFieldValue(JsonArray arrayWithNewValues, JsonArray currentArray)
 {
 	for (JsonObject newObj : arrayWithNewValues) {
 		//!!!!!Should only run once - a select can only send/have a single value so the first key is the value!!!!!
@@ -110,12 +110,12 @@ void Effect::updateEffectConfigValue(JsonArray arrayWithNewValues, JsonArray cur
 	}
 }
 
-bool Effect::getSwitchState(const char *_name)
+bool Effect::getSwitchFieldState(const char *_name)
 {
 	return (bool) getConfigFieldValue(_name, switchesJsonArr);
 }
 
-JsonVariant Effect::getSelectValue(const char *_name)
+JsonVariant Effect::getSelectFieldValue(const char *_name)
 {
 	return getConfigFieldValue(_name, selectsJsonArr);
 }
