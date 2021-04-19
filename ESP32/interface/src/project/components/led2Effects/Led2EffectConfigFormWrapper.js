@@ -19,23 +19,12 @@ const useStyles = makeStyles((theme) => ({
 
 const Led2EffectConfigFormWrapper = ({effectName, effectConfig}) => {
 	const styles = useStyles();
-
 	const [show, setShow] = useState(false);
-	const [switches, setSwitches] = useState([]);
-	const [selects, setSelects] = useState([]);
 
 	useEffect(() => {
 		let shouldShow = effectConfig && Object.keys(effectConfig).length > 0;
 		setShow(shouldShow);
-		if (shouldShow) {
-			if (effectConfig.selects.length > 0) {
-				setSelects(effectConfig.selects);
-			}
-			if (effectConfig.switches.length > 0) {
-				setSwitches(effectConfig.switches);
-			}
-		}
-	}, [effectConfig, effectConfig?.selects, effectConfig?.switches]);
+	}, [effectConfig]);
 
 	if (!show) {
 		return null;
@@ -44,7 +33,7 @@ const Led2EffectConfigFormWrapper = ({effectName, effectConfig}) => {
 	return (
 		<PaperSection paperClassName={styles.led2ConfigSection} className={styles.led2ConfigForm}
 					  title="Effect configuration">
-			<Led2EffectConfigForm effectName={effectName} switches={switches} selects={selects}/>
+			<Led2EffectConfigForm effectName={effectName} configFields={effectConfig}/>
 		</PaperSection>
 	)
 }

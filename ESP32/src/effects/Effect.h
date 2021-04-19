@@ -33,9 +33,11 @@ class Effect
 		void updateEffectFieldValue(JsonArray arrayWithNewValues, JsonArray currentArray);
 		JsonVariant getConfigFieldValue(const char *_name, JsonArray jsonArr);
 	protected:
-		bool getSwitchFieldState(const char* _name);
-		JsonVariant getSelectFieldValue(const char* _name);
+		bool getSwitchFieldState(const char *_name);
+		JsonVariant getSelectFieldValue(const char *_name);
+		JsonVariant getNumberFieldValue(const char *_name);
 		JsonArray addSelectField(const char *_name, const char *label, int value);
 		JsonArray addSelectField(const char *_name, const char *label, char *value);
+		void addNumberField(const char *_name, const char *label, int value, int min, int max);
 		void addSwitchField(const char *_name, const char *label, bool state);
 };

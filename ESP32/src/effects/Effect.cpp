@@ -49,6 +49,7 @@ void Effect::setupEffectConfig(DynamicJsonDocument *doc)
 	effectConfig = doc->createNestedObject(name);
 	selectFields = effectConfig.createNestedArray("selects");
 	switchFields = effectConfig.createNestedArray("switches");
+	numberFields = effectConfig.createNestedArray("numbers");
 	defineEffectConfig();
 }
 
@@ -80,16 +81,38 @@ void Effect::addSwitchField(const char *_name, const char *label, bool state)
 	switchField["value"] = state;
 }
 
+void Effect::addNumberField(const char *_name, const char *label, int value, int min, int max)
+{
+	if(value <= min) {
+		value = (float) min;
+	}
+	if(value >= max) {
+		value = (float) max;
+	}
+
+	JsonObject numberField = numberFields.createNestedObject();
+	numberField["name"] = _name;
+	numberField["label"] = label;
+	numberField["value"] = value;
+	numberField["min"] = min;
+	numberField["max"] = max;
+}
+
 void Effect::changeEffectFieldValue(DynamicJsonDocument doc)
 {
 	JsonArray _selectFields = doc["selects"];
 	JsonArray _switchFields = doc["switches"];
+	JsonArray _numberFields = doc["numbers"];
 
-	//Selects
+	//Select fields
 	updateEffectFieldValue(_selectFields, selectFields);
 
-	//Switches
+	//Switch fields
 	updateEffectFieldValue(_switchFields, switchFields);
+
+	//Number fields
+	updateEffectFieldValue(_numberFields, numberFields);
+
 }
 
 void Effect::updateEffectFieldValue(JsonArray arrayWithNewValues, JsonArray currentArray)
@@ -118,6 +141,10 @@ bool Effect::getSwitchFieldState(const char *_name)
 JsonVariant Effect::getSelectFieldValue(const char *_name)
 {
 	return getConfigFieldValue(_name, selectFields);
+}
+
+JsonVariant Effect::getNumberFieldValue(const char *_name){
+	return getConfigFieldValue(_name, numberFields);
 }
 
 JsonVariant Effect::getConfigFieldValue(const char *_name, JsonArray fields)

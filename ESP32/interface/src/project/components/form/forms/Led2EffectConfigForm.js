@@ -6,49 +6,58 @@ import {Button} from "@material-ui/core";
 import {makeStyles} from "@material-ui/core/styles";
 import SwitchField from "../fields/SwitchField";
 import {useDispatch} from "react-redux";
-import {wsSend} from "../../../redux/reducers/webSocketSlice";
 import {useEffect, useState} from "react";
+import NumberField from "../fields/NumberField";
+import {wsSend} from "../../../redux/reducers/webSocketSlice";
 
 
 const useStyles = makeStyles((theme) => ({
 	fields: {
-		paddingBottom: "2rem",
+		display: "grid",
+		gridTemplateColumns: "auto auto",
+		gridGap: "1rem",
+		paddingBottom: "1rem",
 	},
 	field: {
-		margin: "0.5rem 0",
+
 	}
 }));
 
-const validationSchema = yup.object().shape({
-	//username: yup.string().required("validation.missing.username"),
-	//password: yup.string().min(6, "validation.lengthNotMet.password").required("validation.missing.password")
-});
+const validationSchema = yup.object().shape({});
 
-const Led2EffectConfigForm = ({effectName, switches, selects}) => {
+const Led2EffectConfigForm = ({effectName, configFields}) => {
 	const styles = useStyles();
 	const dispatch = useDispatch();
 	const [initialValues, setInitialValues] = useState([]);
 
 	async function onSubmit(values) {
-		let msg = {component: "led2", command: "setEffectConfig", effect: effectName, value: values};
+		let tmpValues = values;
+		tmpValues["numbers"] = tmpValues.numbers.map((numberField) => {
+			let key = Object.keys(numberField)[0];
+			let value = parseInt(numberField[key]);
+
+			let obj = {};
+			obj[key] = value;
+			return obj;
+		});
+
+		let msg = {component: "led2", command: "setEffectConfig", effect: effectName, value: tmpValues};
 		dispatch(wsSend(msg));
 	}
 
 	useEffect(() => {
-		let selectInitialValues = selects.map((selectData) => {
-			let obj = {};
-			obj[selectData.name] = selectData.value
-			return obj;
+		let obj = {};
+		Object.keys(configFields).forEach((fieldKey) => {
+			obj[fieldKey] = [];
+			configFields[fieldKey].forEach((field) => {
+				let fieldObj = {};
+				fieldObj[field.name] = field.value;
+				obj[fieldKey] = [...obj[fieldKey], fieldObj];
+			})
 		})
 
-		let switchInitialValues = switches.map((switchData) => {
-			let obj = {};
-			obj[switchData.name] = switchData.state;
-			return obj;
-		})
-
-		setInitialValues({selects: selectInitialValues, switches: switchInitialValues})
-	}, [selects, switches]);
+		setInitialValues(obj);
+	}, [configFields]);
 
 	const validate = useValidationSchema(validationSchema);
 
@@ -60,7 +69,7 @@ const Led2EffectConfigForm = ({effectName, switches, selects}) => {
 			render={({handleSubmit}) => (
 				<form onSubmit={handleSubmit}>
 					<div className={styles.fields}>
-						{selects.map((selectData, index) => {
+						{configFields.selects.map((selectData, index) => {
 							return (
 								<SelectField
 									defaultValue={selectData.value}
@@ -72,7 +81,7 @@ const Led2EffectConfigForm = ({effectName, switches, selects}) => {
 								/>
 							)
 						})}
-						{switches.map((switchData, index) => {
+						{configFields.switches.map((switchData, index) => {
 							return (
 								<SwitchField
 									defaultValue={switchData.value}
@@ -83,6 +92,17 @@ const Led2EffectConfigForm = ({effectName, switches, selects}) => {
 								/>
 							)
 						})}
+						{configFields.numbers.map((numberField, index) => (
+							<NumberField
+								defaultValue={numberField.value}
+								fieldClassName={styles.field}
+								key={numberField.name}
+								name={`numbers[${index}]` + numberField.name}
+								label={numberField.label}
+								min={numberField.min}
+								max={numberField.max}
+							/>
+						))}
 					</div>
 					<Button color="primary" variant="contained" type="submit">Save</Button>
 				</form>

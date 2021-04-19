@@ -8,7 +8,7 @@ const SelectField = ({fieldClassName, name, defaultValue, label, options}) => {
 		<Field name={name}
 			   defaultValue={defaultValue}
 			   render={({input}) => (
-				   <FormControl className={fieldClassName} fullWidth variant="filled">
+				   <FormControl className={fieldClassName} variant="filled">
 					   <InputLabel>{label}</InputLabel>
 					   <Select value={input.value} onChange={input.onChange}>
 						   {options.map((option) => {
