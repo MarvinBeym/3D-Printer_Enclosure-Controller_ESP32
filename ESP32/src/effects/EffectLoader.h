@@ -7,6 +7,7 @@
 #include <ArduinoJson.h>
 #include "None.h"
 #include "Rainbow.h"
+#include "Fade.h"
 
 #define NO_EFFECT 0
 
@@ -27,7 +28,7 @@ class EffectLoader
 			effects.push_back(new None("none", true));
 			effects.push_back(new Solid("solid", true));
 			effects.push_back(new Rainbow("rainbow", false));
-
+			effects.push_back(new Fade("fade", false));
 
 			led2 = _led2;
 			eg = _eg;

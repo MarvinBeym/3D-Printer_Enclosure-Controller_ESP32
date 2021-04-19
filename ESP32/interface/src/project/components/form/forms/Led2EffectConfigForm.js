@@ -69,7 +69,7 @@ const Led2EffectConfigForm = ({effectName, configFields}) => {
 			render={({handleSubmit}) => (
 				<form onSubmit={handleSubmit}>
 					<div className={styles.fields}>
-						{configFields.selects.map((selectData, index) => {
+						{configFields?.selects.map((selectData, index) => {
 							return (
 								<SelectField
 									defaultValue={selectData.value}
@@ -81,7 +81,7 @@ const Led2EffectConfigForm = ({effectName, configFields}) => {
 								/>
 							)
 						})}
-						{configFields.switches.map((switchData, index) => {
+						{configFields?.switches.map((switchData, index) => {
 							return (
 								<SwitchField
 									defaultValue={switchData.value}
@@ -92,7 +92,7 @@ const Led2EffectConfigForm = ({effectName, configFields}) => {
 								/>
 							)
 						})}
-						{configFields.numbers.map((numberField, index) => (
+						{configFields?.numbers.map((numberField, index) => (
 							<NumberField
 								defaultValue={numberField.value}
 								fieldClassName={styles.field}
