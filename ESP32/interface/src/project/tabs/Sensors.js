@@ -1,5 +1,4 @@
 import React from 'react';
-import QuickLineChart from "../components/QuickLineChart";
 import {makeStyles} from "@material-ui/core/styles";
 import {useDispatch, useSelector} from "react-redux";
 import {Button} from "@material-ui/core";
@@ -14,6 +13,7 @@ import {
 	selectSensor2
 } from "../redux/reducers/sensorsSlice";
 import Card from "../components/Card";
+import LineChartCard from "../components/LineChartCard";
 
 const useStyles = makeStyles(() => ({
 	graphSection: {
@@ -44,6 +44,9 @@ const useStyles = makeStyles(() => ({
 	valueField: {
 		margin: "0.5rem 0",
 	},
+	lineChartCard: {
+		flex: "1",
+	}
 }));
 
 const Sensors = () => {
@@ -106,25 +109,24 @@ const Sensors = () => {
 						onClick={() => dispatch(clearSensor2Collections())}>Clear sensor 2 data</Button>
 			</Card>
 			<Card header="Graphs" className={styles.lineChartContainer} style={{gridArea: "2 / 1 / 3 / 4"}}>
-				<Card header="Sensor 1">
-					<QuickLineChart
-						yAxisValueSuffix="°C"
-						yAxisLabel="Temperature"
-						xAxisLabel="Time"
-						data={sensor1.temperatureCollection}
-						dataKey="temperature"
-					/>
-				</Card>
-				<Card header="Sensor 2">
-					<QuickLineChart
-						yAxisValueSuffix="°C"
-						yAxisLabel="Temperature"
-						xAxisLabel="Time"
-						data={sensor2.temperatureCollection}
-						dataKey="temperature"
-					/>
-				</Card>
-
+				<LineChartCard
+					cardClassName={styles.lineChartCard}
+					header="Sensor 1"
+					yAxisValueSuffix="°C"
+					yAxisLabel="Temperature"
+					xAxisLabel="Time"
+					data={sensor1.temperatureCollection}
+					dataKey="temperature"
+				/>
+				<LineChartCard
+					cardClassName={styles.lineChartCard}
+					header="Sensor 2"
+					yAxisValueSuffix="°C"
+					yAxisLabel="Temperature"
+					xAxisLabel="Time"
+					data={sensor2.temperatureCollection}
+					dataKey="temperature"
+				/>
 			</Card>
 		</div>
 

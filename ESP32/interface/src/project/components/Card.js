@@ -23,7 +23,7 @@ const useStyles = makeStyles(() => ({
 
 }));
 
-const Card = ({children, elevation = 5, header, style, className, headerLocation}) => {
+const Card = ({children, elevation = 5, header, style, className, cardClassName, headerLocation}) => {
 	const styles = useStyles();
 	const [headerPosition, setHeaderPosition] = useState("center");
 
@@ -45,7 +45,7 @@ const Card = ({children, elevation = 5, header, style, className, headerLocation
 	}, [headerLocation]);
 
 	return (
-		<MuiCard className={styles.card} style={style} elevation={elevation}>
+		<MuiCard className={clsx(styles.card, cardClassName)} style={style} elevation={elevation}>
 			{header ? <Typography variant="h6" className={styles.header}
 								  style={{justifyContent: headerPosition}}>{header}</Typography> : null}
 			<CardContent className={clsx(styles.content, className)}>
