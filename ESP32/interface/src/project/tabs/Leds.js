@@ -8,6 +8,7 @@ import TabContent from "../components/TabContent";
 import Card from "../components/Card";
 import SwitchCard from "../components/SwitchCard";
 import Led2EffectConfigForm from "../components/form/forms/Led2EffectConfigForm";
+import {motion} from "framer-motion";
 
 const useStyles = makeStyles((theme) => ({
 	leds: {
@@ -38,13 +39,19 @@ const useStyles = makeStyles((theme) => ({
 	},
 }));
 
+const variants = {
+	show: { opacity: 1, y: 0 },
+	hide: { opacity: 0, y: "100%" },
+}
+
 const Leds = () => {
 	const styles = useStyles();
 	const dispatch = useDispatch();
 
 	const led1 = useSelector((state) => selectLed1(state));
 	const led2 = useSelector((state) => selectLed2(state));
-	const currentEffectHasConfig = led2.effects[led2.currentEffect].config && Object.keys(led2.effects[led2.currentEffect].config).length > 0;
+	const currentEffect = led2.effects[led2.currentEffect];
+	const currentEffectHasConfig = currentEffect.config && Object.keys(currentEffect.config).length > 0;
 
 	const onLed1Change = (event) => {
 		dispatch(wsSend({component: "led1", command: "setState", value: event.target.checked ? 1 : 0}));
@@ -70,21 +77,16 @@ const Leds = () => {
 					</FormControl>
 				</Card>
 			</Card>
-			{currentEffectHasConfig
-				? (
-					<Card header="Effect configuration">
-						<Led2EffectConfigForm effectName={led2.effects[led2.currentEffect].name}
-											  configFields={led2.effects[led2.currentEffect].config}/>
-					</Card>
-				)
-				: null
-			}
+			<motion.div animate={currentEffectHasConfig ? "show" : "hide"} variants={variants}>
+				<Card header="Effect configuration">
+					{currentEffectHasConfig ?
+						<Led2EffectConfigForm effect={currentEffect}/>
+					: null}
+				</Card>
+			</motion.div>
 		</TabContent>
 
 	)
 }
 
 export default Leds;
-/*
-<Led2EffectConfigFormWrapper effectName={led2.effects[led2.currentEffect].name} effectConfig={led2.effects[led2.currentEffect].config}/>
- */

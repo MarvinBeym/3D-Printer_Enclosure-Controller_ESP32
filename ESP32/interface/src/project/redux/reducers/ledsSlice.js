@@ -7,7 +7,7 @@ const initialState = {
 	led2: {
 		currentEffect: 0,
 		effects: [
-			{name: "none", id: 0, setup: {switches: [], buttons: []}}
+			{name: "none", id: 0, setup: {switches: [], selects: [], buttons: []}}
 		]
 	},
 	status: 'idle',

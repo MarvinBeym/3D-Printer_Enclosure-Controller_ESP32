@@ -25,10 +25,13 @@ const useStyles = makeStyles((theme) => ({
 
 const validationSchema = yup.object().shape({});
 
-const Led2EffectConfigForm = ({effectName, configFields}) => {
+const Led2EffectConfigForm = ({effect}) => {
 	const styles = useStyles();
 	const dispatch = useDispatch();
 	const [initialValues, setInitialValues] = useState([]);
+
+	const name = effect.name;
+	const config = effect.config;
 
 	async function onSubmit(values) {
 		let tmpValues = values;
@@ -41,15 +44,15 @@ const Led2EffectConfigForm = ({effectName, configFields}) => {
 			return obj;
 		});
 
-		let msg = {component: "led2", command: "setEffectConfig", effect: effectName, value: tmpValues};
+		let msg = {component: "led2", command: "setEffectConfig", effect: name, value: tmpValues};
 		dispatch(wsSend(msg));
 	}
 
 	useEffect(() => {
 		let obj = {};
-		Object.keys(configFields).forEach((fieldKey) => {
+		Object.keys(config).forEach((fieldKey) => {
 			obj[fieldKey] = [];
-			configFields[fieldKey].forEach((field) => {
+			config[fieldKey].forEach((field) => {
 				let fieldObj = {};
 				fieldObj[field.name] = field.value;
 				obj[fieldKey] = [...obj[fieldKey], fieldObj];
@@ -57,7 +60,7 @@ const Led2EffectConfigForm = ({effectName, configFields}) => {
 		})
 
 		setInitialValues(obj);
-	}, [configFields]);
+	}, [config]);
 
 	const validate = useValidationSchema(validationSchema);
 
@@ -69,7 +72,7 @@ const Led2EffectConfigForm = ({effectName, configFields}) => {
 			render={({handleSubmit}) => (
 				<form onSubmit={handleSubmit}>
 					<div className={styles.fields}>
-						{configFields.selects.map((selectData, index) => {
+						{config.selects.map((selectData, index) => {
 							return (
 								<SelectField
 									defaultValue={selectData.value}
@@ -81,7 +84,7 @@ const Led2EffectConfigForm = ({effectName, configFields}) => {
 								/>
 							)
 						})}
-						{configFields.switches.map((switchData, index) => {
+						{config.switches.map((switchData, index) => {
 							return (
 								<SwitchField
 									defaultValue={switchData.value}
@@ -92,7 +95,7 @@ const Led2EffectConfigForm = ({effectName, configFields}) => {
 								/>
 							)
 						})}
-						{configFields.numbers.map((numberField, index) => (
+						{config.numbers.map((numberField, index) => (
 							<NumberField
 								defaultValue={numberField.value}
 								fieldClassName={styles.field}
