@@ -45,11 +45,7 @@ const Main = () => {
 			{fans.map((fan, index) => {
 				const header = "Fan " + (index + 1);
 				return (
-					<Card
-						key={index}
-						className={styles.card}
-						header={header}
-					>
+					<Card key={index} className={styles.card} header={header}>
 						<ValueField label="Rpm" value={fan.rpm} endAdornment={<Img src={speedIcon}/>}/>
 						<ValueField label="Percent" value={fan.percent} endAdornment={<Img src={percentIcon}/>}/>
 					</Card>
@@ -58,11 +54,7 @@ const Main = () => {
 			{sensors.map((sensor, index) => {
 				const header = "Sensor " + (index + 1);
 				return (
-					<Card
-						key={index}
-						className={styles.card}
-						title={header}
-					>
+					<Card key={index} className={styles.card} title={header}>
 						<ValueField label="Temperature" valueEnding="°C" value={sensor.temperature}
 									endAdornment={<Img src={temperatureIcon}/>}/>
 						<ValueField label="Humidity" valueEnding="%" value={sensor.humidity}
@@ -70,16 +62,10 @@ const Main = () => {
 					</Card>
 				)
 			})}
-			<Card
-				header="Led 1"
-				className={styles.card}
-			>
+			<Card header="Led 1" className={styles.card}>
 				<ValueField label="State" value={led1.state ? "ON" : "OFF"}/>
 			</Card>
-			<Card
-				header="Led 2"
-				className={styles.card}
-			>
+			<Card header="Led 2" className={styles.card}>
 				<ValueField label="Effect" value={led2.effects[led2.currentEffect].name.toUpperCase()}/>
 			</Card>
 		</TabContent>
