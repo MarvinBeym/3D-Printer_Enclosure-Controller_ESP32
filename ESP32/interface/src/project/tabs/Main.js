@@ -1,6 +1,5 @@
 import React from 'react';
 import {makeStyles} from "@material-ui/core/styles";
-import PaperSection from "../components/PaperSection";
 import ValueField from "../components/ValueField";
 import temperatureIcon from "../images/temp_icon_x32.png";
 import humidityIcon from "../images/humidity_icon_x32.png";
@@ -11,6 +10,8 @@ import {useSelector} from "react-redux";
 import {selectFans} from "../redux/reducers/fansSlice";
 import {selectSensors} from "../redux/reducers/sensorsSlice";
 import {selectLed1, selectLed2} from "../redux/reducers/ledsSlice";
+import Card from "../components/Card";
+import TabContent from "../components/TabContent";
 
 
 const useStyles = makeStyles((theme) => ({
@@ -18,7 +19,9 @@ const useStyles = makeStyles((theme) => ({
 		display: "grid",
 		gridTemplateColumns: "auto auto",
 		gridTemplateRows: "auto auto auto",
-		gridGap: "1rem",
+	},
+	card: {
+		flexDirection: "row",
 	},
 	infoPaper: {
 		margin: "0",
@@ -38,46 +41,48 @@ const Main = () => {
 	const led2 = useSelector((state) => selectLed2(state));
 
 	return (
-		<PaperSection className={styles.main}>
-			{fans.map((fan, index) => (
-				<PaperSection
-					key={index}
-					paperClassName={styles.infoPaper}
-					className={styles.infoContainer}
-					title={"Fan " + (index + 1)}
-				>
-					<ValueField label="Rpm" value={fan.rpm} endAdornment={<Img src={speedIcon}/>}/>
-					<ValueField label="Percent" value={fan.percent} endAdornment={<Img src={percentIcon}/>}/>
-				</PaperSection>
-			))}
-			{sensors.map((sensor, index) => (
-				<PaperSection
-					key={index}
-					paperClassName={styles.infoPaper}
-					className={styles.infoContainer}
-					title={"Sensor " + (index + 1)}
-				>
-					<ValueField label="Temperature" valueEnding="°C" value={sensor.temperature}
-								endAdornment={<Img src={temperatureIcon}/>}/>
-					<ValueField label="Humidity" valueEnding="%" value={sensor.humidity}
-								endAdornment={<Img src={humidityIcon}/>}/>
-				</PaperSection>
-			))}
-			<PaperSection
-				paperClassName={styles.infoPaper}
-				className={styles.infoContainer}
-				title="Led 1"
+		<TabContent className={styles.main}>
+			{fans.map((fan, index) => {
+				const header = "Fan " + (index + 1);
+				return (
+					<Card
+						key={index}
+						className={styles.card}
+						header={header}
+					>
+						<ValueField label="Rpm" value={fan.rpm} endAdornment={<Img src={speedIcon}/>}/>
+						<ValueField label="Percent" value={fan.percent} endAdornment={<Img src={percentIcon}/>}/>
+					</Card>
+				)
+			})}
+			{sensors.map((sensor, index) => {
+				const header = "Sensor " + (index + 1);
+				return (
+					<Card
+						key={index}
+						className={styles.card}
+						title={header}
+					>
+						<ValueField label="Temperature" valueEnding="°C" value={sensor.temperature}
+									endAdornment={<Img src={temperatureIcon}/>}/>
+						<ValueField label="Humidity" valueEnding="%" value={sensor.humidity}
+									endAdornment={<Img src={humidityIcon}/>}/>
+					</Card>
+				)
+			})}
+			<Card
+				header="Led 1"
+				className={styles.card}
 			>
 				<ValueField label="State" value={led1.state ? "ON" : "OFF"}/>
-			</PaperSection>
-			<PaperSection
-				paperClassName={styles.infoPaper}
-				className={styles.infoContainer}
-				title="Led 2"
+			</Card>
+			<Card
+				header="Led 2"
+				className={styles.card}
 			>
 				<ValueField label="Effect" value={led2.effects[led2.currentEffect].name.toUpperCase()}/>
-			</PaperSection>
-		</PaperSection>
+			</Card>
+		</TabContent>
 	)
 
 }
