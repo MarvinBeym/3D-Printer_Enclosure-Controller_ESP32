@@ -1,17 +1,18 @@
 import React from 'react';
-import PaperSection from "../components/PaperSection";
 import {makeStyles} from "@material-ui/core/styles";
-import {FormControl, InputLabel, MenuItem, Select, Switch} from "@material-ui/core";
+import {FormControl, InputLabel, MenuItem, Select} from "@material-ui/core";
 import {useDispatch, useSelector} from "react-redux";
 import {selectLed1, selectLed2,} from "../redux/reducers/ledsSlice";
 import {wsSend} from "../redux/reducers/webSocketSlice";
-import Led2EffectConfigFormWrapper from "../components/led2Effects/Led2EffectConfigFormWrapper";
+import TabContent from "../components/TabContent";
+import Card from "../components/Card";
+import SwitchCard from "../components/SwitchCard";
+import Led2EffectConfigForm from "../components/form/forms/Led2EffectConfigForm";
 
 const useStyles = makeStyles((theme) => ({
 	leds: {
-		display: "flex",
-		width: "100%",
-		padding: "1rem",
+		display: "grid",
+		gridTemplateColumns: "25% 1fr",
 	},
 	effectChooserSection: {
 		margin: "0",
@@ -43,6 +44,8 @@ const Leds = () => {
 
 	const led1 = useSelector((state) => selectLed1(state));
 	const led2 = useSelector((state) => selectLed2(state));
+	const currentEffectHasConfig = led2.effects[led2.currentEffect].config && Object.keys(led2.effects[led2.currentEffect].config).length > 0;
+
 	const onLed1Change = (event) => {
 		dispatch(wsSend({component: "led1", command: "setState", value: event.target.checked ? 1 : 0}));
 	}
@@ -52,12 +55,10 @@ const Leds = () => {
 	}
 
 	return (
-		<PaperSection className={styles.leds}>
-			<PaperSection paperClassName={styles.effectChooserSection} title="Leds">
-				<PaperSection title="Led 1" paperClassName={styles.led1Section}>
-					<Switch checked={led1.state} onChange={onLed1Change}/>
-				</PaperSection>
-				<PaperSection title="Led 2" paperClassName={styles.ledSection}>
+		<TabContent className={styles.leds}>
+			<Card header="Leds">
+				<SwitchCard header="Led 1" checked={led1.state} onChange={onLed1Change}/>
+				<Card header="Led 2">
 					<FormControl fullWidth variant="filled">
 						<InputLabel id="demo-simple-select-outlined-label">Effect</InputLabel>
 						<Select value={led2.currentEffect} onChange={onLed2EffectChange}
@@ -67,12 +68,23 @@ const Leds = () => {
 							))}
 						</Select>
 					</FormControl>
-				</PaperSection>
-			</PaperSection>
-			<Led2EffectConfigFormWrapper effectName={led2.effects[led2.currentEffect].name} effectConfig={led2.effects[led2.currentEffect].config}/>
+				</Card>
+			</Card>
+			{currentEffectHasConfig
+				? (
+					<Card header="Effect configuration">
+						<Led2EffectConfigForm effectName={led2.effects[led2.currentEffect].name}
+											  configFields={led2.effects[led2.currentEffect].config}/>
+					</Card>
+				)
+				: null
+			}
+		</TabContent>
 
-		</PaperSection>
 	)
 }
 
 export default Leds;
+/*
+<Led2EffectConfigFormWrapper effectName={led2.effects[led2.currentEffect].name} effectConfig={led2.effects[led2.currentEffect].config}/>
+ */
