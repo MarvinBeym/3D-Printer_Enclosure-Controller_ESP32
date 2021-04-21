@@ -21,6 +21,15 @@ const useStyles = makeStyles((theme) => ({
 		gridTemplateRows: "auto auto auto",
 	},
 	card: {
+		display: "grid",
+		gridTemplateColumns: "auto auto",
+		gap: "1rem",
+		flexDirection: "row",
+	},
+	ledCard: {
+		display: "grid",
+		gridTemplateColumns: "auto",
+		gap: "1rem",
 		flexDirection: "row",
 	},
 	infoPaper: {
@@ -62,10 +71,10 @@ const Main = () => {
 					</Card>
 				)
 			})}
-			<Card header="Led 1" className={styles.card}>
+			<Card header="Led 1" className={styles.ledCard}>
 				<ValueField label="State" value={led1.state ? "ON" : "OFF"}/>
 			</Card>
-			<Card header="Led 2" className={styles.card}>
+			<Card header="Led 2" className={styles.ledCard}>
 				<ValueField label="Effect" value={led2.effects[led2.currentEffect].name.toUpperCase()}/>
 			</Card>
 		</TabContent>

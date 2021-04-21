@@ -40,8 +40,10 @@ const useStyles = makeStyles((theme) => ({
 		height: "100%",
 	},
 	valueFieldsContainer: {
-		display: "flex",
+		display: "grid",
+		gridTemplateColumns: "auto auto",
 		paddingTop: "1rem",
+		gap: "1rem",
 	},
 	fanCard: {
 		display: "flex",

@@ -1,11 +1,10 @@
 import React from "react";
-import {InputAdornment, TextField} from "@material-ui/core";
+import {InputAdornment, Paper, TextField} from "@material-ui/core";
 import {makeStyles} from "@material-ui/core/styles";
 import clsx from "clsx";
 
 const useStyles = makeStyles((theme) => ({
 	valueField: {
-		margin: "0 0.5rem",
 		width: "100%",
 		"& .MuiInputBase-root": {
 			padding: "0.5rem",
@@ -23,7 +22,6 @@ const useStyles = makeStyles((theme) => ({
 			fontSize: "1rem",
 		},
 		"& .MuiOutlinedInput-root": {
-			borderRadius: "2rem",
 			cursor: "default",
 		},
 		"& .MuiOutlinedInput-notchedOutline": {
@@ -36,7 +34,11 @@ const useStyles = makeStyles((theme) => ({
 		fontWeight: "bolder",
 		fontSize: "1.5rem",
 		marginRight: "0.5rem",
-	}
+	},
+	paper: {
+		width: "100%",
+		padding: "0.5rem",
+	},
 }));
 
 const ValueEnding = ({value}) => {
@@ -48,7 +50,7 @@ const ValueEnding = ({value}) => {
 	)
 }
 
-const ValueField = ({label, value, className, endAdornment, valueEnding}) => {
+const ValueField = ({label, value, paperClassName, className, endAdornment, valueEnding}) => {
 	const styles = useStyles();
 
 	let endAdor = null;
@@ -61,10 +63,13 @@ const ValueField = ({label, value, className, endAdornment, valueEnding}) => {
 	}
 
 	return (
-		<TextField className={clsx(styles.valueField, className)} color="primary" InputProps={{
-			endAdornment: endAdor,
-			readOnly: true,
-		}} variant="outlined" label={label} value={value ? value : typeof value == "number" ? value : " "}/>
+		<Paper className={clsx(styles.paper, paperClassName)} elevation={5}>
+			<TextField className={clsx(styles.valueField, className)} color="primary" InputProps={{
+				endAdornment: endAdor,
+				readOnly: true,
+			}} variant="outlined" label={label} value={value ? value : typeof value == "number" ? value : " "}/>
+		</Paper>
+
 	)
 }
 

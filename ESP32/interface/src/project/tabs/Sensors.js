@@ -33,20 +33,25 @@ const useStyles = makeStyles(() => ({
 		display: "flex",
 		flexDirection: "column",
 	},
-	actionButton: {
-		margin: "0.5rem 0",
-	},
 	sensorPaper: {
 		maxWidth: "15rem",
 		display: "flex",
 		flexDirection: "column",
 	},
-	valueField: {
-		margin: "0.5rem 0",
-	},
 	lineChartCard: {
 		flex: "1",
+	},
+	sensorCard: {
+		display: "grid",
+		gridTemplateColumns: "auto auto",
+		gap: "1rem",
+	},
+	actionCard: {
+		display: "grid",
+		gridTemplateRows: "auto auto",
+		gap: "1rem",
 	}
+
 }));
 
 const Sensors = () => {
@@ -85,13 +90,12 @@ const Sensors = () => {
 		<TabContent className={styles.sensors}>
 			{data.map((sensor, index) => {
 				return (
-					<Card key={sensor.title} style={{gridArea: `1 / ${index + 1} / 2 / ${index + 2}`}}
+					<Card className={styles.sensorCard} key={sensor.title} style={{gridArea: `1 / ${index + 1} / 2 / ${index + 2}`}}
 						  header={sensor.title}>
 						{sensor.fields.map((field) => {
 							return (
 								<ValueField
 									key={field.label}
-									className={styles.valueField}
 									label={field.label}
 									valueEnding={field.ending}
 									value={field.value}
@@ -102,10 +106,10 @@ const Sensors = () => {
 					</Card>
 				)
 			})}
-			<Card header="Actions" style={{gridArea: "1 / 3 / 2 / 4"}}>
-				<Button className={styles.actionButton} variant="contained" color="primary"
+			<Card className={styles.actionCard} header="Actions" style={{gridArea: "1 / 3 / 2 / 4"}}>
+				<Button variant="contained" color="primary"
 						onClick={() => dispatch(clearSensor1Collections())}>Clear sensor 1 data</Button>
-				<Button className={styles.actionButton} variant="contained" color="primary"
+				<Button variant="contained" color="primary"
 						onClick={() => dispatch(clearSensor2Collections())}>Clear sensor 2 data</Button>
 			</Card>
 			<Card header="Graphs" className={styles.lineChartContainer} style={{gridArea: "2 / 1 / 3 / 4"}}>
