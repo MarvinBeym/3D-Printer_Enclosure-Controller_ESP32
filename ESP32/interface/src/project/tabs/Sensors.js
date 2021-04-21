@@ -14,13 +14,13 @@ import {
 } from "../redux/reducers/sensorsSlice";
 import Card from "../components/Card";
 import LineChartCard from "../components/LineChartCard";
+import TabContent from "../components/TabContent";
 
 const useStyles = makeStyles(() => ({
 	graphSection: {
 		display: "flex",
 	},
 	sensors: {
-		padding: "1rem",
 		display: "grid",
 		gridTemplateColumns: "repeat(3, auto)",
 		gridTemplateRows: "repeat(2, auto)",
@@ -82,7 +82,7 @@ const Sensors = () => {
 	];
 
 	return (
-		<div className={styles.sensors}>
+		<TabContent className={styles.sensors}>
 			{data.map((sensor, index) => {
 				return (
 					<Card key={sensor.title} style={{gridArea: `1 / ${index + 1} / 2 / ${index + 2}`}}
@@ -128,7 +128,7 @@ const Sensors = () => {
 					dataKey="temperature"
 				/>
 			</Card>
-		</div>
+		</TabContent>
 
 	)
 }

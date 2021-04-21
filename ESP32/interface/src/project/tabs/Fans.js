@@ -1,6 +1,5 @@
 import React, {useEffect, useState} from 'react';
 import {makeStyles} from "@material-ui/core/styles";
-import PaperSection from "../components/PaperSection";
 import {Slider} from "@material-ui/core";
 import ValueField from "../components/ValueField";
 import {motion} from "framer-motion";
@@ -8,8 +7,10 @@ import speedIcon from "../images/speed_icon_x32.png";
 import fanImage from "../images/fan.png";
 import Img from "../components/Img";
 import {useDispatch, useSelector} from "react-redux";
-import {selectFan1, selectFan2} from "../redux/reducers/fansSlice";
+import {selectFan1, selectFan2, selectFans} from "../redux/reducers/fansSlice";
 import {wsSend} from "../redux/reducers/webSocketSlice";
+import Card from "../components/Card";
+import TabContent from "../components/TabContent";
 
 const useStyles = makeStyles((theme) => ({
 	fanPaper: {
@@ -23,9 +24,6 @@ const useStyles = makeStyles((theme) => ({
 		marginRight: "2rem",
 		marginLeft: "2rem",
 		justifyContent: "space-between",
-	},
-	fans: {
-		display: "flex",
 	},
 	fanWrapper: {
 		padding: "0.3rem",
@@ -44,6 +42,10 @@ const useStyles = makeStyles((theme) => ({
 	valueFieldsContainer: {
 		display: "flex",
 		paddingTop: "1rem",
+	},
+	fanCard: {
+		display: "flex",
+		flexDirection: "row",
 	}
 }));
 
@@ -58,6 +60,7 @@ const Fans = () => {
 	const dispatch = useDispatch();
 	const fan1 = useSelector((state) => selectFan1(state));
 	const fan2 = useSelector((state) => selectFan2(state));
+	const fans = useSelector((state) => selectFans(state));
 	const [fan1SliderValue, setFan1SliderValue] = useState(fan1.percent);
 	const [fan2SliderValue, setFan2SliderValue] = useState(fan2.percent);
 
@@ -69,19 +72,17 @@ const Fans = () => {
 		{value: 100, label: "100%"},
 	];
 
-	const onFan1SliderChange = (newPercent) => {
-		setFan1SliderValue(newPercent);
-	}
-	const onFan2SliderChange = (newPercent) => {
-		setFan2SliderValue(newPercent);
-	}
-
-	const onFan1SliderCommitted = (newPercent) => {
-		dispatch(wsSend({component: "fan1", command: "setPercent", value: newPercent}));
+	const onFanSliderChange = (fanName, newPercent) => {
+		if (fanName === "fan1") {
+			setFan1SliderValue(newPercent);
+		}
+		if (fanName === "fan2") {
+			setFan2SliderValue(newPercent);
+		}
 	}
 
-	const onFan2SliderCommitted = (newPercent) => {
-		dispatch(wsSend({component: "fan2", command: "setPercent", value: newPercent}));
+	const onFanSliderCommitted = (fanName, newPercent) => {
+		dispatch(wsSend({component: fanName, command: "setPercent", value: newPercent}));
 	}
 
 	useEffect(() => {
@@ -93,60 +94,40 @@ const Fans = () => {
 	}, [fan2]);
 
 	return (
-		<div className={styles.fans}>
-			<PaperSection className={styles.fanPaper} title="Fan 1">
-				<div className={styles.fanWrapper}>
-					<motion.div className={styles.fanImageWrapper} animate={{rotate: 360}}
-								transition={spinTransition}>
-						<img className={styles.fanImage} src={fanImage} alt=""/>
-					</motion.div>
-				</div>
-				<div className={styles.fanInfo}>
-					<Slider min={0} max={100} step={1}
-							onChange={(event, value) => onFan1SliderChange(value)}
-							onChangeCommitted={(event, value) => onFan1SliderCommitted(value)}
-							marks={sliderMarks} valueLabelDisplay="auto"
-							value={fan1SliderValue}/>
-					<div className={styles.valueFieldsContainer}>
-						<ValueField
-							endAdornment={<Img src={speedIcon}/>}
-							label="Rpm"
-							value={fan1.rpm}
-						/>
-						<ValueField
-							label="Duty cycle"
-							value={fan1.dutyCycle}
-						/>
-					</div>
-				</div>
-			</PaperSection>
-			<PaperSection className={styles.fanPaper} title="Fan 2">
-				<div className={styles.fanWrapper}>
-					<motion.div className={styles.fanImageWrapper} animate={{rotate: 360}}
-								transition={spinTransition}>
-						<img className={styles.fanImage} src={fanImage} alt=""/>
-					</motion.div>
-				</div>
-				<div className={styles.fanInfo}>
-					<Slider min={0} max={100} step={1}
-							onChange={(event, value) => onFan2SliderChange(value)}
-							onChangeCommitted={(event, value) => onFan2SliderCommitted(value)}
-							marks={sliderMarks} valueLabelDisplay="auto"
-							value={fan2SliderValue}/>
-					<div className={styles.valueFieldsContainer}>
-						<ValueField
-							endAdornment={<Img src={speedIcon}/>}
-							label="Rpm"
-							value={fan2.rpm}
-						/>
-						<ValueField
-							label="Duty cycle"
-							value={fan2.dutyCycle}
-						/>
-					</div>
-				</div>
-			</PaperSection>
-		</div>
+		<TabContent>
+			{fans.map((fan, index) => {
+				const fanName = "fan" + (index + 1);
+				const slideValue = fanName === "fan1" ? fan1SliderValue : fan2SliderValue;
+				return (
+					<Card key={fanName} header={"Fan " + (index + 1)} className={styles.fanCard}>
+						<div className={styles.fanWrapper}>
+							<motion.div className={styles.fanImageWrapper} animate={{rotate: 360}}
+										transition={spinTransition}>
+								<img className={styles.fanImage} src={fanImage} alt=""/>
+							</motion.div>
+						</div>
+						<div className={styles.fanInfo}>
+							<Slider min={0} max={100} step={1}
+									onChange={(event, value) => onFanSliderChange(fanName, value)}
+									onChangeCommitted={(event, value) => onFanSliderCommitted(fanName, value)}
+									marks={sliderMarks} valueLabelDisplay="auto"
+									value={slideValue}/>
+							<div className={styles.valueFieldsContainer}>
+								<ValueField
+									endAdornment={<Img src={speedIcon}/>}
+									label="Rpm"
+									value={fan.rpm}
+								/>
+								<ValueField
+									label="Duty cycle"
+									value={fan.dutyCycle}
+								/>
+							</div>
+						</div>
+					</Card>
+				)
+			})}
+		</TabContent>
 	)
 
 }
