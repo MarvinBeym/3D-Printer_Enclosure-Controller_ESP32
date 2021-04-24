@@ -3,6 +3,7 @@ import {setLed1, setLed2} from "../reducers/ledsSlice";
 import {setSensor1, setSensor2} from "../reducers/sensorsSlice";
 import {setFan1, setFan2} from "../reducers/fansSlice";
 import {removeExecutedCall} from "../reducers/webSocketSlice";
+import {setConfiguration} from "../reducers/configurationSlice";
 
 const webSocketMiddleware = (store) => (next) => (action) => {
 	const dispatch = store.dispatch;
@@ -57,6 +58,8 @@ const handleWebSocketMessages = (dispatch, json) => {
 			case "fan2":
 				dispatch(setFan2(json));
 				break;
+			case "configuration":
+				dispatch(setConfiguration(json));
 		}
 	})
 

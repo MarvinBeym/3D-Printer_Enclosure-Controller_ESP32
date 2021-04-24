@@ -31,6 +31,7 @@
 #include "libs/Relay.h"
 #include "libs/FasterLed.h"
 #include "libs/Fan.h"
+#include "libs/Config.h"
 #include "effects/EffectLoader.h"
 
 EventGroupHandle_t eg;
@@ -46,6 +47,7 @@ FasterLed *led2;
 Fan *fan1;
 Fan *fan2;
 EffectLoader *effectLoader;
+Config *config;
 bool booted = false;
 
 NextionDisplay *nextion;
@@ -59,6 +61,7 @@ enum WebSocketComponent
 	Led2,
 	Fan1,
 	Fan2,
+	Configuration,
 	Invalid,
 };
 
@@ -68,6 +71,7 @@ enum WebSocketCommand
 	setEffect,
 	setPercent,
 	setEffectConfig,
+	setDisplayBrightness,
 	invalid,
 };
 
@@ -77,6 +81,7 @@ WebSocketComponent resolveWebSocketComponent(String component)
 	if (component == "led2") return Led2;
 	if (component == "fan1") return Fan1;
 	if (component == "fan2") return Fan2;
+	if (component == "configuration") return Configuration;
 	return Invalid;
 }
 
@@ -86,6 +91,7 @@ WebSocketCommand resolveWebSocketCommand(String command)
 	if (command == "setEffect") return setEffect;
 	if (command == "setPercent") return setPercent;
 	if (command == "setEffectConfig") return setEffectConfig;
+	if (command == "setDisplayBrightness") return setDisplayBrightness;
 	return invalid;
 }
 
@@ -389,6 +395,8 @@ void nextionCompClickedCallback(void *params)
 					case 2:
 						nextion->setPage(ABOUT_PAGE);
 						break;
+					case 3:
+						config->setDisplayBrightness(nextion->getCompValue("conf_page.sli_brightness"));
 				}
 				break;
 			case ABOUT_PAGE:
@@ -412,6 +420,28 @@ void effectChangeCallback(void *params)
 
 		DynamicJsonDocument json(96);
 		effectLoader->addToJson(&json, true, false);
+		String response;
+		serializeJson(json, response);
+
+		ws.textAll(response);
+
+		delay(10);
+	}
+}
+
+void displayBrightnessUpdated(void *params)
+{
+	for (;;) {
+		xEventGroupWaitBits(eg, TASK_EVENT_DisplayBrightness, pdTRUE, pdTRUE, portMAX_DELAY);
+
+		nextion->setCompValue("conf_page.sli_brightness", config->getDisplayBrightness());
+		String command = "dims=";
+		command += config->getDisplayBrightness();
+		nextion->sendCommand(command.c_str());
+
+		DynamicJsonDocument json(96);
+		config->addToJson(&json);
+
 		String response;
 		serializeJson(json, response);
 
@@ -459,6 +489,9 @@ void setup()
 	FastLED.addLeds<WS2812B, led2_data_pin, GRB>(led2->leds, led2NumberOfLeds);
 	led2->begin();
 	effectLoader = new EffectLoader(led2, eg, TASK_EVENT_LED2_EffectChanged, &effectChangeCallback);
+
+	//Configuration
+	config = new Config(eg, &displayBrightnessUpdated);
 
 	//Buzzer
 	pinMode(buzzer_pin, OUTPUT);
@@ -548,7 +581,7 @@ DynamicJsonDocument handleWebSocketCommunication(DynamicJsonDocument json)
 				String effectName = json["effect"];
 				int effectId = effectLoader->getEffectIdByName(effectName.c_str());
 
-				if(effectId == -1) {
+				if (effectId == -1) {
 					responseDoc["message"] = "Executed command";
 					responseDoc["reason"] = "Effect not found";
 					responseDoc["status"] = "failure";
@@ -578,8 +611,20 @@ DynamicJsonDocument handleWebSocketCommunication(DynamicJsonDocument json)
 				auto fan = component == Fan1 ? fan1 : fan2;
 				int newPercent = value.toInt();
 				fan->setPercent(newPercent);
-				break;
 			}
+			break;
+		case Configuration:
+			switch (command) {
+				case setDisplayBrightness:
+					config->setDisplayBrightness(value.toInt());
+					break;
+				default:
+					responseDoc["message"] = "Invalid component";
+					responseDoc["status"] = "failure";
+					responseDoc["component"] = _component;
+					return responseDoc;
+			}
+			break;
 		case Invalid:
 		default:
 			responseDoc["message"] = "Invalid component";
