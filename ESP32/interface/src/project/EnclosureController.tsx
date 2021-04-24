@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {Redirect, Switch, useHistory} from 'react-router-dom'
 
 import {Tab, Tabs} from '@material-ui/core';
@@ -16,6 +16,7 @@ import Configuration from './tabs/Configuration';
 import {Provider} from "react-redux";
 import store from './redux/store';
 import {connect} from "@giantmachines/redux-websocket";
+import {loadWebinterfaceConfigFromLocalStorage} from "./redux/reducers/configurationSlice";
 
 store.dispatch(connect(process.env.REACT_APP_WEB_SOCKET_ROOT + "/ws", "ENCLOSURE_CONTROLLER"));
 
@@ -24,6 +25,11 @@ const EnclosureController = ({location}) => {
     const handleTabChange = (event, path) => {
         history.push(path);
     };
+
+    //Load from localstorage
+    useEffect(() => {
+        store.dispatch(loadWebinterfaceConfigFromLocalStorage());
+    }, []);
 
     return (
         <Provider store={store}>

@@ -25,13 +25,40 @@ const configurationSlice = createSlice({
 		},
 		setFanSpinAnimation(state, action) {
 			state.webinterface.fanSpinAnimation = action.payload;
+			saveWebinterfaceConfigToLocalStorage(state.webinterface);
 		},
 		setDefaultPage(state, action) {
 			state.webinterface.defaultPage = action.payload;
+			saveWebinterfaceConfigToLocalStorage(state.webinterface);
+		},
+		loadWebinterfaceConfigFromLocalStorage(state) {
+			let jsonString = localStorage.getItem("webinterface");
+			if(!jsonString) {
+				return;
+			}
+
+			let json = JSON.parse(jsonString);
+			if(!json) {
+				return;
+			}
+
+			Object.keys(json).forEach((key) => {
+				if(!(key in state.webinterface) || !(typeof(state.webinterface[key]) === typeof(json[key]))) {
+					//Skip value invalid;
+					return;
+				}
+
+				state.webinterface[key] = json[key];
+			})
 		}
 	},
 });
 
-export const {setConfiguration, setDefaultPage, setFanSpinAnimation} = configurationSlice.actions;
+const saveWebinterfaceConfigToLocalStorage = (state) => {
+	let jsonString = JSON.stringify(state);
+	localStorage.setItem("webinterface", jsonString);
+}
+
+export const {setConfiguration, setDefaultPage, setFanSpinAnimation, loadWebinterfaceConfigFromLocalStorage} = configurationSlice.actions;
 
 export default configurationSlice.reducer;
