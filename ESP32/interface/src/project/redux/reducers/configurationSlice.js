@@ -5,6 +5,7 @@ const initialState = {
 		displayBrightness: 100,
 	},
 	webinterface: {
+		fanSpinAnimation: true,
 		defaultPage: "/enclosure-controller/information",
 	},
 	status: 'idle',
@@ -22,12 +23,15 @@ const configurationSlice = createSlice({
 				state.config.displayBrightness = displayBrightness;
 			}
 		},
+		setFanSpinAnimation(state, action) {
+			state.webinterface.fanSpinAnimation = action.payload;
+		},
 		setDefaultPage(state, action) {
 			state.webinterface.defaultPage = action.payload;
 		}
 	},
 });
 
-export const {setConfiguration, setDefaultPage} = configurationSlice.actions;
+export const {setConfiguration, setDefaultPage, setFanSpinAnimation} = configurationSlice.actions;
 
 export default configurationSlice.reducer;

@@ -3,7 +3,12 @@ import {makeStyles} from "@material-ui/core/styles";
 import SliderCard from "../components/SliderCard";
 import {wsSend} from "../redux/reducers/webSocketSlice";
 import {useDispatch, useSelector} from "react-redux";
-import {selectConfiguration, selectWebinterfaceConfig, setDefaultPage} from "../redux/reducers/configurationSlice";
+import {
+	selectConfiguration,
+	selectWebinterfaceConfig,
+	setDefaultPage,
+	setFanSpinAnimation
+} from "../redux/reducers/configurationSlice";
 import IconButtonCard from "../components/IconButtonCard";
 import Card from "../components/Card";
 import SwitchCard from "../components/SwitchCard";
@@ -58,10 +63,14 @@ const Configuration = () => {
 		dispatch(setDefaultPage(value));
 	}
 
+	const onFanSpinAnimationChange = (event) => {
+		dispatch(setFanSpinAnimation(event.target.checked));
+	}
+
 	return (
 		<div className={styles.configuration}>
 			<Card className={styles.webinterfaceCard} header="Webinterface">
-				<SwitchCard header="Fan spin animation"/>
+				<SwitchCard header="Fan spin animation" checked={webinterfaceConfig.fanSpinAnimation} onChange={onFanSpinAnimationChange}/>
 				<SelectCard header="Default page" options={defaultPageOptions} value={webinterfaceConfig.defaultPage}
 							onChange={onDefaultPageChange}/>
 			</Card>
