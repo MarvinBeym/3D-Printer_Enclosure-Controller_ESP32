@@ -93,7 +93,8 @@ const Sensors = () => {
 		<TabContent className={styles.sensors}>
 			{data.map((sensor, index) => {
 				return (
-					<Card className={styles.sensorCard} key={sensor.title} style={{gridArea: `1 / ${index + 1} / 2 / ${index + 2}`}}
+					<Card className={styles.sensorCard} key={sensor.title}
+						  style={{gridArea: `1 / ${index + 1} / 2 / ${index + 2}`}}
 						  header={sensor.title}>
 						{sensor.fields.map((field) => {
 							return (
@@ -109,12 +110,19 @@ const Sensors = () => {
 					</Card>
 				)
 			})}
-			<Card className={styles.actionCard} header="Actions" style={{gridArea: "1 / 3 / 2 / 4"}}>
-				<Button variant="contained" color="primary"
-						onClick={() => dispatch(clearSensor1Collections())}>Clear sensor 1 data</Button>
-				<Button variant="contained" color="primary"
-						onClick={() => dispatch(clearSensor2Collections())}>Clear sensor 2 data</Button>
-			</Card>
+			{webinterfaceConfig.showSensorGraph.sensor1 || webinterfaceConfig.showSensorGraph.sensor2 ? (
+				<Card className={styles.actionCard} header="Actions" style={{gridArea: "1 / 3 / 2 / 4"}}>
+					{webinterfaceConfig.showSensorGraph.sensor1 ? (
+						<Button variant="contained" color="primary"
+								onClick={() => dispatch(clearSensor1Collections())}>Clear sensor 1 data</Button>
+					) : null}
+					{webinterfaceConfig.showSensorGraph.sensor2 ? (
+						<Button variant="contained" color="primary"
+								onClick={() => dispatch(clearSensor2Collections())}>Clear sensor 2 data</Button>
+					) : null}
+				</Card>
+			) : null}
+
 			{webinterfaceConfig.showSensorGraph.sensor1 || webinterfaceConfig.showSensorGraph.sensor2 ? (
 				<Card header="Graphs" className={styles.lineChartContainer} style={{gridArea: "2 / 1 / 3 / 4"}}>
 					{webinterfaceConfig.showSensorGraph.sensor1 ? (
