@@ -4,6 +4,7 @@ import SliderCard from "../components/SliderCard";
 import {wsSend} from "../redux/reducers/webSocketSlice";
 import {useDispatch, useSelector} from "react-redux";
 import {selectConfiguration} from "../redux/reducers/configurationSlice";
+import IconButtonCard from "../components/IconButtonCard";
 
 const useStyles = makeStyles((theme) => ({
 	configuration: {
@@ -36,6 +37,7 @@ const Configuration = () => {
 		<div className={styles.configuration}>
 			<SliderCard header="Display brightness" value={displayBrightnessSliderValue} onChange={onBrightnessChange}
 						onCommit={onBrightnessCommit}/>
+			<IconButtonCard header="Save to flash"/>
 		</div>
 	)
 }
