@@ -5,12 +5,23 @@ import {wsSend} from "../redux/reducers/webSocketSlice";
 import {useDispatch, useSelector} from "react-redux";
 import {selectConfiguration} from "../redux/reducers/configurationSlice";
 import IconButtonCard from "../components/IconButtonCard";
+import Card from "../components/Card";
+import SwitchCard from "../components/SwitchCard";
 
 const useStyles = makeStyles((theme) => ({
 	configuration: {
 		display: "grid",
 		gridTemplateColumns: "auto auto",
 		gap: "1rem",
+	},
+	webinterfaceCard: {
+		display: "grid",
+		gridTemplateColumns: "repeat(2, auto)",
+		gap: "1rem",
+	},
+	esp32Card: {
+		display: "grid",
+		gridTemplateColumns: "auto max-content",
 	}
 }));
 
@@ -35,9 +46,14 @@ const Configuration = () => {
 
 	return (
 		<div className={styles.configuration}>
-			<SliderCard header="Display brightness" value={displayBrightnessSliderValue} onChange={onBrightnessChange}
-						onCommit={onBrightnessCommit}/>
-			<IconButtonCard header="Save to flash"/>
+			<Card className={styles.webinterfaceCard} header="Webinterface">
+				<SwitchCard header="Fan spin animation"/>
+			</Card>
+			<Card className={styles.esp32Card} header="ESP32">
+				<SliderCard header="Display brightness" value={displayBrightnessSliderValue} onChange={onBrightnessChange}
+							onCommit={onBrightnessCommit}/>
+				<IconButtonCard header="Save to flash"/>
+			</Card>
 		</div>
 	)
 }
