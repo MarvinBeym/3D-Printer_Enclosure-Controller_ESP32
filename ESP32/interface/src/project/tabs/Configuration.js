@@ -23,7 +23,6 @@ const useStyles = makeStyles((theme) => ({
 	webinterfaceCard: {
 		display: "grid",
 		gridTemplateColumns: "repeat(2, auto)",
-		gap: "1rem",
 	},
 	esp32Card: {
 		display: "grid",
