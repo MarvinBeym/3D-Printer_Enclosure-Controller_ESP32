@@ -6,7 +6,11 @@ import {useDispatch, useSelector} from "react-redux";
 import {selectConfiguration} from "../redux/reducers/configurationSlice";
 
 const useStyles = makeStyles((theme) => ({
-	configuration: {}
+	configuration: {
+		display: "grid",
+		gridTemplateColumns: "auto auto",
+		gap: "1rem",
+	}
 }));
 
 const Configuration = () => {
