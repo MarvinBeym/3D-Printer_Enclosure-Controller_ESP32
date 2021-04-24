@@ -7,7 +7,9 @@ import {
 	selectConfiguration,
 	selectWebinterfaceConfig,
 	setDefaultPage,
-	setFanSpinAnimation
+	setFanSpinAnimation,
+	setShowSensor1Graph,
+	setShowSensor2Graph
 } from "../redux/reducers/configurationSlice";
 import IconButtonCard from "../components/IconButtonCard";
 import Card from "../components/Card";
@@ -66,12 +68,38 @@ const Configuration = () => {
 		dispatch(setFanSpinAnimation(event.target.checked));
 	}
 
+	const onSensor1GraphChange = (event) => {
+		dispatch(setShowSensor1Graph(event.target.checked));
+	}
+
+	const onSensor2GraphChange = (event) => {
+		dispatch(setShowSensor2Graph(event.target.checked));
+	}
+
 	return (
 		<div className={styles.configuration}>
 			<Card className={styles.webinterfaceCard} header="Webinterface">
-				<SwitchCard header="Fan spin animation" checked={webinterfaceConfig.fanSpinAnimation} onChange={onFanSpinAnimationChange}/>
-				<SelectCard header="Default page" options={defaultPageOptions} value={webinterfaceConfig.defaultPage}
-							onChange={onDefaultPageChange}/>
+				<SwitchCard
+					header="Fan spin animation"
+					checked={webinterfaceConfig.fanSpinAnimation}
+					onChange={onFanSpinAnimationChange}
+				/>
+				<SelectCard
+					header="Default page"
+					options={defaultPageOptions}
+					value={webinterfaceConfig.defaultPage}
+					onChange={onDefaultPageChange}
+				/>
+				<SwitchCard
+					header="Show sensor 1 Graph"
+					checked={webinterfaceConfig.showSensorGraph.sensor1}
+					onChange={onSensor1GraphChange}
+				/>
+				<SwitchCard
+					header="Show sensor 2 Graph"
+					checked={webinterfaceConfig.showSensorGraph.sensor2}
+					onChange={onSensor2GraphChange}
+				/>
 			</Card>
 			<Card className={styles.esp32Card} header="ESP32">
 				<SliderCard header="Display brightness" value={displayBrightnessSliderValue}

@@ -7,6 +7,10 @@ const initialState = {
 	webinterface: {
 		fanSpinAnimation: true,
 		defaultPage: "/enclosure-controller/information",
+		showSensorGraph: {
+			sensor1: true,
+			sensor2: false,
+		},
 	},
 	status: 'idle',
 }
@@ -29,6 +33,14 @@ const configurationSlice = createSlice({
 		},
 		setDefaultPage(state, action) {
 			state.webinterface.defaultPage = action.payload;
+			saveWebinterfaceConfigToLocalStorage(state.webinterface);
+		},
+		setShowSensor1Graph(state, action) {
+			state.webinterface.showSensorGraph.sensor1 = action.payload;
+			saveWebinterfaceConfigToLocalStorage(state.webinterface);
+		},
+		setShowSensor2Graph(state, action) {
+			state.webinterface.showSensorGraph.sensor2 = action.payload;
 			saveWebinterfaceConfigToLocalStorage(state.webinterface);
 		},
 		loadWebinterfaceConfigFromLocalStorage(state) {
@@ -59,6 +71,6 @@ const saveWebinterfaceConfigToLocalStorage = (state) => {
 	localStorage.setItem("webinterface", jsonString);
 }
 
-export const {setConfiguration, setDefaultPage, setFanSpinAnimation, loadWebinterfaceConfigFromLocalStorage} = configurationSlice.actions;
+export const {setConfiguration, setDefaultPage, setFanSpinAnimation, loadWebinterfaceConfigFromLocalStorage, setShowSensor1Graph, setShowSensor2Graph} = configurationSlice.actions;
 
 export default configurationSlice.reducer;
