@@ -3,10 +3,11 @@ import {makeStyles} from "@material-ui/core/styles";
 import SliderCard from "../components/SliderCard";
 import {wsSend} from "../redux/reducers/webSocketSlice";
 import {useDispatch, useSelector} from "react-redux";
-import {selectConfiguration} from "../redux/reducers/configurationSlice";
+import {selectConfiguration, selectWebinterfaceConfig, setDefaultPage} from "../redux/reducers/configurationSlice";
 import IconButtonCard from "../components/IconButtonCard";
 import Card from "../components/Card";
 import SwitchCard from "../components/SwitchCard";
+import SelectCard from "../components/SelectCard";
 
 const useStyles = makeStyles((theme) => ({
 	configuration: {
@@ -25,11 +26,20 @@ const useStyles = makeStyles((theme) => ({
 	}
 }));
 
+const defaultPageOptions = [
+	{value: "/enclosure-controller/information", label: "Information"},
+	{value: "/enclosure-controller/main", label: "Main"},
+	{value: "/enclosure-controller/fans", label: "Fans"},
+	{value: "/enclosure-controller/sensors", label: "Sensors"},
+	{value: "/enclosure-controller/leds", label: "Leds"},
+	{value: "/enclosure-controller/configuration", label: "Configuration"},
+]
+
 const Configuration = () => {
 	const styles = useStyles();
 	const dispatch = useDispatch();
 	const configuration = useSelector((state) => selectConfiguration(state));
-
+	const webinterfaceConfig = useSelector((state) => selectWebinterfaceConfig(state));
 	const [displayBrightnessSliderValue, setDisplayBrightnessSliderValue] = useState(configuration.displayBrightness);
 
 	useEffect(() => {
@@ -44,13 +54,20 @@ const Configuration = () => {
 		dispatch(wsSend({component: "configuration", command: "setDisplayBrightness", value: value}));
 	}
 
+	const onDefaultPageChange = (value) => {
+		dispatch(setDefaultPage(value));
+	}
+
 	return (
 		<div className={styles.configuration}>
 			<Card className={styles.webinterfaceCard} header="Webinterface">
 				<SwitchCard header="Fan spin animation"/>
+				<SelectCard header="Default page" options={defaultPageOptions} value={webinterfaceConfig.defaultPage}
+							onChange={onDefaultPageChange}/>
 			</Card>
 			<Card className={styles.esp32Card} header="ESP32">
-				<SliderCard header="Display brightness" value={displayBrightnessSliderValue} onChange={onBrightnessChange}
+				<SliderCard header="Display brightness" value={displayBrightnessSliderValue}
+							onChange={onBrightnessChange}
 							onCommit={onBrightnessCommit}/>
 				<IconButtonCard header="Save to flash"/>
 			</Card>

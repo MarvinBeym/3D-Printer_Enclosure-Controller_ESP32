@@ -4,10 +4,14 @@ const initialState = {
 	config: {
 		displayBrightness: 100,
 	},
+	webinterface: {
+		defaultPage: "/enclosure-controller/information",
+	},
 	status: 'idle',
 }
 
 export const selectConfiguration = (state) => state.configuration.config;
+export const selectWebinterfaceConfig = (state) => state.configuration.webinterface;
 const configurationSlice = createSlice({
 	name: 'configuration',
 	initialState,
@@ -17,10 +21,13 @@ const configurationSlice = createSlice({
 			if("displayBrightness" in action.payload.configuration) {
 				state.config.displayBrightness = displayBrightness;
 			}
+		},
+		setDefaultPage(state, action) {
+			state.webinterface.defaultPage = action.payload;
 		}
 	},
 });
 
-export const {setConfiguration} = configurationSlice.actions;
+export const {setConfiguration, setDefaultPage} = configurationSlice.actions;
 
 export default configurationSlice.reducer;
