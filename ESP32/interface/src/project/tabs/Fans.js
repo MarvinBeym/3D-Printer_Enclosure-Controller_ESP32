@@ -11,6 +11,7 @@ import {selectFan1, selectFan2, selectFans} from "../redux/reducers/fansSlice";
 import {wsSend} from "../redux/reducers/webSocketSlice";
 import Card from "../components/Card";
 import TabContent from "../components/TabContent";
+import {selectWebinterfaceConfig} from "../redux/reducers/configurationSlice";
 
 const useStyles = makeStyles((theme) => ({
 	fanPaper: {
@@ -66,6 +67,8 @@ const Fans = () => {
 	const [fan1SliderValue, setFan1SliderValue] = useState(fan1.percent);
 	const [fan2SliderValue, setFan2SliderValue] = useState(fan2.percent);
 
+	const webinterfaceConfiguration = useSelector((state) => selectWebinterfaceConfig(state));
+
 	const sliderMarks = [
 		{value: 0, label: "0%"},
 		{value: 25, label: "25%"},
@@ -103,7 +106,7 @@ const Fans = () => {
 				return (
 					<Card key={fanName} header={"Fan " + (index + 1)} className={styles.fanCard}>
 						<div className={styles.fanWrapper}>
-							<motion.div className={styles.fanImageWrapper} animate={{rotate: 360}}
+							<motion.div className={styles.fanImageWrapper} animate={{rotate: webinterfaceConfiguration.fanSpinAnimation ? 360 : 0}}
 										transition={spinTransition}>
 								<img className={styles.fanImage} src={fanImage} alt=""/>
 							</motion.div>
