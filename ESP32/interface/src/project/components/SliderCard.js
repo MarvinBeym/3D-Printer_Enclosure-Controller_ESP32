@@ -1,9 +1,16 @@
 import {Slider} from "@material-ui/core";
 import Card from "./Card";
 import React, {useEffect, useState} from "react";
+import {makeStyles} from "@material-ui/core/styles";
 
+const useStyles = makeStyles((theme) => ({
+	sliderCard: {
+		padding: "1rem 2rem",
+	}
+}));
 
 const SliderCard = ({header, onChange, onCommit, min = 0, max = 100, step = 1, marks, value}) => {
+	const styles = useStyles();
 	const [sliderMarks, setSliderMarks] = useState([]);
 
 	const onSliderChange = (event, value) => {
@@ -29,7 +36,7 @@ const SliderCard = ({header, onChange, onCommit, min = 0, max = 100, step = 1, m
 	}, [marks]);
 
 	return (
-		<Card header={header}>
+		<Card cardClassName={styles.sliderCard} header={header}>
 			<Slider min={min} max={max} step={step}
 					onChange={onSliderChange}
 					onChangeCommitted={onSliderChangeCommit}
