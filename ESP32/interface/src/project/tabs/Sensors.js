@@ -48,7 +48,6 @@ const useStyles = makeStyles(() => ({
 	sensorCard: {
 		display: "grid",
 		gridTemplateColumns: "auto auto",
-		gap: "1rem",
 	},
 	actionCard: {
 		display: "grid",
@@ -89,20 +88,20 @@ const Sensors = () => {
 		}
 	}, [sensor2DangerThresholdExceeded]);
 
-	const onSensor1TempDangerChange = (checked) => {
+	const onSensor1TempDangerEnable = (checked) => {
 		dispatch(wsSend({component: "sensor1", command: "setTempDangerEnabled", value: checked ? 1 : 0}))
 	}
 
-	const onSensor1TempDangerThresholdChange = (value) => {
+	const onSensor1TempDangerThresholdSave = (value) => {
 		dispatch(wsSend({component: "sensor1", command: "setTempDangerThreshold", value: value}))
 	}
 
 
-	const onSensor2TempDangerChange = (checked) => {
+	const onSensor2TempDangerEnable = (checked) => {
 		dispatch(wsSend({component: "sensor2", command: "setTempDangerEnabled", value: checked ? 1 : 0}))
 	}
 
-	const onSensor2TempDangerThresholdChange = (value) => {
+	const onSensor2TempDangerThresholdSave = (value) => {
 		dispatch(wsSend({component: "sensor2", command: "setTempDangerThreshold", value: value}))
 	}
 
@@ -119,9 +118,9 @@ const Sensors = () => {
 							value={sensor1.humidity}/>
 
 				<SwitchCard header="Temperature danger" checked={sensor1.tempDanger.enabled}
-							onChange={onSensor1TempDangerChange}/>
-				<InputCard header="Temperature danger threshold" value={sensor1.tempDanger.threshold}
-						   onChange={onSensor1TempDangerThresholdChange}/>
+							onChange={onSensor1TempDangerEnable}/>
+				<InputCard header="Temperature danger threshold" defaultValue={sensor1.tempDanger.threshold}
+						   onSave={onSensor1TempDangerThresholdSave}/>
 			</Card>
 			<Card header="Sensor 2" className={styles.sensorCard} style={
 				{gridArea: '1 / 2 / 2 / 3', border: `solid 4px ${sensor2BorderColor}`}
@@ -132,9 +131,9 @@ const Sensors = () => {
 							value={sensor2.humidity}/>
 
 				<SwitchCard header="Temperature danger" checked={sensor2.tempDanger.enabled}
-							onChange={onSensor2TempDangerChange}/>
-				<InputCard header="Temperature danger threshold" value={sensor2.tempDanger.threshold}
-						   onChange={onSensor2TempDangerThresholdChange}/>
+							onChange={onSensor2TempDangerEnable}/>
+				<InputCard header="Temperature danger threshold" defaultValue={sensor2.tempDanger.threshold}
+						   onSave={onSensor2TempDangerThresholdSave}/>
 			</Card>
 			{webinterfaceConfig.showSensorGraph.sensor1 || webinterfaceConfig.showSensorGraph.sensor2 ? (
 				<Card className={styles.actionCard} header="Actions" style={{gridArea: "1 / 3 / 2 / 4"}}>
