@@ -603,8 +603,6 @@ void setup()
 
 	Serial.println("3D-Print-Enclosure-Controller booted");
 	booted = true;
-	fan1->setPercent(100);
-	fan2->setPercent(100);
 }
 
 DynamicJsonDocument handleWebSocketCommunication(DynamicJsonDocument json)
