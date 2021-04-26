@@ -81,7 +81,7 @@ const Sensors = () => {
 							value={sensor1.temperature}/>
 				<ValueField label="Humidity" valueEnding="%" endAdornment={<Img src={humidityIcon}/>}
 							value={sensor1.humidity}/>
-				<SwitchCard header="Temperature warning" value={sensor1.tempWarn.warning.enabled}
+				<SwitchCard header="Temperature warning" checked={sensor1.tempWarn.warning.enabled}
 							onChange={onSensor1TempWarnTempChange}/>
 			</Card>
 			<Card header="Sensor 2" className={styles.sensorCard} style={{gridArea: '1 / 2 / 2 / 3'}}>
@@ -89,7 +89,7 @@ const Sensors = () => {
 							value={sensor2.temperature}/>
 				<ValueField label="Humidity" valueEnding="%" endAdornment={<Img src={humidityIcon}/>}
 							value={sensor2.humidity}/>
-				<SwitchCard header="Temperature warning" value={sensor2.tempWarn.warning.enabled}
+				<SwitchCard header="Temperature warning" checked={sensor2.tempWarn.warning.enabled}
 							onChange={onSensor2TempWarnTempChange}/>
 			</Card>
 			{webinterfaceConfig.showSensorGraph.sensor1 || webinterfaceConfig.showSensorGraph.sensor2 ? (

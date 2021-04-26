@@ -78,7 +78,7 @@ const sensorsSlice = createSlice({
 				const humidityData = {humidity: humidity, time: new Date().getTime()};
 				state.sensor2.humidityCollection = [...state.sensor2.humidityCollection, humidityData];
 			}
-			if ("warning" in action.payload.sensor2) {
+			if ("tempWarn" in action.payload.sensor2) {
 				state.sensor2.tempWarn = tempWarn;
 			}
 		},
