@@ -64,52 +64,16 @@ const Sensors = () => {
 
 	const webinterfaceConfig = useSelector((state) => selectWebinterfaceConfig(state));
 
-	const data = [
-		{
-			title: "Sensor 1", fields: [
-				{
-					label: "Temperature",
-					ending: "°C",
-					adornment: temperatureIcon,
-					value: sensor1.temperature
-				},
-				{label: "Humidity", ending: "%", adornment: humidityIcon, value: sensor1.humidity},
-			]
-		},
-		{
-			title: "Sensor 2", fields: [
-				{
-					label: "Temperature",
-					ending: "°C",
-					adornment: temperatureIcon,
-					value: sensor2.temperature
-				},
-				{label: "Humidity", ending: "%", adornment: humidityIcon, value: sensor2.humidity},
-			]
-		}
-	];
-
 	return (
 		<TabContent className={styles.sensors}>
-			{data.map((sensor, index) => {
-				return (
-					<Card className={styles.sensorCard} key={sensor.title}
-						  style={{gridArea: `1 / ${index + 1} / 2 / ${index + 2}`}}
-						  header={sensor.title}>
-						{sensor.fields.map((field) => {
-							return (
-								<ValueField
-									key={field.label}
-									label={field.label}
-									valueEnding={field.ending}
-									value={field.value}
-									endAdornment={<Img src={field.adornment}/>}
-								/>
-							)
-						})}
-					</Card>
-				)
-			})}
+			<Card header="Sensor 1" className={styles.sensorCard} style={{gridArea: '1 / 1 / 2 / 2'}}>
+				<ValueField label="Temperature" valueEnding="°C" endAdornment={<Img src={temperatureIcon}/>} value={sensor1.temperature} />
+				<ValueField label="Humidity" valueEnding="%" endAdornment={<Img src={humidityIcon}/>} value={sensor1.humidity} />
+			</Card>
+			<Card header="Sensor 2" className={styles.sensorCard} style={{gridArea: '1 / 2 / 2 / 3'}}>
+				<ValueField label="Temperature" valueEnding="°C" endAdornment={<Img src={temperatureIcon}/>} value={sensor2.temperature} />
+				<ValueField label="Humidity" valueEnding="%" endAdornment={<Img src={humidityIcon}/>} value={sensor2.humidity} />
+			</Card>
 			{webinterfaceConfig.showSensorGraph.sensor1 || webinterfaceConfig.showSensorGraph.sensor2 ? (
 				<Card className={styles.actionCard} header="Actions" style={{gridArea: "1 / 3 / 2 / 4"}}>
 					{webinterfaceConfig.showSensorGraph.sensor1 ? (
