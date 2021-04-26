@@ -75,7 +75,22 @@ const sensorsSlice = createSlice({
 				state.sensor1.humidityCollection = [...state.sensor1.humidityCollection, humidityData];
 			}
 			if ("tempWarn" in action.payload.sensor1) {
-				state.sensor1.tempWarn = tempWarn;
+				state.sensor1.tempWarn.warning.enabled = tempWarn.warning.enabled;
+				state.sensor1.tempWarn.warning.threshold = tempWarn.warning.threshold;
+				state.sensor1.tempWarn.danger.enabled = tempWarn.danger.enabled;
+				state.sensor1.tempWarn.danger.threshold = tempWarn.danger.threshold;
+
+				if(!tempWarn.warning.enabled) {
+					state.sensor1.tempWarn.warning.exceeded = false;
+				} else {
+					state.sensor1.tempWarn.warning.exceeded = checkTempWarnExceeded(state.sensor1);
+				}
+
+				if(!tempWarn.danger.enabled) {
+					state.sensor1.tempWarn.danger.exceeded = false;
+				} else {
+					state.sensor1.tempWarn.danger.exceeded = checkTempDangerExceeded(state.sensor1);
+				}
 			}
 		},
 		setSensor2(state, action) {
@@ -111,6 +126,18 @@ const sensorsSlice = createSlice({
 				state.sensor2.tempWarn.warning.threshold = tempWarn.warning.threshold;
 				state.sensor2.tempWarn.danger.enabled = tempWarn.danger.enabled;
 				state.sensor2.tempWarn.danger.threshold = tempWarn.danger.threshold;
+
+				if(!tempWarn.warning.enabled) {
+					state.sensor2.tempWarn.warning.exceeded = false;
+				} else {
+					state.sensor2.tempWarn.warning.exceeded = checkTempWarnExceeded(state.sensor2);
+				}
+
+				if(!tempWarn.danger.enabled) {
+					state.sensor2.tempWarn.danger.exceeded = false;
+				} else {
+					state.sensor2.tempWarn.danger.exceeded = checkTempDangerExceeded(state.sensor2);
+				}
 			}
 		},
 		clearSensor1Collections(state, action) {
@@ -123,6 +150,14 @@ const sensorsSlice = createSlice({
 		},
 	},
 });
+
+const checkTempWarnExceeded = (sensor) => {
+	return sensor.temperature > sensor.tempWarn.warning.threshold;
+}
+
+const checkTempDangerExceeded = (sensor) => {
+	return sensor.temperature > sensor.tempWarn.danger.threshold;
+}
 
 export const {
 	setSensor1,
