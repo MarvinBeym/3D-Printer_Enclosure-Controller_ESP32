@@ -47,98 +47,10 @@ const sensorsSlice = createSlice({
 	initialState,
 	reducers: {
 		setSensor1(state, action) {
-			let temperature = action.payload.sensor1?.temperature;
-			let humidity = action.payload.sensor1?.humidity;
-			let tempWarn = action.payload.sensor1?.tempWarn;
-
-			if ("temperature" in action.payload.sensor1) {
-				state.sensor1.temperature = temperature;
-				const temperatureData = {temperature: temperature, time: new Date().getTime()};
-				if(state.sensor1.tempWarn.warning.enabled) {
-					state.sensor1.tempWarn.warning.exceeded = temperature > state.sensor1.tempWarn.warning.threshold;
-				} else if(state.sensor1.tempWarn.warning.exceeded) {
-					state.sensor1.tempWarn.warning.exceeded = false;
-				}
-
-				if(state.sensor1.tempWarn.danger.enabled) {
-					state.sensor1.tempWarn.danger.exceeded = temperature > state.sensor1.tempWarn.danger.threshold;
-				} else if(state.sensor1.tempWarn.danger.exceeded) {
-					state.sensor1.tempWarn.danger.exceeded = false;
-				}
-
-				state.sensor1.temperatureCollection = [...state.sensor1.temperatureCollection, temperatureData];
-			}
-			if ("humidity" in action.payload.sensor1) {
-				state.sensor1.humidity = humidity;
-				state.sensor1.humidityCollection = [...state.sensor1.humidityCollection, humidity]
-				const humidityData = {humidity: humidity, time: new Date().getTime()};
-				state.sensor1.humidityCollection = [...state.sensor1.humidityCollection, humidityData];
-			}
-			if ("tempWarn" in action.payload.sensor1) {
-				state.sensor1.tempWarn.warning.enabled = tempWarn.warning.enabled;
-				state.sensor1.tempWarn.warning.threshold = tempWarn.warning.threshold;
-				state.sensor1.tempWarn.danger.enabled = tempWarn.danger.enabled;
-				state.sensor1.tempWarn.danger.threshold = tempWarn.danger.threshold;
-
-				if(!tempWarn.warning.enabled) {
-					state.sensor1.tempWarn.warning.exceeded = false;
-				} else {
-					state.sensor1.tempWarn.warning.exceeded = checkTempWarnExceeded(state.sensor1);
-				}
-
-				if(!tempWarn.danger.enabled) {
-					state.sensor1.tempWarn.danger.exceeded = false;
-				} else {
-					state.sensor1.tempWarn.danger.exceeded = checkTempDangerExceeded(state.sensor1);
-				}
-			}
+			updateSensor(state, "sensor1", action.payload.sensor1);
 		},
 		setSensor2(state, action) {
-			let temperature = action.payload.sensor2?.temperature;
-			let humidity = action.payload.sensor2?.humidity;
-			let tempWarn = action.payload.sensor2?.tempWarn;
-
-			if ("temperature" in action.payload.sensor2) {
-				state.sensor2.temperature = temperature;
-				const temperatureData = {temperature: temperature, time: new Date().getTime()};
-
-				if(state.sensor2.tempWarn.warning.enabled) {
-					state.sensor2.tempWarn.warning.exceeded = temperature > state.sensor2.tempWarn.warning.threshold;
-				} else if(state.sensor2.tempWarn.warning.exceeded) {
-					state.sensor2.tempWarn.warning.exceeded = false;
-				}
-
-				if(state.sensor2.tempWarn.danger.enabled) {
-					state.sensor2.tempWarn.danger.exceeded = temperature > state.sensor2.tempWarn.danger.threshold;
-				} else if(state.sensor2.tempWarn.danger.exceeded) {
-					state.sensor2.tempWarn.danger.exceeded = false;
-				}
-
-				state.sensor2.temperatureCollection = [...state.sensor2.temperatureCollection, temperatureData];
-			}
-			if ("humidity" in action.payload.sensor2) {
-				state.sensor2.humidity = humidity;
-				const humidityData = {humidity: humidity, time: new Date().getTime()};
-				state.sensor2.humidityCollection = [...state.sensor2.humidityCollection, humidityData];
-			}
-			if ("tempWarn" in action.payload.sensor2) {
-				state.sensor2.tempWarn.warning.enabled = tempWarn.warning.enabled;
-				state.sensor2.tempWarn.warning.threshold = tempWarn.warning.threshold;
-				state.sensor2.tempWarn.danger.enabled = tempWarn.danger.enabled;
-				state.sensor2.tempWarn.danger.threshold = tempWarn.danger.threshold;
-
-				if(!tempWarn.warning.enabled) {
-					state.sensor2.tempWarn.warning.exceeded = false;
-				} else {
-					state.sensor2.tempWarn.warning.exceeded = checkTempWarnExceeded(state.sensor2);
-				}
-
-				if(!tempWarn.danger.enabled) {
-					state.sensor2.tempWarn.danger.exceeded = false;
-				} else {
-					state.sensor2.tempWarn.danger.exceeded = checkTempDangerExceeded(state.sensor2);
-				}
-			}
+			updateSensor(state, "sensor2", action.payload.sensor2);
 		},
 		clearSensor1Collections(state, action) {
 			state.sensor1.temperatureCollection = [];
@@ -150,6 +62,57 @@ const sensorsSlice = createSlice({
 		},
 	},
 });
+
+const updateSensor = (state, sensorName, sensorData) => {
+	let temperature = sensorData?.temperature;
+	let humidity = sensorData?.humidity;
+	let tempWarn = sensorData?.tempWarn;
+
+	if ("temperature" in sensorData) {
+		state[sensorName].temperature = temperature;
+		const temperatureData = {temperature: temperature, time: new Date().getTime()};
+
+		//Check temp warning
+		if (state[sensorName].tempWarn.warning.enabled) {
+			state[sensorName].tempWarn.warning.exceeded = temperature > state[sensorName].tempWarn.warning.threshold;
+		} else if (state[sensorName].tempWarn.warning.exceeded) {
+			state[sensorName].tempWarn.warning.exceeded = false;
+		}
+
+		//Check temp danger
+		if (state[sensorName].tempWarn.danger.enabled) {
+			state[sensorName].tempWarn.danger.exceeded = temperature > state[sensorName].tempWarn.danger.threshold;
+		} else if (state[sensorName].tempWarn.danger.exceeded) {
+			state[sensorName].tempWarn.danger.exceeded = false;
+		}
+
+		state[sensorName].temperatureCollection = [...state[sensorName].temperatureCollection, temperatureData];
+	}
+	if ("humidity" in sensorData) {
+		state[sensorName].humidity = humidity;
+		state[sensorName].humidityCollection = [...state[sensorName].humidityCollection, humidity]
+		const humidityData = {humidity: humidity, time: new Date().getTime()};
+		state[sensorName].humidityCollection = [...state[sensorName].humidityCollection, humidityData];
+	}
+	if ("tempWarn" in sensorData) {
+		state[sensorName].tempWarn.warning.enabled = tempWarn.warning.enabled;
+		state[sensorName].tempWarn.warning.threshold = tempWarn.warning.threshold;
+		state[sensorName].tempWarn.danger.enabled = tempWarn.danger.enabled;
+		state[sensorName].tempWarn.danger.threshold = tempWarn.danger.threshold;
+
+		if (!tempWarn.warning.enabled) {
+			state[sensorName].tempWarn.warning.exceeded = false;
+		} else {
+			state[sensorName].tempWarn.warning.exceeded = checkTempWarnExceeded(state[sensorName]);
+		}
+
+		if (!tempWarn.danger.enabled) {
+			state[sensorName].tempWarn.danger.exceeded = false;
+		} else {
+			state[sensorName].tempWarn.danger.exceeded = checkTempDangerExceeded(state[sensorName]);
+		}
+	}
+}
 
 const checkTempWarnExceeded = (sensor) => {
 	return sensor.temperature > sensor.tempWarn.warning.threshold;
