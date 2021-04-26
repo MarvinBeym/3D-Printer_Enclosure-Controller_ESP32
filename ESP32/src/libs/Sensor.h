@@ -34,6 +34,7 @@ class Sensor
 		bool getTempDangerEnabled();
 		int getTempWarnThreshold();
 		int getTempDangerThreshold();
+		float getTemperature();
 	private:
 		void (*temperatureUpdateCallback)(void *);
 		void (*humidityUpdateCallback)(void *);

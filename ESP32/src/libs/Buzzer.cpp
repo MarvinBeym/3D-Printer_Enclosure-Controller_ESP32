@@ -52,7 +52,7 @@ void Buzzer::playTone(int percent, int frequency = 2000)
 }
 
 void Buzzer::stopTone(){
-	if(!state) {
+	if(!state && playingTone) {
 		ledcWrite(channel, 0);
 		ledcWriteTone(channel, defaultFrequency);
 		playingTone = false;

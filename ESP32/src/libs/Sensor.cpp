@@ -135,3 +135,8 @@ bool Sensor::getTempDangerEnabled() { return tempDangerEnabled; }
 int Sensor::getTempWarnThreshold() { return tempWarnThreshold; }
 
 int Sensor::getTempDangerThreshold() { return tempDangerThreshold; }
+
+float Sensor::getTemperature()
+{
+	return temperature;
+}

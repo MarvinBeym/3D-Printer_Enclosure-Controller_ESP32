@@ -147,6 +147,7 @@ void sensor1TemperatureUpdated(void *params)
 		xEventGroupWaitBits(eg, TASK_EVENT_SENSOR1_TemperatureUpdated, pdTRUE, pdTRUE, portMAX_DELAY);
 		float temperature = *((float *) params);
 
+
 		String value = Helper::Helper::valueToTempString(temperature);
 		nextion->setCompText("main_page.tf_temp_sens1", value);
 		nextion->setCompText("sensor_page.tf_temp_sens1", value);
