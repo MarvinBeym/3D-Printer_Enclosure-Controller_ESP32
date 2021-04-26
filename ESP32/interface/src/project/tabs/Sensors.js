@@ -72,6 +72,8 @@ const Sensors = () => {
 
 	const sensor1 = useSelector((state) => selectSensor1(state));
 	const sensor2 = useSelector((state) => selectSensor2(state));
+	const webinterfaceConfig = useSelector((state) => selectWebinterfaceConfig(state));
+
 	const [sensor1BorderColor, setSensor1BorderColor] = useState("transparent");
 	const [sensor2BorderColor, setSensor2BorderColor] = useState("transparent");
 
@@ -104,7 +106,6 @@ const Sensors = () => {
 		dispatch(wsSend({component: "sensor1", command: "setTempDangerThreshold", value: value}))
 	}
 
-
 	const onSensor2TempDangerEnable = (checked) => {
 		dispatch(wsSend({component: "sensor2", command: "setTempDangerEnabled", value: checked ? 1 : 0}))
 	}
@@ -112,8 +113,6 @@ const Sensors = () => {
 	const onSensor2TempDangerThresholdSave = (value) => {
 		dispatch(wsSend({component: "sensor2", command: "setTempDangerThreshold", value: value}))
 	}
-
-	const webinterfaceConfig = useSelector((state) => selectWebinterfaceConfig(state));
 
 	return (
 		<TabContent className={styles.sensors}>
@@ -135,8 +134,6 @@ const Sensors = () => {
 								   onSave={onSensor1TempDangerThresholdSave}/>
 					</motion.div>
 				</Card>
-
-
 			</Card>
 			<Card header="Sensor 2" className={styles.sensorCard} style={
 				{gridArea: '1 / 2 / 2 / 3', border: `solid 4px ${sensor2BorderColor}`}
