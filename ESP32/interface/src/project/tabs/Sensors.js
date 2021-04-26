@@ -16,6 +16,7 @@ import Card from "../components/Card";
 import LineChartCard from "../components/LineChartCard";
 import TabContent from "../components/TabContent";
 import {selectWebinterfaceConfig} from "../redux/reducers/configurationSlice";
+import SwitchCard from "../components/SwitchCard";
 
 const useStyles = makeStyles(() => ({
 	graphSection: {
@@ -62,17 +63,33 @@ const Sensors = () => {
 	const sensor1 = useSelector((state) => selectSensor1(state));
 	const sensor2 = useSelector((state) => selectSensor2(state));
 
+	const onSensor1TempWarnTempChange = (event) => {
+
+	}
+
+	const onSensor2TempWarnTempChange = (event) => {
+
+	}
+
 	const webinterfaceConfig = useSelector((state) => selectWebinterfaceConfig(state));
 
 	return (
 		<TabContent className={styles.sensors}>
 			<Card header="Sensor 1" className={styles.sensorCard} style={{gridArea: '1 / 1 / 2 / 2'}}>
-				<ValueField label="Temperature" valueEnding="°C" endAdornment={<Img src={temperatureIcon}/>} value={sensor1.temperature} />
-				<ValueField label="Humidity" valueEnding="%" endAdornment={<Img src={humidityIcon}/>} value={sensor1.humidity} />
+				<ValueField label="Temperature" valueEnding="°C" endAdornment={<Img src={temperatureIcon}/>}
+							value={sensor1.temperature}/>
+				<ValueField label="Humidity" valueEnding="%" endAdornment={<Img src={humidityIcon}/>}
+							value={sensor1.humidity}/>
+				<SwitchCard header="Temperature warning" value={sensor1.tempWarn.warning.enabled}
+							onChange={onSensor1TempWarnTempChange}/>
 			</Card>
 			<Card header="Sensor 2" className={styles.sensorCard} style={{gridArea: '1 / 2 / 2 / 3'}}>
-				<ValueField label="Temperature" valueEnding="°C" endAdornment={<Img src={temperatureIcon}/>} value={sensor2.temperature} />
-				<ValueField label="Humidity" valueEnding="%" endAdornment={<Img src={humidityIcon}/>} value={sensor2.humidity} />
+				<ValueField label="Temperature" valueEnding="°C" endAdornment={<Img src={temperatureIcon}/>}
+							value={sensor2.temperature}/>
+				<ValueField label="Humidity" valueEnding="%" endAdornment={<Img src={humidityIcon}/>}
+							value={sensor2.humidity}/>
+				<SwitchCard header="Temperature warning" value={sensor2.tempWarn.warning.enabled}
+							onChange={onSensor2TempWarnTempChange}/>
 			</Card>
 			{webinterfaceConfig.showSensorGraph.sensor1 || webinterfaceConfig.showSensorGraph.sensor2 ? (
 				<Card className={styles.actionCard} header="Actions" style={{gridArea: "1 / 3 / 2 / 4"}}>
