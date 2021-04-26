@@ -2,13 +2,13 @@
 #include "ArduinoJson.h"
 #include "task-events.h"
 
-Config::Config(EventGroupHandle_t _eg, void (*displayBrightnessEventCallback)(void *))
+Config::Config(EventGroupHandle_t _eg, void (*configUpdateEventCallback)(void *))
 {
 	eg = _eg;
 
 	xTaskCreate(
-			displayBrightnessEventCallback,
-			"displayBrightnessEventCallback",
+			configUpdateEventCallback,
+			"configUpdateEventCallback",
 			3000,
 			nullptr,
 			1,
@@ -16,21 +16,35 @@ Config::Config(EventGroupHandle_t _eg, void (*displayBrightnessEventCallback)(vo
 	);
 }
 
-void Config::addToJson(DynamicJsonDocument *doc, bool includeDisplayBrightness)
+void Config::addToJson(DynamicJsonDocument *doc, bool includeDisplayBrightness, bool includeDisplaySleep)
 {
 	JsonObject jsonObject = doc->createNestedObject("configuration");
 	if (includeDisplayBrightness) {
 		jsonObject["displayBrightness"] = displayBrightness;
+	}
+	if(includeDisplaySleep) {
+		jsonObject["displaySleep"] = displaySleep;
 	}
 }
 
 void Config::setDisplayBrightness(int brightness)
 {
 	displayBrightness = brightness;
-	xEventGroupSetBits(eg, TASK_EVENT_DisplayBrightness);
+	xEventGroupSetBits(eg, TASK_EVENT_ConfigUpdate);
+}
+
+void Config::setDisplaySleep(bool sleep)
+{
+	displaySleep = sleep;
+	xEventGroupSetBits(eg, TASK_EVENT_ConfigUpdate);
 }
 
 int Config::getDisplayBrightness()
 {
 	return displayBrightness;
+}
+
+bool Config::getDisplaySleep()
+{
+	return displaySleep;
 }

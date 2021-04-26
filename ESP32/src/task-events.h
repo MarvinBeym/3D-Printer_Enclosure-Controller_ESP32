@@ -18,4 +18,4 @@
 #define TASK_EVENT_LED1_StateUpdated 			0b00010000000000
 #define TASK_EVENT_NEXTION_CompClicked 			0b00100000000000
 #define TASK_EVENT_LED2_EffectChanged 			0b01000000000000
-#define TASK_EVENT_DisplayBrightness			0b10000000000000
+#define TASK_EVENT_ConfigUpdate					0b10000000000000

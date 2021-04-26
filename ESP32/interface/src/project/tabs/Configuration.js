@@ -56,6 +56,10 @@ const Configuration = () => {
 		setDisplayBrightnessSliderValue(value);
 	}
 
+	const onDisplaySleepChange = (event) => {
+		dispatch(wsSend({component: "configuration", command: "setDisplaySleep", value: event.target.checked ? 1 : 0}));
+	}
+
 	const onBrightnessCommit = (value) => {
 		dispatch(wsSend({component: "configuration", command: "setDisplayBrightness", value: value}));
 	}
@@ -106,6 +110,11 @@ const Configuration = () => {
 							onChange={onBrightnessChange}
 							onCommit={onBrightnessCommit}/>
 				<IconButtonCard header="Save to flash"/>
+				<SwitchCard
+					header="Display sleep"
+					checked={configuration.displaySleep}
+					onChange={onDisplaySleepChange}
+				/>
 			</Card>
 		</div>
 	)

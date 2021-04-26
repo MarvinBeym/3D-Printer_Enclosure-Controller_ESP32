@@ -74,6 +74,7 @@ enum WebSocketCommand
 	setPercent,
 	setEffectConfig,
 	setDisplayBrightness,
+	setDisplaySleep,
 	invalid,
 };
 
@@ -94,6 +95,7 @@ WebSocketCommand resolveWebSocketCommand(String command)
 	if (command == "setPercent") return setPercent;
 	if (command == "setEffectConfig") return setEffectConfig;
 	if (command == "setDisplayBrightness") return setDisplayBrightness;
+	if (command == "setDisplaySleep") return setDisplaySleep;
 	return invalid;
 }
 
@@ -399,6 +401,9 @@ void nextionCompClickedCallback(void *params)
 						break;
 					case 3:
 						config->setDisplayBrightness(nextion->getCompValue("conf_page.sli_brightness"));
+						break;
+					case 4:
+						config->setDisplaySleep(nextion->getCompValue("conf_page.btn_sleep"));
 				}
 				break;
 			case ABOUT_PAGE:
@@ -431,17 +436,29 @@ void effectChangeCallback(void *params)
 	}
 }
 
-void displayBrightnessUpdated(void *params)
+void configUpdated(void *params)
 {
 	for (;;) {
-		xEventGroupWaitBits(eg, TASK_EVENT_DisplayBrightness, pdTRUE, pdTRUE, portMAX_DELAY);
+		xEventGroupWaitBits(eg, TASK_EVENT_ConfigUpdate, pdTRUE, pdTRUE, portMAX_DELAY);
 
-		nextion->setCompValue("conf_page.sli_brightness", config->getDisplayBrightness());
 		String command = "dims=";
 		command += config->getDisplayBrightness();
 		nextion->sendCommand(command.c_str());
 
-		DynamicJsonDocument json(96);
+		if(config->getDisplaySleep()) {
+			nextion->sendCommand("thsp=10");
+		} else {
+			nextion->sendCommand("sleep=0");
+			nextion->sendCommand("thsp=0");
+		}
+
+		//Delay to make sure the screen starts accepting commands to change component values after sleep update
+		delay(10);
+
+		nextion->setCompValue("conf_page.sli_brightness", config->getDisplayBrightness());
+		nextion->setCompValue("conf_page.btn_sleep", config->getDisplaySleep());
+
+		DynamicJsonDocument json(256);
 		config->addToJson(&json);
 
 		String response;
@@ -493,7 +510,7 @@ void setup()
 	effectLoader = new EffectLoader(led2, eg, TASK_EVENT_LED2_EffectChanged, &effectChangeCallback);
 
 	//Configuration
-	config = new Config(eg, &displayBrightnessUpdated);
+	config = new Config(eg, &configUpdated);
 
 	//Fan
 	fan1 = new Fan(
@@ -619,6 +636,9 @@ DynamicJsonDocument handleWebSocketCommunication(DynamicJsonDocument json)
 				case setDisplayBrightness:
 					config->setDisplayBrightness(value.toInt());
 					break;
+				case setDisplaySleep:
+					config->setDisplaySleep(value.toInt() != 0);
+					break;
 				default:
 					responseDoc["message"] = "Invalid component";
 					responseDoc["status"] = "failure";
@@ -655,6 +675,7 @@ void onWsEvent(AsyncWebSocket *webSocket, AsyncWebSocketClient *client, AwsEvent
 		fan2->addToJson(&json);
 		sensor1->addToJson(&json);
 		sensor2->addToJson(&json);
+		config->addToJson(&json);
 		String response;
 		serializeJson(json, response);
 		client->text(response);

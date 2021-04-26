@@ -3,6 +3,7 @@ import {createSlice} from "@reduxjs/toolkit";
 const initialState = {
 	config: {
 		displayBrightness: 100,
+		displaySleep: false,
 	},
 	webinterface: {
 		fanSpinAnimation: true,
@@ -23,8 +24,13 @@ const configurationSlice = createSlice({
 	reducers: {
 		setConfiguration(state, action) {
 			let displayBrightness = action.payload.configuration?.displayBrightness;
+			let displaySleep = action.payload.configuration?.displaySleep;
 			if("displayBrightness" in action.payload.configuration) {
 				state.config.displayBrightness = displayBrightness;
+			}
+			if("displaySleep" in action.payload.configuration) {
+				console.log("T");
+				state.config.displaySleep = displaySleep;
 			}
 		},
 		setFanSpinAnimation(state, action) {
