@@ -32,6 +32,7 @@
 #include "libs/FasterLed.h"
 #include "libs/Fan.h"
 #include "libs/Config.h"
+#include "libs/Buzzer.h"
 #include "effects/EffectLoader.h"
 
 EventGroupHandle_t eg;
@@ -47,6 +48,7 @@ FasterLed *led2;
 Fan *fan1;
 Fan *fan2;
 EffectLoader *effectLoader;
+Buzzer *buzzer;
 Config *config;
 bool booted = false;
 
@@ -493,9 +495,6 @@ void setup()
 	//Configuration
 	config = new Config(eg, &displayBrightnessUpdated);
 
-	//Buzzer
-	pinMode(buzzer_pin, OUTPUT);
-
 	//Fan
 	fan1 = new Fan(
 			"fan1",
@@ -522,6 +521,8 @@ void setup()
 			&fan2PwmUpdated
 	);
 
+	//Buzzer
+	buzzer = new Buzzer(buzzer_pin, 2);
 	//Display
 	nextion = new NextionDisplay(displayBootDelay, serial2BaudRate, nextionDisplayRX, nextionDisplayTX, eg,
 								 TASK_EVENT_NEXTION_CompClicked, &nextionCompClickedCallback);
