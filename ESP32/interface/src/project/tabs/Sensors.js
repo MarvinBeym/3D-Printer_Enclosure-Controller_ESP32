@@ -53,8 +53,11 @@ const useStyles = makeStyles(() => ({
 		display: "grid",
 		gridTemplateRows: "auto auto",
 		gap: "1rem",
+	},
+	tempDangerCard: {
+		display: "grid",
+		gridTemplateColumns: "auto auto",
 	}
-
 }));
 
 const Sensors = () => {
@@ -112,28 +115,34 @@ const Sensors = () => {
 			<Card header="Sensor 1" className={styles.sensorCard} style={
 				{gridArea: '1 / 1 / 2 / 2', border: `solid 4px ${sensor1BorderColor}`}
 			}>
-				<ValueCard label="Temperature" valueEnding="°C" endAdornment={<Img src={temperatureIcon}/>}
+				<ValueCard label="Temperature" valueEnding="°C" style={{gridArea: "1 / 1 / 2 / 3"}} endAdornment={<Img src={temperatureIcon}/>}
 						   value={sensor1.temperature}/>
-				<ValueCard label="Humidity" valueEnding="%" endAdornment={<Img src={humidityIcon}/>}
+				<ValueCard label="Humidity" valueEnding="%" style={{gridArea: "1 / 2 / 2 / 3"}} endAdornment={<Img src={humidityIcon}/>}
 						   value={sensor1.humidity}/>
 
-				<SwitchCard header="Temperature danger" checked={sensor1.tempDanger.enabled}
-							onChange={onSensor1TempDangerEnable}/>
-				<InputCard header="Temperature danger threshold" defaultValue={sensor1.tempDanger.threshold}
-						   onSave={onSensor1TempDangerThresholdSave}/>
+				<Card header="Temperature alarm" className={styles.tempDangerCard} style={{gridArea: "2 / 1 / 3 / 3"}}>
+					<SwitchCard header="Enabled" checked={sensor1.tempDanger.enabled}
+								onChange={onSensor1TempDangerEnable}/>
+					<InputCard header="Threshold" defaultValue={sensor1.tempDanger.threshold}
+							   onSave={onSensor1TempDangerThresholdSave}/>
+				</Card>
+
+
 			</Card>
 			<Card header="Sensor 2" className={styles.sensorCard} style={
 				{gridArea: '1 / 2 / 2 / 3', border: `solid 4px ${sensor2BorderColor}`}
 			}>
-				<ValueCard label="Temperature" valueEnding="°C" endAdornment={<Img src={temperatureIcon}/>}
+				<ValueCard label="Temperature" valueEnding="°C" style={{gridArea: "1 / 1 / 2 / 3"}} endAdornment={<Img src={temperatureIcon}/>}
 						   value={sensor2.temperature}/>
-				<ValueCard label="Humidity" valueEnding="%" endAdornment={<Img src={humidityIcon}/>}
+				<ValueCard label="Humidity" valueEnding="%" style={{gridArea: "1 / 2 / 2 / 3"}} endAdornment={<Img src={humidityIcon}/>}
 						   value={sensor2.humidity}/>
+				<Card header="Temperature alarm" className={styles.tempDangerCard} style={{gridArea: "2 / 1 / 3 / 3"}}>
+					<SwitchCard header="Enabled" checked={sensor2.tempDanger.enabled}
+								onChange={onSensor2TempDangerEnable}/>
+					<InputCard header="Threshold" defaultValue={sensor2.tempDanger.threshold}
+							   onSave={onSensor2TempDangerThresholdSave}/>
+				</Card>
 
-				<SwitchCard header="Temperature danger" checked={sensor2.tempDanger.enabled}
-							onChange={onSensor2TempDangerEnable}/>
-				<InputCard header="Temperature danger threshold" defaultValue={sensor2.tempDanger.threshold}
-						   onSave={onSensor2TempDangerThresholdSave}/>
 			</Card>
 			{webinterfaceConfig.showSensorGraph.sensor1 || webinterfaceConfig.showSensorGraph.sensor2 ? (
 				<Card className={styles.actionCard} header="Actions" style={{gridArea: "1 / 3 / 2 / 4"}}>
