@@ -171,6 +171,21 @@ void sensor1HumidityUpdated(void *params)
 	}
 }
 
+void sensor1TempWarnUpdated(void *params) {
+	for (;;) {
+		xEventGroupWaitBits(eg, TASK_EVENT_SENSOR1_TempWarnUpdated, pdTRUE, pdTRUE, portMAX_DELAY);
+
+		DynamicJsonDocument json(192);
+		sensor1->addToJson(&json, false, false, true);
+
+		String response;
+		serializeJson(json, response);
+
+		ws.textAll(response);
+		delay(10);
+	}
+}
+
 void sensor2TemperatureUpdated(void *params)
 {
 	for (;;) {
@@ -207,6 +222,21 @@ void sensor2HumidityUpdated(void *params)
 
 		DynamicJsonDocument json(64);
 		sensor2->addToJson(&json, false);
+		String response;
+		serializeJson(json, response);
+
+		ws.textAll(response);
+		delay(10);
+	}
+}
+
+void sensor2TempWarnUpdated(void *params) {
+	for (;;) {
+		xEventGroupWaitBits(eg, TASK_EVENT_SENSOR2_TempWarnUpdated, pdTRUE, pdTRUE, portMAX_DELAY);
+
+		DynamicJsonDocument json(192);
+		sensor1->addToJson(&json, false, false, true);
+
 		String response;
 		serializeJson(json, response);
 
@@ -486,8 +516,10 @@ void setup()
 			eg,
 			TASK_EVENT_SENSOR1_TemperatureUpdated,
 			TASK_EVENT_SENSOR1_HumidityUpdated,
+			TASK_EVENT_SENSOR1_TempWarnUpdated,
 			&sensor1TemperatureUpdated,
-			&sensor1HumidityUpdated
+			&sensor1HumidityUpdated,
+			&sensor1TempWarnUpdated
 	);
 	sensor2 = new Sensor(
 			"sensor2",
@@ -496,8 +528,10 @@ void setup()
 			eg,
 			TASK_EVENT_SENSOR2_TemperatureUpdated,
 			TASK_EVENT_SENSOR2_HumidityUpdated,
+			TASK_EVENT_SENSOR2_TempWarnUpdated,
 			&sensor2TemperatureUpdated,
-			&sensor2HumidityUpdated
+			&sensor2HumidityUpdated,
+			&sensor2TempWarnUpdated
 	);
 
 	//Led1 (relay) setup

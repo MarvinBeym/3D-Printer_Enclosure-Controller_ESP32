@@ -3,8 +3,10 @@
 Sensor::Sensor(const char *_name, int pin, int _senseInterval, EventGroupHandle_t _eg,
 			   int _temperatureUpdateEvent,
 			   int _humidityUpdateEvent,
+			   int _tempWarnUpdateEvent,
 			   void (*temperatureUpdateCallback)(void *),
-			   void (*humidityUpdateCallback)(void *)
+			   void (*humidityUpdateCallback)(void *),
+			   void (*tempWarnUpdateCallback)(void *)
 )
 {
 	name = _name;
@@ -12,6 +14,7 @@ Sensor::Sensor(const char *_name, int pin, int _senseInterval, EventGroupHandle_
 	eg = _eg;
 	temperatureUpdateEvent = _temperatureUpdateEvent;
 	humidityUpdateEvent = _humidityUpdateEvent;
+	tempWarnUpdateEvent = _tempWarnUpdateEvent;
 
 	temperature = 0;
 	humidity = 0;
@@ -39,6 +42,15 @@ Sensor::Sensor(const char *_name, int pin, int _senseInterval, EventGroupHandle_
 			(void *) &humidity,
 			1,
 			NULL
+	);
+
+	xTaskCreate(
+			tempWarnUpdateCallback,
+			"tempWarnUpdateCallback",
+			2000,
+			nullptr,
+			1,
+			nullptr
 	);
 }
 
@@ -68,7 +80,7 @@ void Sensor::readSensorTask()
 	}
 }
 
-void Sensor::addToJson(DynamicJsonDocument *doc, bool includeTemperature, bool includeHumidity) const
+void Sensor::addToJson(DynamicJsonDocument *doc, bool includeTemperature, bool includeHumidity, bool includeTempWarn) const
 {
 	JsonObject json = doc->createNestedObject(name);
 	if (includeTemperature) {
@@ -76,5 +88,17 @@ void Sensor::addToJson(DynamicJsonDocument *doc, bool includeTemperature, bool i
 	}
 	if (includeHumidity) {
 		json["humidity"] = humidity;
+	}
+
+	if(includeTempWarn) {
+		JsonObject tempWarnObj = json.createNestedObject("tempWarning");
+		JsonObject warningObj = tempWarnObj.createNestedObject("warning");
+		JsonObject dangerObj = tempWarnObj.createNestedObject("danger");
+
+		warningObj["enabled"] = tempWarnEnabled;
+		warningObj["threshold"] = tempWarnThreshold;
+
+		dangerObj["enabled"] = tempDangerEnabled;
+		dangerObj["threshold"] = tempDangerThreshold;
 	}
 }

@@ -19,10 +19,12 @@ class Sensor
 				EventGroupHandle_t _eg,
 				int _temperatureUpdateEvent,
 				int _humidityUpdateEvent,
+				int _tempWarnUpdateEvent,
 				void (*temperatureUpdateCallback)(void *),
-				void (*humidityUpdateCallback)(void *)
+				void (*humidityUpdateCallback)(void *),
+				void (*tempWarnUpdateCallback)(void *)
 		);
-		void addToJson(DynamicJsonDocument *doc, bool includeTemperature = true, bool includeHumidity = true) const;
+		void addToJson(DynamicJsonDocument *doc, bool includeTemperature = true, bool includeHumidity = true, bool includeTempWarn = true) const;
 		const char *name;
 	private:
 		void (*temperatureUpdateCallback)(void *);
@@ -31,9 +33,14 @@ class Sensor
 		void readSensorTask();
 		int temperatureUpdateEvent;
 		int humidityUpdateEvent;
+		int tempWarnUpdateEvent;
 		EventGroupHandle_t eg;
 		DHT *dht;
 		int senseInterval;
 		float temperature;
 		float humidity;
+		bool tempWarnEnabled = false;
+		bool tempDangerEnabled = false;
+		int tempWarnThreshold = 100;
+		int tempDangerThreshold = 100;
 };
