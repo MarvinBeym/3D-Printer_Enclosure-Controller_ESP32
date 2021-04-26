@@ -53,8 +53,8 @@ const Leds = () => {
 	const currentEffect = led2.effects[led2.currentEffect];
 	const currentEffectHasConfig = currentEffect.config && Object.keys(currentEffect.config).length > 0;
 
-	const onLed1Change = (event) => {
-		dispatch(wsSend({component: "led1", command: "setState", value: event.target.checked ? 1 : 0}));
+	const onLed1Change = (checked) => {
+		dispatch(wsSend({component: "led1", command: "setState", value: checked ? 1 : 0}));
 	}
 
 	const onLed2EffectChange = (event) => {

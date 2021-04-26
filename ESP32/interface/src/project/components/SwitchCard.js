@@ -11,9 +11,14 @@ const useStyles = makeStyles((theme) => ({
 
 const SwitchCard = ({checked, onChange, header}) => {
 	const styles = useStyles();
+
+	const onSwitchChange = (event) => {
+		onChange(event.target.checked);
+	}
+
 	return (
 		<Card className={styles.switchCard} header={header}>
-			<Switch checked={checked} onChange={onChange}/>
+			<Switch checked={checked} onChange={onSwitchChange}/>
 		</Card>
 	)
 }

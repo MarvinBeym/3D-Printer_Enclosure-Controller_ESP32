@@ -56,8 +56,8 @@ const Configuration = () => {
 		setDisplayBrightnessSliderValue(value);
 	}
 
-	const onDisplaySleepChange = (event) => {
-		dispatch(wsSend({component: "configuration", command: "setDisplaySleep", value: event.target.checked ? 1 : 0}));
+	const onDisplaySleepChange = (checked) => {
+		dispatch(wsSend({component: "configuration", command: "setDisplaySleep", value: checked ? 1 : 0}));
 	}
 
 	const onBrightnessCommit = (value) => {
@@ -68,16 +68,16 @@ const Configuration = () => {
 		dispatch(setDefaultPage(value));
 	}
 
-	const onFanSpinAnimationChange = (event) => {
-		dispatch(setFanSpinAnimation(event.target.checked));
+	const onFanSpinAnimationChange = (checked) => {
+		dispatch(setFanSpinAnimation(checked));
 	}
 
-	const onSensor1GraphChange = (event) => {
-		dispatch(setShowSensor1Graph(event.target.checked));
+	const onSensor1GraphChange = (checked) => {
+		dispatch(setShowSensor1Graph(checked));
 	}
 
-	const onSensor2GraphChange = (event) => {
-		dispatch(setShowSensor2Graph(event.target.checked));
+	const onSensor2GraphChange = (checked) => {
+		dispatch(setShowSensor2Graph(checked));
 	}
 
 	return (

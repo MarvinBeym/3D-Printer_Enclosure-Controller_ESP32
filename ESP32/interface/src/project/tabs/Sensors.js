@@ -64,12 +64,12 @@ const Sensors = () => {
 	const sensor1 = useSelector((state) => selectSensor1(state));
 	const sensor2 = useSelector((state) => selectSensor2(state));
 
-	const onSensor1TempWarnTempChange = (event) => {
-		dispatch(wsSend({component: "sensor1", command: "setTempWarnEnabled", value: event.target.checked ? 1 : 0}))
+	const onSensor1TempWarnTempChange = (checked) => {
+		dispatch(wsSend({component: "sensor1", command: "setTempWarnEnabled", value: checked ? 1 : 0}))
 	}
 
-	const onSensor2TempWarnTempChange = (event) => {
-		dispatch(wsSend({component: "sensor2", command: "setTempWarnEnabled", value: event.target.checked ? 1 : 0}))
+	const onSensor2TempWarnTempChange = (checked) => {
+		dispatch(wsSend({component: "sensor2", command: "setTempWarnEnabled", value: checked ? 1 : 0}))
 	}
 
 	const webinterfaceConfig = useSelector((state) => selectWebinterfaceConfig(state));
