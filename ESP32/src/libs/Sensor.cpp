@@ -3,10 +3,10 @@
 Sensor::Sensor(const char *_name, int pin, int _senseInterval, EventGroupHandle_t _eg,
 			   int _temperatureUpdateEvent,
 			   int _humidityUpdateEvent,
-			   int _tempWarnUpdateEvent,
+			   int _tempDangerUpdateEvent,
 			   void (*temperatureUpdateCallback)(void *),
 			   void (*humidityUpdateCallback)(void *),
-			   void (*tempWarnUpdateCallback)(void *)
+			   void (*tempDangerUpdateCallback)(void *)
 )
 {
 	name = _name;
@@ -14,7 +14,7 @@ Sensor::Sensor(const char *_name, int pin, int _senseInterval, EventGroupHandle_
 	eg = _eg;
 	temperatureUpdateEvent = _temperatureUpdateEvent;
 	humidityUpdateEvent = _humidityUpdateEvent;
-	tempWarnUpdateEvent = _tempWarnUpdateEvent;
+	tempDangerUpdateEvent = _tempDangerUpdateEvent;
 
 	temperature = 0;
 	humidity = 0;
@@ -45,8 +45,8 @@ Sensor::Sensor(const char *_name, int pin, int _senseInterval, EventGroupHandle_
 	);
 
 	xTaskCreate(
-			tempWarnUpdateCallback,
-			"tempWarnUpdateCallback",
+			tempDangerUpdateCallback,
+			"tempDangerUpdateCallback",
 			2000,
 			nullptr,
 			1,
@@ -92,47 +92,26 @@ Sensor::addToJson(DynamicJsonDocument *doc, bool includeTemperature, bool includ
 	}
 
 	if (includeTempWarn) {
-		JsonObject tempWarnObj = json.createNestedObject("tempWarn");
-		JsonObject warningObj = tempWarnObj.createNestedObject("warning");
-		JsonObject dangerObj = tempWarnObj.createNestedObject("danger");
+		JsonObject tempDangerObj = json.createNestedObject("tempDanger");
 
-		warningObj["enabled"] = tempWarnEnabled;
-		warningObj["threshold"] = tempWarnThreshold;
-
-		dangerObj["enabled"] = tempDangerEnabled;
-		dangerObj["threshold"] = tempDangerThreshold;
+		tempDangerObj["enabled"] = tempDangerEnabled;
+		tempDangerObj["threshold"] = tempDangerThreshold;
 	}
-}
-
-void Sensor::setTempWarnEnabled(bool enabled)
-{
-	tempWarnEnabled = enabled;
-	xEventGroupSetBits(eg, tempWarnUpdateEvent);
 }
 
 void Sensor::setTempDangerEnabled(bool enabled)
 {
 	tempDangerEnabled = enabled;
-	xEventGroupSetBits(eg, tempWarnUpdateEvent);
-}
-
-void Sensor::setTempWarnThreshold(int threshold)
-{
-	tempWarnThreshold = threshold;
-	xEventGroupSetBits(eg, tempWarnUpdateEvent);
+	xEventGroupSetBits(eg, tempDangerUpdateEvent);
 }
 
 void Sensor::setTempDangerThreshold(int threshold)
 {
 	tempDangerThreshold = threshold;
-	xEventGroupSetBits(eg, tempWarnUpdateEvent);
+	xEventGroupSetBits(eg, tempDangerUpdateEvent);
 }
 
-bool Sensor::getTempWarnEnabled() { return tempWarnEnabled; }
-
 bool Sensor::getTempDangerEnabled() { return tempDangerEnabled; }
-
-int Sensor::getTempWarnThreshold() { return tempWarnThreshold; }
 
 int Sensor::getTempDangerThreshold() { return tempDangerThreshold; }
 

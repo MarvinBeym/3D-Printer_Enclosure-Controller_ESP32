@@ -67,61 +67,40 @@ const Sensors = () => {
 	const [sensor1BorderColor, setSensor1BorderColor] = useState("transparent");
 	const [sensor2BorderColor, setSensor2BorderColor] = useState("transparent");
 
-	const sensor1WarnThresholdExceeded = sensor1.tempWarn.warning.exceeded;
-	const sensor2WarnThresholdExceeded = sensor2.tempWarn.warning.exceeded;
-
-	const sensor1DangerThresholdExceeded = sensor1.tempWarn.danger.exceeded;
-	const sensor2DangerThresholdExceeded = sensor2.tempWarn.danger.exceeded;
+	const sensor1DangerThresholdExceeded = sensor1.tempDanger.exceeded;
+	const sensor2DangerThresholdExceeded = sensor2.tempDanger.exceeded;
 
 	useEffect(() => {
 		if(sensor1DangerThresholdExceeded) {
 			setSensor1BorderColor("red");
-		} else if(sensor1WarnThresholdExceeded) {
-			setSensor1BorderColor("orange");
 		} else {
 			setSensor1BorderColor("transparent");
 		}
 
 
 
-	}, [sensor1DangerThresholdExceeded, sensor1WarnThresholdExceeded, sensor2DangerThresholdExceeded]);
+	}, [sensor1DangerThresholdExceeded, sensor2DangerThresholdExceeded]);
 
 	useEffect(() => {
 		if(sensor2DangerThresholdExceeded) {
 			setSensor2BorderColor("red");
-		} else if(sensor2WarnThresholdExceeded) {
-			setSensor2BorderColor("orange");
 		} else {
 			setSensor2BorderColor("transparent");
 		}
-	}, [sensor2DangerThresholdExceeded, sensor2WarnThresholdExceeded]);
-	
-	const onSensor1TempWarnChange = (checked) => {
-		dispatch(wsSend({component: "sensor1", command: "setTempWarnEnabled", value: checked ? 1 : 0}))
-	}
+	}, [sensor2DangerThresholdExceeded]);
+
 	const onSensor1TempDangerChange = (checked) => {
 		dispatch(wsSend({component: "sensor1", command: "setTempDangerEnabled", value: checked ? 1 : 0}))
 	}
-	const onSensor1TempWarnThresholdChange = (value) => {
-		dispatch(wsSend({component: "sensor1", command: "setTempWarnThreshold", value: value}))
-	}
+
 	const onSensor1TempDangerThresholdChange = (value) => {
 		dispatch(wsSend({component: "sensor1", command: "setTempDangerThreshold", value: value}))
 	}
 
-	const onSensor2TempWarnChange = (checked) => {
-		dispatch(wsSend({component: "sensor2", command: "setTempWarnEnabled", value: checked ? 1 : 0}))
-	}
 
 	const onSensor2TempDangerChange = (checked) => {
 		dispatch(wsSend({component: "sensor2", command: "setTempDangerEnabled", value: checked ? 1 : 0}))
 	}
-
-
-	const onSensor2TempWarnThresholdChange = (value) => {
-		dispatch(wsSend({component: "sensor2", command: "setTempWarnThreshold", value: value}))
-	}
-
 
 	const onSensor2TempDangerThresholdChange = (value) => {
 		dispatch(wsSend({component: "sensor2", command: "setTempDangerThreshold", value: value}))
@@ -139,14 +118,9 @@ const Sensors = () => {
 				<ValueField label="Humidity" valueEnding="%" endAdornment={<Img src={humidityIcon}/>}
 							value={sensor1.humidity}/>
 
-				<SwitchCard header="Temperature warning" checked={sensor1.tempWarn.warning.enabled}
-							onChange={onSensor1TempWarnChange}/>
-				<InputCard header="Temperature warning threshold" value={sensor1.tempWarn.warning.threshold}
-						   onChange={onSensor1TempWarnThresholdChange}/>
-
-				<SwitchCard header="Temperature danger" checked={sensor1.tempWarn.danger.enabled}
+				<SwitchCard header="Temperature danger" checked={sensor1.tempDanger.enabled}
 							onChange={onSensor1TempDangerChange}/>
-				<InputCard header="Temperature danger threshold" value={sensor1.tempWarn.danger.threshold}
+				<InputCard header="Temperature danger threshold" value={sensor1.tempDanger.threshold}
 						   onChange={onSensor1TempDangerThresholdChange}/>
 			</Card>
 			<Card header="Sensor 2" className={styles.sensorCard} style={
@@ -157,14 +131,9 @@ const Sensors = () => {
 				<ValueField label="Humidity" valueEnding="%" endAdornment={<Img src={humidityIcon}/>}
 							value={sensor2.humidity}/>
 
-				<SwitchCard header="Temperature warning" checked={sensor2.tempWarn.warning.enabled}
-							onChange={onSensor2TempWarnChange}/>
-				<InputCard header="Temperature warning threshold" value={sensor2.tempWarn.warning.threshold}
-						   onChange={onSensor2TempWarnThresholdChange}/>
-
-				<SwitchCard header="Temperature danger" checked={sensor2.tempWarn.danger.enabled}
+				<SwitchCard header="Temperature danger" checked={sensor2.tempDanger.enabled}
 							onChange={onSensor2TempDangerChange}/>
-				<InputCard header="Temperature danger threshold" value={sensor2.tempWarn.danger.threshold}
+				<InputCard header="Temperature danger threshold" value={sensor2.tempDanger.threshold}
 						   onChange={onSensor2TempDangerThresholdChange}/>
 			</Card>
 			{webinterfaceConfig.showSensorGraph.sensor1 || webinterfaceConfig.showSensorGraph.sensor2 ? (

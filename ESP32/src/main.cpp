@@ -77,9 +77,7 @@ enum WebSocketCommand
 	setEffectConfig,
 	setDisplayBrightness,
 	setDisplaySleep,
-	setTempWarnEnabled,
 	setTempDangerEnabled,
-	setTempWarnThreshold,
 	setTempDangerThreshold,
 	invalid,
 };
@@ -104,9 +102,7 @@ WebSocketCommand resolveWebSocketCommand(String command)
 	if (command == "setEffectConfig") return setEffectConfig;
 	if (command == "setDisplayBrightness") return setDisplayBrightness;
 	if (command == "setDisplaySleep") return setDisplaySleep;
-	if (command == "setTempWarnEnabled") return setTempWarnEnabled;
 	if (command == "setTempDangerEnabled") return setTempDangerEnabled;
-	if (command == "setTempWarnThreshold") return setTempWarnThreshold;
 	if (command == "setTempDangerThreshold") return setTempDangerThreshold;
 	return invalid;
 }
@@ -284,9 +280,7 @@ void fan1PwmUpdated(void *params)
 {
 	for (;;) {
 		xEventGroupWaitBits(eg, TASK_EVENT_FAN1_PwmUpdated, pdTRUE, pdTRUE, portMAX_DELAY);
-		//int dutyCycle = fan1->getDutyCycle();
 		int percent = fan1->getPercent();
-
 
 		String value = Helper::valueToPercentString(percent);
 		nextion
@@ -671,39 +665,14 @@ DynamicJsonDocument handleWebSocketCommunication(DynamicJsonDocument json)
 			}
 			break;
 		case Sensor1:
-			switch (command) {
-				case setTempWarnEnabled:
-					sensor1->setTempWarnEnabled(value.toInt() != 0);
-					break;
-				case setTempDangerEnabled:
-					sensor1->setTempDangerEnabled(value.toInt() != 0);
-					break;
-				case setTempWarnThreshold:
-					sensor1->setTempWarnThreshold(value.toInt());
-					break;
-				case setTempDangerThreshold:
-					sensor1->setTempDangerThreshold(value.toInt());
-					break;
-				default:
-					break;
-			}
-			break;
 		case Sensor2:
-			switch (command) {
-				case setTempWarnEnabled:
-					sensor2->setTempWarnEnabled(value.toInt() != 0);
-					break;
-				case setTempDangerEnabled:
-					sensor2->setTempDangerEnabled(value.toInt() != 0);
-					break;
-				case setTempWarnThreshold:
-					sensor2->setTempWarnThreshold(value.toInt());
-					break;
-				case setTempDangerThreshold:
-					sensor2->setTempDangerThreshold(value.toInt());
-					break;
-				default:
-					break;
+			if(command == setTempDangerEnabled) {
+				auto sensor = component == Sensor1 ? sensor1 : sensor2;
+				sensor->setTempDangerEnabled(value.toInt() != 0);
+			}
+			if(command == setTempDangerThreshold) {
+				auto sensor = component == Sensor1 ? sensor1 : sensor2;
+				sensor->setTempDangerThreshold(value.toInt());
 			}
 			break;
 		case Fan1:
@@ -715,18 +684,11 @@ DynamicJsonDocument handleWebSocketCommunication(DynamicJsonDocument json)
 			}
 			break;
 		case Configuration:
-			switch (command) {
-				case setDisplayBrightness:
-					config->setDisplayBrightness(value.toInt());
-					break;
-				case setDisplaySleep:
-					config->setDisplaySleep(value.toInt() != 0);
-					break;
-				default:
-					responseDoc["message"] = "Invalid component";
-					responseDoc["status"] = "failure";
-					responseDoc["component"] = _component;
-					return responseDoc;
+			if (command == setDisplayBrightness) {
+				config->setDisplayBrightness(value.toInt());
+			}
+			if(command == setDisplaySleep) {
+				config->setDisplaySleep(value.toInt() != 0);
 			}
 			break;
 		case Invalid:
