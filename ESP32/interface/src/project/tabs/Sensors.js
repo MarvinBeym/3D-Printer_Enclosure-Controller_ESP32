@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {makeStyles} from "@material-ui/core/styles";
 import {useDispatch, useSelector} from "react-redux";
 import {Button} from "@material-ui/core";
@@ -64,30 +64,65 @@ const Sensors = () => {
 
 	const sensor1 = useSelector((state) => selectSensor1(state));
 	const sensor2 = useSelector((state) => selectSensor2(state));
+	const [sensor1BorderColor, setSensor1BorderColor] = useState("transparent");
+	const [sensor2BorderColor, setSensor2BorderColor] = useState("transparent");
 
+	const sensor1WarnThresholdExceeded = sensor1.tempWarn.warning.exceeded;
+	const sensor2WarnThresholdExceeded = sensor2.tempWarn.warning.exceeded;
+
+	const sensor1DangerThresholdExceeded = sensor1.tempWarn.danger.exceeded;
+	const sensor2DangerThresholdExceeded = sensor2.tempWarn.danger.exceeded;
+
+	useEffect(() => {
+		if(sensor1DangerThresholdExceeded) {
+			setSensor1BorderColor("red");
+		} else if(sensor1WarnThresholdExceeded) {
+			setSensor1BorderColor("orange");
+		} else {
+			setSensor1BorderColor("transparent");
+		}
+
+
+
+	}, [sensor1DangerThresholdExceeded, sensor1WarnThresholdExceeded, sensor2DangerThresholdExceeded]);
+
+	useEffect(() => {
+		if(sensor2DangerThresholdExceeded) {
+			setSensor2BorderColor("red");
+		} else if(sensor2WarnThresholdExceeded) {
+			setSensor2BorderColor("orange");
+		} else {
+			setSensor2BorderColor("transparent");
+		}
+	}, [sensor2DangerThresholdExceeded, sensor2WarnThresholdExceeded]);
+	
 	const onSensor1TempWarnChange = (checked) => {
 		dispatch(wsSend({component: "sensor1", command: "setTempWarnEnabled", value: checked ? 1 : 0}))
-	}
-	const onSensor2TempWarnChange = (checked) => {
-		dispatch(wsSend({component: "sensor2", command: "setTempWarnEnabled", value: checked ? 1 : 0}))
 	}
 	const onSensor1TempDangerChange = (checked) => {
 		dispatch(wsSend({component: "sensor1", command: "setTempDangerEnabled", value: checked ? 1 : 0}))
 	}
+	const onSensor1TempWarnThresholdChange = (value) => {
+		dispatch(wsSend({component: "sensor1", command: "setTempWarnThreshold", value: value}))
+	}
+	const onSensor1TempDangerThresholdChange = (value) => {
+		dispatch(wsSend({component: "sensor1", command: "setTempDangerThreshold", value: value}))
+	}
+
+	const onSensor2TempWarnChange = (checked) => {
+		dispatch(wsSend({component: "sensor2", command: "setTempWarnEnabled", value: checked ? 1 : 0}))
+	}
+
 	const onSensor2TempDangerChange = (checked) => {
 		dispatch(wsSend({component: "sensor2", command: "setTempDangerEnabled", value: checked ? 1 : 0}))
 	}
 
-	const onSensor1TempWarnThresholdChange = (value) => {
-		dispatch(wsSend({component: "sensor1", command: "setTempWarnThreshold", value: value}))
-	}
+
 	const onSensor2TempWarnThresholdChange = (value) => {
 		dispatch(wsSend({component: "sensor2", command: "setTempWarnThreshold", value: value}))
 	}
 
-	const onSensor1TempDangerThresholdChange = (value) => {
-		dispatch(wsSend({component: "sensor1", command: "setTempDangerThreshold", value: value}))
-	}
+
 	const onSensor2TempDangerThresholdChange = (value) => {
 		dispatch(wsSend({component: "sensor2", command: "setTempDangerThreshold", value: value}))
 	}
@@ -96,29 +131,37 @@ const Sensors = () => {
 
 	return (
 		<TabContent className={styles.sensors}>
-			<Card header="Sensor 1" className={styles.sensorCard} style={{gridArea: '1 / 1 / 2 / 2'}}>
+			<Card header="Sensor 1" className={styles.sensorCard} style={
+				{gridArea: '1 / 1 / 2 / 2', border: `solid 4px ${sensor1BorderColor}`}
+			}>
 				<ValueField label="Temperature" valueEnding="°C" endAdornment={<Img src={temperatureIcon}/>}
 							value={sensor1.temperature}/>
 				<ValueField label="Humidity" valueEnding="%" endAdornment={<Img src={humidityIcon}/>}
 							value={sensor1.humidity}/>
+
 				<SwitchCard header="Temperature warning" checked={sensor1.tempWarn.warning.enabled}
 							onChange={onSensor1TempWarnChange}/>
 				<InputCard header="Temperature warning threshold" value={sensor1.tempWarn.warning.threshold}
 						   onChange={onSensor1TempWarnThresholdChange}/>
+
 				<SwitchCard header="Temperature danger" checked={sensor1.tempWarn.danger.enabled}
 							onChange={onSensor1TempDangerChange}/>
 				<InputCard header="Temperature danger threshold" value={sensor1.tempWarn.danger.threshold}
 						   onChange={onSensor1TempDangerThresholdChange}/>
 			</Card>
-			<Card header="Sensor 2" className={styles.sensorCard} style={{gridArea: '1 / 2 / 2 / 3'}}>
+			<Card header="Sensor 2" className={styles.sensorCard} style={
+				{gridArea: '1 / 2 / 2 / 3', border: `solid 4px ${sensor2BorderColor}`}
+			}>
 				<ValueField label="Temperature" valueEnding="°C" endAdornment={<Img src={temperatureIcon}/>}
 							value={sensor2.temperature}/>
 				<ValueField label="Humidity" valueEnding="%" endAdornment={<Img src={humidityIcon}/>}
 							value={sensor2.humidity}/>
+
 				<SwitchCard header="Temperature warning" checked={sensor2.tempWarn.warning.enabled}
 							onChange={onSensor2TempWarnChange}/>
 				<InputCard header="Temperature warning threshold" value={sensor2.tempWarn.warning.threshold}
 						   onChange={onSensor2TempWarnThresholdChange}/>
+
 				<SwitchCard header="Temperature danger" checked={sensor2.tempWarn.danger.enabled}
 							onChange={onSensor2TempDangerChange}/>
 				<InputCard header="Temperature danger threshold" value={sensor2.tempWarn.danger.threshold}

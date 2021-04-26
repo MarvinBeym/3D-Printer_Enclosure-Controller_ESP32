@@ -212,7 +212,7 @@ void sensor2TemperatureUpdated(void *params)
 						1, 1,
 						Helper::newMap((int) temperature, displayGraphMinTemp, 255, 0, displayGraphHeight));
 		DynamicJsonDocument json(64);
-		sensor2->addToJson(&json, true, false);
+		sensor2->addToJson(&json, true, false, false);
 		String response;
 		serializeJson(json, response);
 
@@ -233,7 +233,7 @@ void sensor2HumidityUpdated(void *params)
 				->setCompText("sensor_page.tf_hum_sens2", value);
 
 		DynamicJsonDocument json(64);
-		sensor2->addToJson(&json, false);
+		sensor2->addToJson(&json, false, true, false);
 		String response;
 		serializeJson(json, response);
 
@@ -247,7 +247,7 @@ void sensor2TempWarnUpdated(void *params) {
 		xEventGroupWaitBits(eg, TASK_EVENT_SENSOR2_TempWarnUpdated, pdTRUE, pdTRUE, portMAX_DELAY);
 
 		DynamicJsonDocument json(192);
-		sensor1->addToJson(&json, false, false, true);
+		sensor2->addToJson(&json, false, false, true);
 
 		String response;
 		serializeJson(json, response);
