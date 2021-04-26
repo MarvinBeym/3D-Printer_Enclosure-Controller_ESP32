@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {makeStyles} from "@material-ui/core/styles";
 import {Slider} from "@material-ui/core";
-import ValueField from "../components/ValueField";
+import ValueCard from "../components/ValueCard";
 import {motion} from "framer-motion";
 import speedIcon from "../images/speed_icon_x32.png";
 import fanImage from "../images/fan.png";
@@ -118,12 +118,12 @@ const Fans = () => {
 									marks={sliderMarks} valueLabelDisplay="auto"
 									value={slideValue}/>
 							<div className={styles.valueFieldsContainer}>
-								<ValueField
+								<ValueCard
 									endAdornment={<Img src={speedIcon}/>}
 									label="Rpm"
 									value={fan.rpm}
 								/>
-								<ValueField
+								<ValueCard
 									label="Duty cycle"
 									value={fan.dutyCycle}
 								/>

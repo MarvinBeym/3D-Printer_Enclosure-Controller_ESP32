@@ -1,6 +1,6 @@
 import React from 'react';
 import {makeStyles} from "@material-ui/core/styles";
-import ValueField from "../components/ValueField";
+import ValueCard from "../components/ValueCard";
 import temperatureIcon from "../images/temp_icon_x32.png";
 import humidityIcon from "../images/humidity_icon_x32.png";
 import speedIcon from "../images/speed_icon_x32.png";
@@ -55,8 +55,8 @@ const Main = () => {
 				const header = "Fan " + (index + 1);
 				return (
 					<Card key={index} className={styles.card} header={header}>
-						<ValueField label="Rpm" value={fan.rpm} endAdornment={<Img src={speedIcon}/>}/>
-						<ValueField label="Percent" value={fan.percent} endAdornment={<Img src={percentIcon}/>}/>
+						<ValueCard label="Rpm" value={fan.rpm} endAdornment={<Img src={speedIcon}/>}/>
+						<ValueCard label="Percent" value={fan.percent} endAdornment={<Img src={percentIcon}/>}/>
 					</Card>
 				)
 			})}
@@ -64,18 +64,18 @@ const Main = () => {
 				const header = "Sensor " + (index + 1);
 				return (
 					<Card key={index} className={styles.card} title={header}>
-						<ValueField label="Temperature" valueEnding="°C" value={sensor.temperature}
-									endAdornment={<Img src={temperatureIcon}/>}/>
-						<ValueField label="Humidity" valueEnding="%" value={sensor.humidity}
-									endAdornment={<Img src={humidityIcon}/>}/>
+						<ValueCard label="Temperature" valueEnding="°C" value={sensor.temperature}
+								   endAdornment={<Img src={temperatureIcon}/>}/>
+						<ValueCard label="Humidity" valueEnding="%" value={sensor.humidity}
+								   endAdornment={<Img src={humidityIcon}/>}/>
 					</Card>
 				)
 			})}
 			<Card header="Led 1" className={styles.ledCard}>
-				<ValueField label="State" value={led1.state ? "ON" : "OFF"}/>
+				<ValueCard label="State" value={led1.state ? "ON" : "OFF"}/>
 			</Card>
 			<Card header="Led 2" className={styles.ledCard}>
-				<ValueField label="Effect" value={led2.effects[led2.currentEffect].name.toUpperCase()}/>
+				<ValueCard label="Effect" value={led2.effects[led2.currentEffect].name.toUpperCase()}/>
 			</Card>
 		</TabContent>
 	)

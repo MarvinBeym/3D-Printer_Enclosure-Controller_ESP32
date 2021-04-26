@@ -2,7 +2,7 @@ import React, {useEffect, useState} from 'react';
 import {makeStyles} from "@material-ui/core/styles";
 import {useDispatch, useSelector} from "react-redux";
 import {Button} from "@material-ui/core";
-import ValueField from "../components/ValueField";
+import ValueCard from "../components/ValueCard";
 import temperatureIcon from "../images/temp_icon_x32.png";
 import humidityIcon from "../images/humidity_icon_x32.png";
 import Img from "../components/Img";
@@ -112,10 +112,10 @@ const Sensors = () => {
 			<Card header="Sensor 1" className={styles.sensorCard} style={
 				{gridArea: '1 / 1 / 2 / 2', border: `solid 4px ${sensor1BorderColor}`}
 			}>
-				<ValueField label="Temperature" valueEnding="°C" endAdornment={<Img src={temperatureIcon}/>}
-							value={sensor1.temperature}/>
-				<ValueField label="Humidity" valueEnding="%" endAdornment={<Img src={humidityIcon}/>}
-							value={sensor1.humidity}/>
+				<ValueCard label="Temperature" valueEnding="°C" endAdornment={<Img src={temperatureIcon}/>}
+						   value={sensor1.temperature}/>
+				<ValueCard label="Humidity" valueEnding="%" endAdornment={<Img src={humidityIcon}/>}
+						   value={sensor1.humidity}/>
 
 				<SwitchCard header="Temperature danger" checked={sensor1.tempDanger.enabled}
 							onChange={onSensor1TempDangerEnable}/>
@@ -125,10 +125,10 @@ const Sensors = () => {
 			<Card header="Sensor 2" className={styles.sensorCard} style={
 				{gridArea: '1 / 2 / 2 / 3', border: `solid 4px ${sensor2BorderColor}`}
 			}>
-				<ValueField label="Temperature" valueEnding="°C" endAdornment={<Img src={temperatureIcon}/>}
-							value={sensor2.temperature}/>
-				<ValueField label="Humidity" valueEnding="%" endAdornment={<Img src={humidityIcon}/>}
-							value={sensor2.humidity}/>
+				<ValueCard label="Temperature" valueEnding="°C" endAdornment={<Img src={temperatureIcon}/>}
+						   value={sensor2.temperature}/>
+				<ValueCard label="Humidity" valueEnding="%" endAdornment={<Img src={humidityIcon}/>}
+						   value={sensor2.humidity}/>
 
 				<SwitchCard header="Temperature danger" checked={sensor2.tempDanger.enabled}
 							onChange={onSensor2TempDangerEnable}/>

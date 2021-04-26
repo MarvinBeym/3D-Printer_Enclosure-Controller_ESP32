@@ -1,7 +1,8 @@
 import React from "react";
-import {InputAdornment, Paper, TextField} from "@material-ui/core";
+import {InputAdornment, TextField} from "@material-ui/core";
 import {makeStyles} from "@material-ui/core/styles";
 import clsx from "clsx";
+import Card from "./Card";
 
 const useStyles = makeStyles((theme) => ({
 	valueField: {
@@ -35,10 +36,13 @@ const useStyles = makeStyles((theme) => ({
 		fontSize: "1.5rem",
 		marginRight: "0.5rem",
 	},
-	paper: {
+	card: {
 		width: "100%",
 		padding: "0.5rem",
 	},
+	cardContent: {
+		padding: "0",
+	}
 }));
 
 const ValueEnding = ({value}) => {
@@ -50,7 +54,7 @@ const ValueEnding = ({value}) => {
 	)
 }
 
-const ValueField = ({label, value, paperClassName, className, endAdornment, valueEnding}) => {
+const ValueCard = ({label, value, className, endAdornment, valueEnding}) => {
 	const styles = useStyles();
 
 	let endAdor = null;
@@ -63,14 +67,14 @@ const ValueField = ({label, value, paperClassName, className, endAdornment, valu
 	}
 
 	return (
-		<Paper className={clsx(styles.paper, paperClassName)} elevation={5}>
+		<Card cardClassName={styles.card} className={styles.cardContent} elevation={5}>
 			<TextField className={clsx(styles.valueField, className)} color="primary" InputProps={{
 				endAdornment: endAdor,
 				readOnly: true,
 			}} variant="outlined" label={label} value={value ? value : typeof value == "number" ? value : " "}/>
-		</Paper>
+		</Card>
 
 	)
 }
 
-export default ValueField;
+export default ValueCard;
