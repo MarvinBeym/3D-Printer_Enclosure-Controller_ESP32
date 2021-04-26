@@ -19,6 +19,7 @@ import {selectWebinterfaceConfig} from "../redux/reducers/configurationSlice";
 import SwitchCard from "../components/SwitchCard";
 import {wsSend} from "../redux/reducers/webSocketSlice";
 import InputCard from "../components/InputCard";
+import {motion} from "framer-motion";
 
 const useStyles = makeStyles(() => ({
 	graphSection: {
@@ -56,9 +57,14 @@ const useStyles = makeStyles(() => ({
 	},
 	tempDangerCard: {
 		display: "grid",
-		gridTemplateColumns: "auto auto",
+		gridTemplateColumns: "1fr 1fr",
 	}
 }));
+
+const variants = {
+	show: {opacity: 1},
+	hide: {opacity: 0},
+}
 
 const Sensors = () => {
 	const dispatch = useDispatch();
@@ -73,18 +79,17 @@ const Sensors = () => {
 	const sensor2DangerThresholdExceeded = sensor2.tempDanger.exceeded;
 
 	useEffect(() => {
-		if(sensor1DangerThresholdExceeded) {
+		if (sensor1DangerThresholdExceeded) {
 			setSensor1BorderColor("red");
 		} else {
 			setSensor1BorderColor("transparent");
 		}
 
 
-
 	}, [sensor1DangerThresholdExceeded, sensor2DangerThresholdExceeded]);
 
 	useEffect(() => {
-		if(sensor2DangerThresholdExceeded) {
+		if (sensor2DangerThresholdExceeded) {
 			setSensor2BorderColor("red");
 		} else {
 			setSensor2BorderColor("transparent");
@@ -115,16 +120,20 @@ const Sensors = () => {
 			<Card header="Sensor 1" className={styles.sensorCard} style={
 				{gridArea: '1 / 1 / 2 / 2', border: `solid 4px ${sensor1BorderColor}`}
 			}>
-				<ValueCard label="Temperature" valueEnding="°C" style={{gridArea: "1 / 1 / 2 / 3"}} endAdornment={<Img src={temperatureIcon}/>}
+				<ValueCard label="Temperature" valueEnding="°C" style={{gridArea: "1 / 1 / 2 / 3"}}
+						   endAdornment={<Img src={temperatureIcon}/>}
 						   value={sensor1.temperature}/>
-				<ValueCard label="Humidity" valueEnding="%" style={{gridArea: "1 / 2 / 2 / 3"}} endAdornment={<Img src={humidityIcon}/>}
+				<ValueCard label="Humidity" valueEnding="%" style={{gridArea: "1 / 2 / 2 / 3"}}
+						   endAdornment={<Img src={humidityIcon}/>}
 						   value={sensor1.humidity}/>
 
 				<Card header="Temperature alarm" className={styles.tempDangerCard} style={{gridArea: "2 / 1 / 3 / 3"}}>
 					<SwitchCard header="Enabled" checked={sensor1.tempDanger.enabled}
 								onChange={onSensor1TempDangerEnable}/>
-					<InputCard header="Threshold" defaultValue={sensor1.tempDanger.threshold}
-							   onSave={onSensor1TempDangerThresholdSave}/>
+					<motion.div animate={sensor1.tempDanger.enabled ? "show" : "hide"} variants={variants}>
+						<InputCard header="Threshold" defaultValue={sensor1.tempDanger.threshold}
+								   onSave={onSensor1TempDangerThresholdSave}/>
+					</motion.div>
 				</Card>
 
 
@@ -132,15 +141,19 @@ const Sensors = () => {
 			<Card header="Sensor 2" className={styles.sensorCard} style={
 				{gridArea: '1 / 2 / 2 / 3', border: `solid 4px ${sensor2BorderColor}`}
 			}>
-				<ValueCard label="Temperature" valueEnding="°C" style={{gridArea: "1 / 1 / 2 / 3"}} endAdornment={<Img src={temperatureIcon}/>}
+				<ValueCard label="Temperature" valueEnding="°C" style={{gridArea: "1 / 1 / 2 / 3"}}
+						   endAdornment={<Img src={temperatureIcon}/>}
 						   value={sensor2.temperature}/>
-				<ValueCard label="Humidity" valueEnding="%" style={{gridArea: "1 / 2 / 2 / 3"}} endAdornment={<Img src={humidityIcon}/>}
+				<ValueCard label="Humidity" valueEnding="%" style={{gridArea: "1 / 2 / 2 / 3"}}
+						   endAdornment={<Img src={humidityIcon}/>}
 						   value={sensor2.humidity}/>
 				<Card header="Temperature alarm" className={styles.tempDangerCard} style={{gridArea: "2 / 1 / 3 / 3"}}>
 					<SwitchCard header="Enabled" checked={sensor2.tempDanger.enabled}
 								onChange={onSensor2TempDangerEnable}/>
-					<InputCard header="Threshold" defaultValue={sensor2.tempDanger.threshold}
-							   onSave={onSensor2TempDangerThresholdSave}/>
+					<motion.div animate={sensor2.tempDanger.enabled ? "show" : "hide"} variants={variants}>
+						<InputCard header="Threshold" defaultValue={sensor2.tempDanger.threshold}
+								   onSave={onSensor2TempDangerThresholdSave}/>
+					</motion.div>
 				</Card>
 
 			</Card>
