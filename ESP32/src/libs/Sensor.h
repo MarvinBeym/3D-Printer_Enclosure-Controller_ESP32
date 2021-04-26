@@ -26,6 +26,14 @@ class Sensor
 		);
 		void addToJson(DynamicJsonDocument *doc, bool includeTemperature = true, bool includeHumidity = true, bool includeTempWarn = true) const;
 		const char *name;
+		void setTempWarnEnabled(bool enabled);
+		void setTempDangerEnabled(bool enabled);
+		void setTempWarnThreshold(int threshold);
+		void setTempDangerThreshold(int threshold);
+		bool getTempWarnEnabled();
+		bool getTempDangerEnabled();
+		int getTempWarnThreshold();
+		int getTempDangerThreshold();
 	private:
 		void (*temperatureUpdateCallback)(void *);
 		void (*humidityUpdateCallback)(void *);

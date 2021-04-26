@@ -64,6 +64,8 @@ enum WebSocketComponent
 	Fan1,
 	Fan2,
 	Configuration,
+	Sensor1,
+	Sensor2,
 	Invalid,
 };
 
@@ -75,6 +77,10 @@ enum WebSocketCommand
 	setEffectConfig,
 	setDisplayBrightness,
 	setDisplaySleep,
+	setTempWarnEnabled,
+	setTempDangerEnabled,
+	setTempWarnThreshold,
+	setTempDangerThreshold,
 	invalid,
 };
 
@@ -85,6 +91,8 @@ WebSocketComponent resolveWebSocketComponent(String component)
 	if (component == "fan1") return Fan1;
 	if (component == "fan2") return Fan2;
 	if (component == "configuration") return Configuration;
+	if (component == "sensor1") return Sensor1;
+	if (component == "sensor2") return Sensor2;
 	return Invalid;
 }
 
@@ -96,6 +104,10 @@ WebSocketCommand resolveWebSocketCommand(String command)
 	if (command == "setEffectConfig") return setEffectConfig;
 	if (command == "setDisplayBrightness") return setDisplayBrightness;
 	if (command == "setDisplaySleep") return setDisplaySleep;
+	if (command == "setTempWarnEnabled") return setTempWarnEnabled;
+	if (command == "setTempDangerEnabled") return setTempDangerEnabled;
+	if (command == "setTempWarnThreshold") return setTempWarnThreshold;
+	if (command == "setTempDangerThreshold") return setTempDangerThreshold;
 	return invalid;
 }
 
@@ -655,6 +667,42 @@ DynamicJsonDocument handleWebSocketCommunication(DynamicJsonDocument json)
 				String response;
 				serializeJson(updatedLed2EffectJson, response);
 				ws.textAll(response);
+			}
+			break;
+		case Sensor1:
+			switch (command) {
+				case setTempWarnEnabled:
+					sensor1->setTempWarnEnabled(value.toInt() != 0);
+					break;
+				case setTempDangerEnabled:
+					sensor1->setTempDangerEnabled(value.toInt() != 0);
+					break;
+				case setTempWarnThreshold:
+					sensor1->setTempWarnThreshold(value.toInt());
+					break;
+				case setTempDangerThreshold:
+					sensor1->setTempDangerThreshold(value.toInt());
+					break;
+				default:
+					break;
+			}
+			break;
+		case Sensor2:
+			switch (command) {
+				case setTempWarnEnabled:
+					sensor2->setTempWarnEnabled(value.toInt() != 0);
+					break;
+				case setTempDangerEnabled:
+					sensor2->setTempDangerEnabled(value.toInt() != 0);
+					break;
+				case setTempWarnThreshold:
+					sensor2->setTempWarnThreshold(value.toInt());
+					break;
+				case setTempDangerThreshold:
+					sensor2->setTempDangerThreshold(value.toInt());
+					break;
+				default:
+					break;
 			}
 			break;
 		case Fan1:

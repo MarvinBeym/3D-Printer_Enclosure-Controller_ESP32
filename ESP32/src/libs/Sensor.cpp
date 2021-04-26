@@ -80,7 +80,8 @@ void Sensor::readSensorTask()
 	}
 }
 
-void Sensor::addToJson(DynamicJsonDocument *doc, bool includeTemperature, bool includeHumidity, bool includeTempWarn) const
+void
+Sensor::addToJson(DynamicJsonDocument *doc, bool includeTemperature, bool includeHumidity, bool includeTempWarn) const
 {
 	JsonObject json = doc->createNestedObject(name);
 	if (includeTemperature) {
@@ -90,7 +91,7 @@ void Sensor::addToJson(DynamicJsonDocument *doc, bool includeTemperature, bool i
 		json["humidity"] = humidity;
 	}
 
-	if(includeTempWarn) {
+	if (includeTempWarn) {
 		JsonObject tempWarnObj = json.createNestedObject("tempWarning");
 		JsonObject warningObj = tempWarnObj.createNestedObject("warning");
 		JsonObject dangerObj = tempWarnObj.createNestedObject("danger");
@@ -102,3 +103,35 @@ void Sensor::addToJson(DynamicJsonDocument *doc, bool includeTemperature, bool i
 		dangerObj["threshold"] = tempDangerThreshold;
 	}
 }
+
+void Sensor::setTempWarnEnabled(bool enabled)
+{
+	tempWarnEnabled = enabled;
+	xEventGroupSetBits(eg, tempWarnUpdateEvent);
+}
+
+void Sensor::setTempDangerEnabled(bool enabled)
+{
+	tempDangerEnabled = enabled;
+	xEventGroupSetBits(eg, tempWarnUpdateEvent);
+}
+
+void Sensor::setTempWarnThreshold(int threshold)
+{
+	tempWarnThreshold = threshold;
+	xEventGroupSetBits(eg, tempWarnUpdateEvent);
+}
+
+void Sensor::setTempDangerThreshold(int threshold)
+{
+	tempDangerThreshold = threshold;
+	xEventGroupSetBits(eg, tempWarnUpdateEvent);
+}
+
+bool Sensor::getTempWarnEnabled() { return tempWarnEnabled; }
+
+bool Sensor::getTempDangerEnabled() { return tempDangerEnabled; }
+
+int Sensor::getTempWarnThreshold() { return tempWarnThreshold; }
+
+int Sensor::getTempDangerThreshold() { return tempDangerThreshold; }
