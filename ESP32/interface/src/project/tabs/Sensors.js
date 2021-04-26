@@ -18,6 +18,7 @@ import TabContent from "../components/TabContent";
 import {selectWebinterfaceConfig} from "../redux/reducers/configurationSlice";
 import SwitchCard from "../components/SwitchCard";
 import {wsSend} from "../redux/reducers/webSocketSlice";
+import InputCard from "../components/InputCard";
 
 const useStyles = makeStyles(() => ({
 	graphSection: {
@@ -64,12 +65,31 @@ const Sensors = () => {
 	const sensor1 = useSelector((state) => selectSensor1(state));
 	const sensor2 = useSelector((state) => selectSensor2(state));
 
-	const onSensor1TempWarnTempChange = (checked) => {
+	const onSensor1TempWarnChange = (checked) => {
 		dispatch(wsSend({component: "sensor1", command: "setTempWarnEnabled", value: checked ? 1 : 0}))
 	}
-
-	const onSensor2TempWarnTempChange = (checked) => {
+	const onSensor2TempWarnChange = (checked) => {
 		dispatch(wsSend({component: "sensor2", command: "setTempWarnEnabled", value: checked ? 1 : 0}))
+	}
+	const onSensor1TempDangerChange = (checked) => {
+		dispatch(wsSend({component: "sensor1", command: "setTempDangerEnabled", value: checked ? 1 : 0}))
+	}
+	const onSensor2TempDangerChange = (checked) => {
+		dispatch(wsSend({component: "sensor2", command: "setTempDangerEnabled", value: checked ? 1 : 0}))
+	}
+
+	const onSensor1TempWarnThresholdChange = (value) => {
+		dispatch(wsSend({component: "sensor1", command: "setTempWarnThreshold", value: value}))
+	}
+	const onSensor2TempWarnThresholdChange = (value) => {
+		dispatch(wsSend({component: "sensor2", command: "setTempWarnThreshold", value: value}))
+	}
+
+	const onSensor1TempDangerThresholdChange = (value) => {
+		dispatch(wsSend({component: "sensor1", command: "setTempDangerThreshold", value: value}))
+	}
+	const onSensor2TempDangerThresholdChange = (value) => {
+		dispatch(wsSend({component: "sensor2", command: "setTempDangerThreshold", value: value}))
 	}
 
 	const webinterfaceConfig = useSelector((state) => selectWebinterfaceConfig(state));
@@ -82,7 +102,13 @@ const Sensors = () => {
 				<ValueField label="Humidity" valueEnding="%" endAdornment={<Img src={humidityIcon}/>}
 							value={sensor1.humidity}/>
 				<SwitchCard header="Temperature warning" checked={sensor1.tempWarn.warning.enabled}
-							onChange={onSensor1TempWarnTempChange}/>
+							onChange={onSensor1TempWarnChange}/>
+				<InputCard header="Temperature warning threshold" value={sensor1.tempWarn.warning.threshold}
+						   onChange={onSensor1TempWarnThresholdChange}/>
+				<SwitchCard header="Temperature danger" checked={sensor1.tempWarn.danger.enabled}
+							onChange={onSensor1TempDangerChange}/>
+				<InputCard header="Temperature danger threshold" value={sensor1.tempWarn.danger.threshold}
+						   onChange={onSensor1TempDangerThresholdChange}/>
 			</Card>
 			<Card header="Sensor 2" className={styles.sensorCard} style={{gridArea: '1 / 2 / 2 / 3'}}>
 				<ValueField label="Temperature" valueEnding="°C" endAdornment={<Img src={temperatureIcon}/>}
@@ -90,7 +116,13 @@ const Sensors = () => {
 				<ValueField label="Humidity" valueEnding="%" endAdornment={<Img src={humidityIcon}/>}
 							value={sensor2.humidity}/>
 				<SwitchCard header="Temperature warning" checked={sensor2.tempWarn.warning.enabled}
-							onChange={onSensor2TempWarnTempChange}/>
+							onChange={onSensor2TempWarnChange}/>
+				<InputCard header="Temperature warning threshold" value={sensor2.tempWarn.warning.threshold}
+						   onChange={onSensor2TempWarnThresholdChange}/>
+				<SwitchCard header="Temperature danger" checked={sensor2.tempWarn.danger.enabled}
+							onChange={onSensor2TempDangerChange}/>
+				<InputCard header="Temperature danger threshold" value={sensor2.tempWarn.danger.threshold}
+						   onChange={onSensor2TempDangerThresholdChange}/>
 			</Card>
 			{webinterfaceConfig.showSensorGraph.sensor1 || webinterfaceConfig.showSensorGraph.sensor2 ? (
 				<Card className={styles.actionCard} header="Actions" style={{gridArea: "1 / 3 / 2 / 4"}}>
