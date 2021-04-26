@@ -6,7 +6,7 @@ const initialState = {
 		humidity: 0,
 		temperatureCollection: [],
 		humidityCollection: [],
-		warning: {
+		tempWarn: {
 			warning: {
 				enabled: false,
 				threshold: 100,
@@ -22,7 +22,7 @@ const initialState = {
 		humidity: 0,
 		temperatureCollection: [],
 		humidityCollection: [],
-		warning: {
+		tempWarn: {
 			warning: {
 				enabled: false,
 				threshold: 100,
@@ -46,7 +46,7 @@ const sensorsSlice = createSlice({
 		setSensor1(state, action) {
 			let temperature = action.payload.sensor1?.temperature;
 			let humidity = action.payload.sensor1?.humidity;
-			let warning = action.payload.sensor1?.warning;
+			let tempWarn = action.payload.sensor1?.tempWarn;
 
 			if ("temperature" in action.payload.sensor1) {
 				state.sensor1.temperature = temperature;
@@ -59,14 +59,14 @@ const sensorsSlice = createSlice({
 				const humidityData = {humidity: humidity, time: new Date().getTime()};
 				state.sensor1.humidityCollection = [...state.sensor1.humidityCollection, humidityData];
 			}
-			if ("warning" in action.payload.sensor1) {
-				state.sensor1.warning = warning;
+			if ("tempWarn" in action.payload.sensor1) {
+				state.sensor1.tempWarn = tempWarn;
 			}
 		},
 		setSensor2(state, action) {
 			let temperature = action.payload.sensor2?.temperature;
 			let humidity = action.payload.sensor2?.humidity;
-			let warning = action.payload.sensor2?.warning;
+			let tempWarn = action.payload.sensor2?.tempWarn;
 
 			if ("temperature" in action.payload.sensor2) {
 				state.sensor2.temperature = temperature;
@@ -79,7 +79,7 @@ const sensorsSlice = createSlice({
 				state.sensor2.humidityCollection = [...state.sensor2.humidityCollection, humidityData];
 			}
 			if ("warning" in action.payload.sensor2) {
-				state.sensor2.warning = warning;
+				state.sensor2.tempWarn = tempWarn;
 			}
 		},
 		clearSensor1Collections(state, action) {
