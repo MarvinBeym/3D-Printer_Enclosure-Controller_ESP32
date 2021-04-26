@@ -17,6 +17,7 @@ import LineChartCard from "../components/LineChartCard";
 import TabContent from "../components/TabContent";
 import {selectWebinterfaceConfig} from "../redux/reducers/configurationSlice";
 import SwitchCard from "../components/SwitchCard";
+import {wsSend} from "../redux/reducers/webSocketSlice";
 
 const useStyles = makeStyles(() => ({
 	graphSection: {
@@ -64,11 +65,11 @@ const Sensors = () => {
 	const sensor2 = useSelector((state) => selectSensor2(state));
 
 	const onSensor1TempWarnTempChange = (event) => {
-
+		dispatch(wsSend({component: "sensor1", command: "setTempWarnEnabled", value: event.target.checked ? 1 : 0}))
 	}
 
 	const onSensor2TempWarnTempChange = (event) => {
-
+		dispatch(wsSend({component: "sensor2", command: "setTempWarnEnabled", value: event.target.checked ? 1 : 0}))
 	}
 
 	const webinterfaceConfig = useSelector((state) => selectWebinterfaceConfig(state));

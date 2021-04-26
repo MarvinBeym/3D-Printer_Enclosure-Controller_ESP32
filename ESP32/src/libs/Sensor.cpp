@@ -92,7 +92,7 @@ Sensor::addToJson(DynamicJsonDocument *doc, bool includeTemperature, bool includ
 	}
 
 	if (includeTempWarn) {
-		JsonObject tempWarnObj = json.createNestedObject("tempWarning");
+		JsonObject tempWarnObj = json.createNestedObject("tempWarn");
 		JsonObject warningObj = tempWarnObj.createNestedObject("warning");
 		JsonObject dangerObj = tempWarnObj.createNestedObject("danger");
 
